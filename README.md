@@ -173,7 +173,8 @@ row's tooltip, and claimed rewards turn green with a check mark. The
 tier reward row and every completed goal have a **Claim** button. A goal's points are only added to its category when
 it is claimed, so claiming goals is what moves the player along the tiers; a goal without rewards is still claimed for
 its points. The server checks
-every claim, so a reward can only be claimed once.
+every claim, so a reward can only be claimed once. Clicking Claim plays a UI sound on the client: an experience pickup
+for a goal, the level-up sound for a tier.
 
 Goal files can be grouped in sub-folders: `goal/road_to_end/first_table.json` has the id
 `minegoals:road_to_end/first_table`.

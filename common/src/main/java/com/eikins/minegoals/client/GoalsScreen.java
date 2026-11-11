@@ -13,8 +13,10 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
@@ -692,6 +694,7 @@ public class GoalsScreen extends Screen {
         for (ClaimButton button : this.claimButtons) {
             if (inside(mx, my, button.x(), button.y(), CLAIM_WIDTH, CLAIM_HEIGHT)) {
                 ClientGoalState.claim(button.payload());
+                playClaimSound(button.payload());
                 return true;
             }
         }
@@ -721,6 +724,14 @@ public class GoalsScreen extends Screen {
     public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
         this.scroll = Math.max(0, Math.min(this.maxScroll(), this.scroll - scrollY * ROW_HEIGHT / 2.0));
         return true;
+    }
+
+    /** UI sound on the client: a light pickup for a goal, the level-up sound for a tier reward. */
+    private void playClaimSound(MineGoalsNetwork.ClaimReward payload) {
+        boolean tier = payload.tier() > 0;
+        this.minecraft.getSoundManager().play(tier
+                ? SimpleSoundInstance.forUI(SoundEvents.PLAYER_LEVELUP, 1.0F, 0.9F)
+                : SimpleSoundInstance.forUI(SoundEvents.EXPERIENCE_ORB_PICKUP, 1.1F, 0.8F));
     }
 
     private static boolean inside(double mx, double my, int x, int y, int w, int h) {
