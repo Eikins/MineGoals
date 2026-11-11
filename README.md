@@ -1,121 +1,121 @@
 # MineGoals
 
-Mod Minecraft **26.3** multi-loader (**Fabric** et **NeoForge**) : des objectifs personnels organisés en
-**catégories** et en **paliers**, façon battlepass, entièrement définis par datapack.
+A multi-loader Minecraft **26.3** mod (**Fabric** and **NeoForge**): personal goals organised into
+**categories** and **tiers**, battle-pass style, fully defined by datapacks.
 
-- Chaque objectif terminé rapporte des **points** à sa catégorie.
-- Un seuil de points débloque le **palier** suivant, avec sa récompense et ses nouveaux objectifs.
-- La somme des points donne un **niveau global** : 1 niveau tous les 100 points.
-- **HUD** en jeu (touche **H** pour le masquer) et **écran** dédié (touche **G**).
-- Fonctionne en solo et sur serveur dédié. La progression est stockée côté serveur, par joueur.
+- Each completed goal earns **points** for its category.
+- Reaching a points threshold unlocks the next **tier**, with its reward and new goals.
+- Total points give a **global level**: one level every 100 points.
+- In-game **HUD** (press **H** to hide it) and a dedicated **screen** (press **G**).
+- Works in singleplayer and on dedicated servers. Progress is stored server-side, per player.
 
-## Structure du projet
+## Project structure
 
-| Dossier | Rôle |
+| Folder | Purpose |
 |---|---|
-| `common/` | Tout le code du mod (vanilla uniquement) + contenu d'exemple + traductions |
-| `fabric/` | Colle Fabric : enregistrement réseau, reload listener, HUD, touches, commandes |
-| `neoforge/` | Colle NeoForge : idem, via les événements NeoForge |
-| `build-logic/` | Scripts Gradle communs |
+| `common/` | All mod code (vanilla only), example content and translations |
+| `fabric/` | Fabric glue: networking, reload listener, HUD, key bindings, commands |
+| `neoforge/` | NeoForge glue: the same, through NeoForge events |
+| `build-logic/` | Shared Gradle scripts |
 
-Le code de `common/` ne connaît ni Fabric ni NeoForge. Ce qui dépend du loader passe par les services de
-`common/.../platform/services/` (`IPlatformHelper`, `INetworkHelper`), déclarés dans `META-INF/services/`.
+Code in `common/` knows nothing about Fabric or NeoForge. Anything loader-specific goes through the
+services in `common/.../platform/services/` (`IPlatformHelper`, `INetworkHelper`), declared in `META-INF/services/`.
 
-Points clés de `common/src/main/java/com/eikins/minegoals/` :
-- `data/` : formats JSON (`Category`, `Goal`, critères, récompenses) et chargement (`GoalDataLoader`).
-- `progress/` : progression par joueur (`PlayerGoalProgress`), sauvegarde (`GoalProgressData`), logique (`GoalTracker`).
-- `mixin/ServerPlayerMixin` : branche les statistiques vanilla et un tick par seconde sur `GoalTracker`.
-- `network/` : payloads serveur → client.
-- `client/` : HUD, écran, toast, touches.
-- `command/` : `/minegoals`.
+Key packages in `common/src/main/java/com/eikins/minegoals/`:
+- `data/`: JSON formats (`Category`, `Goal`, criteria, rewards) and loading (`GoalDataLoader`).
+- `progress/`: per-player progress (`PlayerGoalProgress`), persistence (`GoalProgressData`), logic (`GoalTracker`).
+- `mixin/ServerPlayerMixin`: hooks vanilla statistics and a once-per-second tick into `GoalTracker`.
+- `network/`: server → client payloads.
+- `client/`: HUD, screen, toast, key bindings.
+- `command/`: `/minegoals`.
 
-## Créer des objectifs (datapack)
+## Creating goals (datapack)
 
-### Catégorie : `data/<namespace>/minegoals/category/<nom>.json`
+### Category: `data/<namespace>/minegoals/category/<name>.json`
 ```json
 {
-  "title": {"translate": "category.monpack.peche"},
+  "title": {"translate": "category.mypack.fishing"},
   "icon": "minecraft:fishing_rod",
   "order": 10,
   "tiers": [
     { "points": 0 },
     { "points": 30, "rewards": { "items": [{"id": "minecraft:cod", "count": 16}] } },
-    { "points": 75, "rewards": { "experience": 100, "commands": ["say @s est un pro de la pêche"] } }
+    { "points": 75, "rewards": { "experience": 100, "commands": ["say @s is a fishing pro"] } }
   ]
 }
 ```
-- `tiers` : le premier palier est à 0 point, puis les seuils sont strictement croissants.
-- La récompense d'un palier est donnée une seule fois, quand il est atteint.
+- `tiers`: the first tier is at 0 points, and thresholds must strictly increase.
+- A tier's reward is granted once, when the tier is reached.
 
-### Objectif : `data/<namespace>/minegoals/goal/<nom>.json`
+### Goal: `data/<namespace>/minegoals/goal/<name>.json`
 ```json
 {
-  "category": "monpack:peche",
+  "category": "mypack:fishing",
   "tier": 2,
   "points": 15,
-  "title": "Pêcheur confirmé",
-  "description": "Ramasse 32 morues",
+  "title": "Seasoned Angler",
+  "description": "Pick up 32 cod",
   "icon": "minecraft:cod",
-  "requires": ["monpack:premier_poisson"],
+  "requires": ["mypack:first_fish"],
   "criterion": { "type": "minegoals:collect_item", "item": "minecraft:cod", "count": 32 },
   "rewards": { "items": [{"id": "minecraft:diamond", "count": 1}], "experience": 20, "commands": [] }
 }
 ```
 
-| Champ | Défaut | Description |
+| Field | Default | Description |
 |---|---|---|
-| `category` | obligatoire | Id de la catégorie |
-| `tier` | `1` | Palier de la catégorie qui débloque l'objectif |
-| `points` | `10` | Points gagnés à la complétion |
-| `title`, `description` | | Texte simple ou composant JSON (`{"translate": ...}`) |
-| `icon` | obligatoire | Id d'objet |
-| `requires` | `[]` | Objectifs à terminer avant (en plus du palier) |
-| `criterion` | obligatoire | Voir ci-dessous |
-| `rewards` | aucune | `items`, `experience`, `commands` (exécutées en tant que joueur, niveau 2) |
+| `category` | required | Category id |
+| `tier` | `1` | Category tier that unlocks the goal |
+| `points` | `10` | Points earned on completion |
+| `title`, `description` | | Plain text or a JSON text component (`{"translate": ...}`) |
+| `icon` | required | Item id |
+| `requires` | `[]` | Goals to complete first (in addition to the tier) |
+| `criterion` | required | See below |
+| `rewards` | none | `items`, `experience`, `commands` (run as the player, permission level 2) |
 
-Un objectif dont la catégorie, le palier ou un `requires` n'existe pas est ignoré, avec un avertissement dans les logs.
+A goal whose category, tier or `requires` entry does not exist is skipped, with a warning in the logs.
 
-### Critères
-Les champs `block`, `entity`, `item` et `biome` acceptent un id (`minecraft:stone`) ou un tag (`#minecraft:logs`).
+### Criteria
+The `block`, `entity`, `item` and `biome` fields accept an id (`minecraft:stone`) or a tag (`#minecraft:logs`).
 
-| `type` | Champs | Compté quand… |
+| `type` | Fields | Counted when… |
 |---|---|---|
-| `minegoals:break_block` | `block`, `count` | le joueur casse le bloc (stat vanilla « miné ») |
-| `minegoals:kill_entity` | `entity`, `count` | le joueur tue l'entité |
-| `minegoals:collect_item` | `item`, `count` | le joueur ramasse l'objet au sol |
-| `minegoals:craft_item` | `item`, `count` | le joueur fabrique ou fait cuire l'objet |
-| `minegoals:hold_item` | `item`, `count` | l'inventaire contient `count` objets en même temps |
-| `minegoals:visit_biome` | `biome` | le joueur se trouve dans le biome |
-| `minegoals:visit_dimension` | `dimension` | le joueur se trouve dans la dimension |
+| `minegoals:break_block` | `block`, `count` | the player breaks the block (vanilla "mined" stat) |
+| `minegoals:kill_entity` | `entity`, `count` | the player kills the entity |
+| `minegoals:collect_item` | `item`, `count` | the player picks the item up from the ground |
+| `minegoals:craft_item` | `item`, `count` | the player crafts or smelts the item |
+| `minegoals:hold_item` | `item`, `count` | the inventory holds `count` items at the same time |
+| `minegoals:visit_biome` | `biome` | the player is in the biome |
+| `minegoals:visit_dimension` | `dimension` | the player is in the dimension |
 
-La progression d'un objectif ne compte qu'à partir de son déblocage.
-Le mod fournit un contenu d'exemple (Minage, Combat, Exploration, Artisanat ; 32 objectifs) dans
-`common/src/main/resources/data/minegoals/`. Un datapack peut remplacer ces fichiers.
+A goal only counts progress once it is unlocked.
+The mod ships example content (Mining, Combat, Exploration, Crafting; 32 goals) in
+`common/src/main/resources/data/minegoals/`. A datapack can override these files.
 
-## Commandes (opérateurs)
+## Commands (operators)
 
-- `/minegoals list [joueur]` : niveau, paliers, état de chaque objectif.
-- `/minegoals reset <joueur> [objectif|catégorie]` : remise à zéro (tout si rien n'est précisé).
-- `/minegoals complete <joueur> <objectif>` : termine un objectif, même verrouillé, avec ses récompenses.
+- `/minegoals list [player]`: level, tiers and the state of every goal.
+- `/minegoals reset <player> [goal|category]`: resets progress (everything if nothing is given).
+- `/minegoals complete <player> <goal>`: completes a goal, even a locked one, and grants its rewards.
 
-## Développement
+## Development
 
-Prérequis : JDK **25**, IntelliJ IDEA (Eclipse n'est pas supporté).
+Requirements: JDK **25**, IntelliJ IDEA (Eclipse is not supported).
 
 ```bash
-./gradlew build                 # compile les deux loaders + tests
-./gradlew :common:test          # tests unitaires (formats JSON, points, paliers, déblocages)
-./gradlew :fabric:runClient     # Minecraft avec Fabric
-./gradlew :neoforge:runClient   # Minecraft avec NeoForge
-./gradlew :fabric:runServer     # serveur de test Fabric
-./gradlew :neoforge:runServer   # serveur de test NeoForge
+./gradlew build                 # builds both loaders and runs the tests
+./gradlew :common:test          # unit tests (JSON formats, points, tiers, unlocking)
+./gradlew :fabric:runClient     # Minecraft with Fabric
+./gradlew :neoforge:runClient   # Minecraft with NeoForge
+./gradlew :fabric:runServer     # Fabric test server
+./gradlew :neoforge:runServer   # NeoForge test server
 ```
 
-Les jars se trouvent dans `fabric/build/libs/` et `neoforge/build/libs/`.
-Versions (mod, Minecraft, Fabric, NeoForge) : `gradle.properties`.
+Jars are written to `fabric/build/libs/` and `neoforge/build/libs/`.
+Versions (mod, Minecraft, Fabric, NeoForge) live in `gradle.properties`.
 
-## À faire
+## To do
 
-- Ajouter une icône `minegoals.png` dans `common/src/main/resources/`.
-- Choisir une licence (actuellement `All-Rights-Reserved`).
-- Saisons (v2) : prévoir un champ `season` optionnel sur les catégories.
+- Add a `minegoals.png` icon to `common/src/main/resources/`.
+- Pick a license (currently `All-Rights-Reserved`).
+- Seasons (v2): add an optional `season` field to categories.
