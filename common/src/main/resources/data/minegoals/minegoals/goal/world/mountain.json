@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:world",
+  "tier": 1,
+  "points": 10,
+  "title": {
+    "translate": "goal.minegoals.world.mountain"
+  },
+  "description": {
+    "translate": "goal.minegoals.world.mountain.desc"
+  },
+  "icon": "minecraft:snowball",
+  "criterion": {
+    "type": "minegoals:visit_biome",
+    "biome": "#minecraft:is_mountain"
+  },
+  "rewards": {
+    "experience": 10
+  }
+}

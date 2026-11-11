@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:road_to_end",
+  "tier": 9,
+  "points": 50,
+  "title": {
+    "translate": "goal.minegoals.road_to_end.eye_spy"
+  },
+  "description": {
+    "translate": "goal.minegoals.road_to_end.eye_spy.desc"
+  },
+  "icon": "minecraft:ender_eye",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:story/follow_ender_eye"
+  },
+  "rewards": {
+    "experience": 50
+  }
+}

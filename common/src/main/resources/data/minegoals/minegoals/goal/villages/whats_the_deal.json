@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:villages",
+  "tier": 1,
+  "points": 10,
+  "title": {
+    "translate": "goal.minegoals.villages.whats_the_deal"
+  },
+  "description": {
+    "translate": "goal.minegoals.villages.whats_the_deal.desc"
+  },
+  "icon": "minecraft:emerald",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:adventure/trade"
+  },
+  "rewards": {
+    "experience": 10
+  }
+}

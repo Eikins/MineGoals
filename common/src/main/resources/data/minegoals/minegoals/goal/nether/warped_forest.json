@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:nether",
+  "tier": 1,
+  "points": 10,
+  "title": {
+    "translate": "goal.minegoals.nether.warped_forest"
+  },
+  "description": {
+    "translate": "goal.minegoals.nether.warped_forest.desc"
+  },
+  "icon": "minecraft:warped_fungus",
+  "criterion": {
+    "type": "minegoals:visit_biome",
+    "biome": "minecraft:warped_forest"
+  },
+  "rewards": {
+    "experience": 10
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:road_to_end",
+  "tier": 7,
+  "points": 40,
+  "title": {
+    "translate": "goal.minegoals.road_to_end.into_fire"
+  },
+  "description": {
+    "translate": "goal.minegoals.road_to_end.into_fire.desc"
+  },
+  "icon": "minecraft:blaze_rod",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:nether/obtain_blaze_rod"
+  },
+  "rewards": {
+    "experience": 40
+  }
+}

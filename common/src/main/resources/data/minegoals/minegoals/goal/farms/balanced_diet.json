@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:farms",
+  "tier": 4,
+  "points": 40,
+  "title": {
+    "translate": "goal.minegoals.farms.balanced_diet"
+  },
+  "description": {
+    "translate": "goal.minegoals.farms.balanced_diet.desc"
+  },
+  "icon": "minecraft:apple",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:husbandry/balanced_diet"
+  },
+  "rewards": {
+    "experience": 40
+  }
+}

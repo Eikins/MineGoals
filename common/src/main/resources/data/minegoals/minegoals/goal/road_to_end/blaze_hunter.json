@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:road_to_end",
+  "tier": 7,
+  "points": 40,
+  "title": {
+    "translate": "goal.minegoals.road_to_end.blaze_hunter"
+  },
+  "description": {
+    "translate": "goal.minegoals.road_to_end.blaze_hunter.desc"
+  },
+  "icon": "minecraft:blaze_powder",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:blaze",
+    "count": 8
+  },
+  "rewards": {
+    "experience": 40
+  }
+}

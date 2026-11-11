@@ -16,8 +16,9 @@ import net.minecraft.stats.Stats;
 import net.minecraft.util.ExtraCodecs;
 
 /**
- * Criteria backed by vanilla statistics: blocks mined, entities killed, items picked up and items crafted.
- * Hooking the stat system covers all four without any loader-specific event.
+ * Criteria backed by vanilla statistics: blocks mined, entities killed, items picked up, items crafted and
+ * "custom" statistics (fish caught, villager trades, animals bred, items enchanted...).
+ * Hooking the stat system covers all of them without any loader-specific event.
  */
 public record StatCriterion<T>(Kind<T> kind, RegistryMatcher<T> target, int count) implements GoalCriterion {
 
@@ -29,11 +30,15 @@ public record StatCriterion<T>(Kind<T> kind, RegistryMatcher<T> target, int coun
             new Kind<>("collect_item", "item", Stats.ITEM_PICKED_UP, Registries.ITEM, BuiltInRegistries.ITEM);
     public static final Kind<net.minecraft.world.item.Item> CRAFT =
             new Kind<>("craft_item", "item", Stats.ITEM_CRAFTED, Registries.ITEM, BuiltInRegistries.ITEM);
+    /** Vanilla "custom" statistics such as {@code minecraft:fish_caught} or {@code minecraft:traded_with_villager}. */
+    public static final Kind<Identifier> CUSTOM =
+            new Kind<>("custom_stat", "stat", Stats.CUSTOM, Registries.CUSTOM_STAT, BuiltInRegistries.CUSTOM_STAT);
 
     public static final MapCodec<StatCriterion<?>> BREAK_BLOCK = codec(BLOCK);
     public static final MapCodec<StatCriterion<?>> KILL_ENTITY = codec(ENTITY);
     public static final MapCodec<StatCriterion<?>> COLLECT_ITEM = codec(PICKUP);
     public static final MapCodec<StatCriterion<?>> CRAFT_ITEM = codec(CRAFT);
+    public static final MapCodec<StatCriterion<?>> CUSTOM_STAT = codec(CUSTOM);
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static <T> MapCodec<StatCriterion<?>> codec(Kind<T> kind) {

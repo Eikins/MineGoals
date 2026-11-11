@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:road_to_end",
+  "tier": 1,
+  "points": 10,
+  "title": {
+    "translate": "goal.minegoals.road_to_end.first_table"
+  },
+  "description": {
+    "translate": "goal.minegoals.road_to_end.first_table.desc"
+  },
+  "icon": "minecraft:crafting_table",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:crafting_table",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 10
+  }
+}

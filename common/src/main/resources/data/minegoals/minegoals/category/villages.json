@@ -1,0 +1,49 @@
+{
+  "title": {
+    "translate": "category.minegoals.villages"
+  },
+  "icon": "minecraft:emerald",
+  "order": 3,
+  "tier_visibility": "visible",
+  "tiers": [
+    {
+      "points": 0
+    },
+    {
+      "points": 20,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:bell",
+            "count": 4
+          }
+        ],
+        "experience": 100
+      }
+    },
+    {
+      "points": 65,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:totem_of_undying",
+            "count": 4
+          }
+        ],
+        "experience": 150
+      }
+    },
+    {
+      "points": 135,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:emerald_block",
+            "count": 1
+          }
+        ],
+        "experience": 200
+      }
+    }
+  ]
+}

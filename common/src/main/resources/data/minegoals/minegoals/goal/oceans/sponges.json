@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:oceans",
+  "tier": 3,
+  "points": 30,
+  "title": {
+    "translate": "goal.minegoals.oceans.sponges"
+  },
+  "description": {
+    "translate": "goal.minegoals.oceans.sponges.desc"
+  },
+  "icon": "minecraft:wet_sponge",
+  "criterion": {
+    "type": "minegoals:break_block",
+    "block": "minecraft:wet_sponge",
+    "count": 5
+  },
+  "rewards": {
+    "experience": 30
+  }
+}

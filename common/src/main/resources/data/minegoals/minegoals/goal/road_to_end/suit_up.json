@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:road_to_end",
+  "tier": 4,
+  "points": 25,
+  "title": {
+    "translate": "goal.minegoals.road_to_end.suit_up"
+  },
+  "description": {
+    "translate": "goal.minegoals.road_to_end.suit_up.desc"
+  },
+  "icon": "minecraft:iron_chestplate",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:story/obtain_armor"
+  },
+  "rewards": {
+    "experience": 25
+  }
+}

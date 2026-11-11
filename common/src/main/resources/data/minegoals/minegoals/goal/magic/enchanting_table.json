@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:magic",
+  "tier": 1,
+  "points": 10,
+  "title": {
+    "translate": "goal.minegoals.magic.enchanting_table"
+  },
+  "description": {
+    "translate": "goal.minegoals.magic.enchanting_table.desc"
+  },
+  "icon": "minecraft:enchanting_table",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:enchanting_table",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 10
+  }
+}

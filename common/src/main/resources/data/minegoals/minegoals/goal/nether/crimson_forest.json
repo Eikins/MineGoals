@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:nether",
+  "tier": 1,
+  "points": 10,
+  "title": {
+    "translate": "goal.minegoals.nether.crimson_forest"
+  },
+  "description": {
+    "translate": "goal.minegoals.nether.crimson_forest.desc"
+  },
+  "icon": "minecraft:crimson_fungus",
+  "criterion": {
+    "type": "minegoals:visit_biome",
+    "biome": "minecraft:crimson_forest"
+  },
+  "rewards": {
+    "experience": 10
+  }
+}

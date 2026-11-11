@@ -1,0 +1,49 @@
+{
+  "title": {
+    "translate": "category.minegoals.nether"
+  },
+  "icon": "minecraft:netherite_ingot",
+  "order": 6,
+  "tier_visibility": "visible",
+  "tiers": [
+    {
+      "points": 0
+    },
+    {
+      "points": 30,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:crying_obsidian",
+            "count": 4
+          }
+        ],
+        "experience": 100
+      }
+    },
+    {
+      "points": 90,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:netherite_scrap",
+            "count": 4
+          }
+        ],
+        "experience": 150
+      }
+    },
+    {
+      "points": 155,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:netherite_upgrade_smithing_template",
+            "count": 1
+          }
+        ],
+        "experience": 200
+      }
+    }
+  ]
+}

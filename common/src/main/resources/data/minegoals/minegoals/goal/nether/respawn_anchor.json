@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:nether",
+  "tier": 2,
+  "points": 20,
+  "title": {
+    "translate": "goal.minegoals.nether.respawn_anchor"
+  },
+  "description": {
+    "translate": "goal.minegoals.nether.respawn_anchor.desc"
+  },
+  "icon": "minecraft:respawn_anchor",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:nether/charge_respawn_anchor"
+  },
+  "rewards": {
+    "experience": 20
+  }
+}

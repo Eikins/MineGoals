@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:nether",
+  "tier": 2,
+  "points": 20,
+  "title": {
+    "translate": "goal.minegoals.nether.bastion"
+  },
+  "description": {
+    "translate": "goal.minegoals.nether.bastion.desc"
+  },
+  "icon": "minecraft:polished_blackstone_bricks",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:nether/find_bastion"
+  },
+  "rewards": {
+    "experience": 20
+  }
+}

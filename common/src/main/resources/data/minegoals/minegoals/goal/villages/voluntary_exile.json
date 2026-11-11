@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:villages",
+  "tier": 3,
+  "points": 30,
+  "title": {
+    "translate": "goal.minegoals.villages.voluntary_exile"
+  },
+  "description": {
+    "translate": "goal.minegoals.villages.voluntary_exile.desc"
+  },
+  "icon": "minecraft:white_banner",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:adventure/voluntary_exile"
+  },
+  "rewards": {
+    "experience": 30
+  }
+}

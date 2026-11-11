@@ -1,0 +1,49 @@
+{
+  "title": {
+    "translate": "category.minegoals.world"
+  },
+  "icon": "minecraft:filled_map",
+  "order": 7,
+  "tier_visibility": "visible",
+  "tiers": [
+    {
+      "points": 0
+    },
+    {
+      "points": 30,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:spyglass",
+            "count": 4
+          }
+        ],
+        "experience": 100
+      }
+    },
+    {
+      "points": 90,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:lodestone",
+            "count": 4
+          }
+        ],
+        "experience": 150
+      }
+    },
+    {
+      "points": 180,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:elytra",
+            "count": 1
+          }
+        ],
+        "experience": 200
+      }
+    }
+  ]
+}

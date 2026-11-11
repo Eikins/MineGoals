@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:magic",
+  "tier": 3,
+  "points": 30,
+  "title": {
+    "translate": "goal.minegoals.magic.chiseled_bookshelf"
+  },
+  "description": {
+    "translate": "goal.minegoals.magic.chiseled_bookshelf.desc"
+  },
+  "icon": "minecraft:chiseled_bookshelf",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:adventure/read_power_of_chiseled_bookshelf"
+  },
+  "rewards": {
+    "experience": 30
+  }
+}

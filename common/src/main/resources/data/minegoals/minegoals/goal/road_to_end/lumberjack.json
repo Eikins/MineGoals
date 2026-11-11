@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:road_to_end",
+  "tier": 1,
+  "points": 10,
+  "title": {
+    "translate": "goal.minegoals.road_to_end.lumberjack"
+  },
+  "description": {
+    "translate": "goal.minegoals.road_to_end.lumberjack.desc"
+  },
+  "icon": "minecraft:oak_log",
+  "criterion": {
+    "type": "minegoals:break_block",
+    "block": "#minecraft:logs",
+    "count": 16
+  },
+  "rewards": {
+    "experience": 10
+  }
+}

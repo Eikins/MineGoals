@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:nether",
+  "tier": 1,
+  "points": 10,
+  "title": {
+    "translate": "goal.minegoals.nether.crying_obsidian"
+  },
+  "description": {
+    "translate": "goal.minegoals.nether.crying_obsidian.desc"
+  },
+  "icon": "minecraft:crying_obsidian",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:nether/obtain_crying_obsidian"
+  },
+  "rewards": {
+    "experience": 10
+  }
+}

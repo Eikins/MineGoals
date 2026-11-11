@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:nether",
+  "tier": 2,
+  "points": 20,
+  "title": {
+    "translate": "goal.minegoals.nether.war_pigs"
+  },
+  "description": {
+    "translate": "goal.minegoals.nether.war_pigs.desc"
+  },
+  "icon": "minecraft:chest",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:nether/loot_bastion"
+  },
+  "rewards": {
+    "experience": 20
+  }
+}

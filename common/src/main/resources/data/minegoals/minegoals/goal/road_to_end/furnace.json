@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:road_to_end",
+  "tier": 2,
+  "points": 15,
+  "title": {
+    "translate": "goal.minegoals.road_to_end.furnace"
+  },
+  "description": {
+    "translate": "goal.minegoals.road_to_end.furnace.desc"
+  },
+  "icon": "minecraft:furnace",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:furnace",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 15
+  }
+}

@@ -22,7 +22,7 @@ import java.util.Set;
 public final class GoalTracker {
 
     private static final Set<StatType<?>> TRACKED_STATS =
-            Set.of(Stats.BLOCK_MINED, Stats.ENTITY_KILLED, Stats.ITEM_PICKED_UP, Stats.ITEM_CRAFTED);
+            Set.of(Stats.BLOCK_MINED, Stats.ENTITY_KILLED, Stats.ITEM_PICKED_UP, Stats.ITEM_CRAFTED, Stats.CUSTOM);
 
     private GoalTracker() {
     }

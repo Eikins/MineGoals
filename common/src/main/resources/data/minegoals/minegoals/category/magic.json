@@ -1,0 +1,49 @@
+{
+  "title": {
+    "translate": "category.minegoals.magic"
+  },
+  "icon": "minecraft:enchanting_table",
+  "order": 4,
+  "tier_visibility": "visible",
+  "tiers": [
+    {
+      "points": 0
+    },
+    {
+      "points": 20,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:experience_bottle",
+            "count": 4
+          }
+        ],
+        "experience": 100
+      }
+    },
+    {
+      "points": 65,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:blaze_rod",
+            "count": 4
+          }
+        ],
+        "experience": 150
+      }
+    },
+    {
+      "points": 135,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:nether_star",
+            "count": 1
+          }
+        ],
+        "experience": 200
+      }
+    }
+  ]
+}

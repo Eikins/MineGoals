@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:world",
+  "tier": 1,
+  "points": 10,
+  "title": {
+    "translate": "goal.minegoals.world.cartographer"
+  },
+  "description": {
+    "translate": "goal.minegoals.world.cartographer.desc"
+  },
+  "icon": "minecraft:map",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:map",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 10
+  }
+}

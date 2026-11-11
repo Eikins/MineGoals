@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:villages",
+  "tier": 4,
+  "points": 40,
+  "title": {
+    "translate": "goal.minegoals.villages.tycoon"
+  },
+  "description": {
+    "translate": "goal.minegoals.villages.tycoon.desc"
+  },
+  "icon": "minecraft:emerald_block",
+  "criterion": {
+    "type": "minegoals:custom_stat",
+    "stat": "minecraft:traded_with_villager",
+    "count": 100
+  },
+  "rewards": {
+    "experience": 40
+  }
+}

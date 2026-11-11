@@ -33,6 +33,7 @@ public class GoalsScreen extends Screen {
     private static final int ROW_HEIGHT = 32;
     private static final int CLAIM_WIDTH = 52;
     private static final int CLAIM_HEIGHT = 12;
+    private static final int MIN_TAB_WIDTH_WITH_TITLE = 60;
 
     private final List<Identifier> categoryIds = new ArrayList<>();
     /** Claim buttons drawn this frame, used to resolve clicks. */
@@ -212,9 +213,17 @@ public class GoalsScreen extends Screen {
             if (selected) {
                 g.fill(x, y + TAB_HEIGHT - 2, x + tabWidth - 2, y + TAB_HEIGHT, GoalRender.GOLD);
             }
-            g.item(new ItemStack(category.icon()), x + 2, y + 2);
-            GoalRender.clippedText(g, this.font, category.title(), x + 20, y + 6, tabWidth - 28,
-                    selected ? GoalRender.WHITE : GoalRender.GRAY);
+            if (tabWidth >= MIN_TAB_WIDTH_WITH_TITLE) {
+                g.item(new ItemStack(category.icon()), x + 2, y + 2);
+                GoalRender.clippedText(g, this.font, category.title(), x + 20, y + 6, tabWidth - 28,
+                        selected ? GoalRender.WHITE : GoalRender.GRAY);
+            } else {
+                // Narrow tabs (many categories): icon only, title in a tooltip.
+                g.item(new ItemStack(category.icon()), x + (tabWidth - 2) / 2 - 8, y + 2);
+                if (hovered) {
+                    g.setTooltipForNextFrame(this.font, List.of(category.title()), Optional.empty(), mouseX, mouseY);
+                }
+            }
             if (this.hasClaimable(defs, progress, categoryId)) {
                 g.fill(x + tabWidth - 7, y + 2, x + tabWidth - 3, y + 6, GoalRender.GREEN);
             }
@@ -263,11 +272,13 @@ public class GoalsScreen extends Screen {
             if (progress.canClaimTier(defs, categoryId, tier)) {
                 g.fill(x + box - 5, y + 1, x + box - 1, y + 5, GoalRender.GREEN);
             }
-            Component name = revealed
-                    ? Component.translatable("minegoals.screen.tier_short", tier)
-                    : Component.literal("???");
+            // Long tracks get narrow boxes: drop the words and keep the numbers.
+            boolean wide = box >= 50;
+            Component name = !revealed
+                    ? Component.literal("???")
+                    : wide ? Component.translatable("minegoals.screen.tier_short", tier) : Component.literal(String.valueOf(tier));
             g.centeredText(this.font, name, x + box / 2, y + 5, isReached ? GoalRender.WHITE : GoalRender.GRAY);
-            String threshold = category.tiers().get(i).points() + " pts";
+            String threshold = category.tiers().get(i).points() + (wide ? " pts" : "");
             g.centeredText(this.font, threshold, x + box / 2, y + 17, isReached ? GoalRender.GREEN : GoalRender.GRAY);
 
             if (inside(mouseX, mouseY, x, y, box, TRACK_HEIGHT)) {
@@ -293,7 +304,9 @@ public class GoalsScreen extends Screen {
         } else {
             summary = Component.translatable("minegoals.screen.category_points", points);
         }
-        g.centeredText(this.font, summary, this.left + this.panelWidth / 2, y + TRACK_HEIGHT + 3, GoalRender.GRAY);
+        Component line = Component.empty().append(category.title().copy().withStyle(ChatFormatting.WHITE))
+                .append(Component.literal(" · ")).append(summary);
+        g.centeredText(this.font, line, this.left + this.panelWidth / 2, y + TRACK_HEIGHT + 3, GoalRender.GRAY);
     }
 
     private void renderRows(GuiGraphicsExtractor g, GoalDefinitions defs, PlayerGoalProgress progress,

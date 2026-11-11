@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:road_to_end",
+  "tier": 10,
+  "points": 55,
+  "title": {
+    "translate": "goal.minegoals.road_to_end.bow"
+  },
+  "description": {
+    "translate": "goal.minegoals.road_to_end.bow.desc"
+  },
+  "icon": "minecraft:bow",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:bow",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 55
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:road_to_end",
+  "tier": 1,
+  "points": 10,
+  "title": {
+    "translate": "goal.minegoals.road_to_end.wooden_pickaxe"
+  },
+  "description": {
+    "translate": "goal.minegoals.road_to_end.wooden_pickaxe.desc"
+  },
+  "icon": "minecraft:wooden_pickaxe",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:wooden_pickaxe",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 10
+  }
+}

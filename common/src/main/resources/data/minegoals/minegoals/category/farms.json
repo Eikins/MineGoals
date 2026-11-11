@@ -1,0 +1,49 @@
+{
+  "title": {
+    "translate": "category.minegoals.farms"
+  },
+  "icon": "minecraft:wheat",
+  "order": 2,
+  "tier_visibility": "visible",
+  "tiers": [
+    {
+      "points": 0
+    },
+    {
+      "points": 20,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:lead",
+            "count": 4
+          }
+        ],
+        "experience": 100
+      }
+    },
+    {
+      "points": 80,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:golden_carrot",
+            "count": 4
+          }
+        ],
+        "experience": 150
+      }
+    },
+    {
+      "points": 150,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:enchanted_golden_apple",
+            "count": 1
+          }
+        ],
+        "experience": 200
+      }
+    }
+  ]
+}

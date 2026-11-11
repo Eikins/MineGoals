@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:magic",
+  "tier": 1,
+  "points": 10,
+  "title": {
+    "translate": "goal.minegoals.magic.enchanter"
+  },
+  "description": {
+    "translate": "goal.minegoals.magic.enchanter.desc"
+  },
+  "icon": "minecraft:enchanted_book",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:story/enchant_item"
+  },
+  "rewards": {
+    "experience": 10
+  }
+}

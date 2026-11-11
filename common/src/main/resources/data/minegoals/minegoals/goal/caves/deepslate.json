@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:caves",
+  "tier": 1,
+  "points": 10,
+  "title": {
+    "translate": "goal.minegoals.caves.deepslate"
+  },
+  "description": {
+    "translate": "goal.minegoals.caves.deepslate.desc"
+  },
+  "icon": "minecraft:deepslate",
+  "criterion": {
+    "type": "minegoals:break_block",
+    "block": "minecraft:deepslate",
+    "count": 128
+  },
+  "rewards": {
+    "experience": 10
+  }
+}

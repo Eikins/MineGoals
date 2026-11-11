@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:caves",
+  "tier": 4,
+  "points": 40,
+  "title": {
+    "translate": "goal.minegoals.caves.under_lock_and_key"
+  },
+  "description": {
+    "translate": "goal.minegoals.caves.under_lock_and_key.desc"
+  },
+  "icon": "minecraft:vault",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:adventure/under_lock_and_key"
+  },
+  "rewards": {
+    "experience": 40
+  }
+}

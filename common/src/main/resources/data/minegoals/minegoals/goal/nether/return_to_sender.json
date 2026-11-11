@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:nether",
+  "tier": 3,
+  "points": 30,
+  "title": {
+    "translate": "goal.minegoals.nether.return_to_sender"
+  },
+  "description": {
+    "translate": "goal.minegoals.nether.return_to_sender.desc"
+  },
+  "icon": "minecraft:fire_charge",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:nether/return_to_sender"
+  },
+  "rewards": {
+    "experience": 30
+  }
+}

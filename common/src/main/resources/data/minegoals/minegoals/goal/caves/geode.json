@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:caves",
+  "tier": 2,
+  "points": 20,
+  "title": {
+    "translate": "goal.minegoals.caves.geode"
+  },
+  "description": {
+    "translate": "goal.minegoals.caves.geode.desc"
+  },
+  "icon": "minecraft:amethyst_shard",
+  "criterion": {
+    "type": "minegoals:collect_item",
+    "item": "minecraft:amethyst_shard",
+    "count": 16
+  },
+  "rewards": {
+    "experience": 20
+  }
+}

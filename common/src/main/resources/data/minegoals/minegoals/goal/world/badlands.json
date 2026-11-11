@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:world",
+  "tier": 2,
+  "points": 20,
+  "title": {
+    "translate": "goal.minegoals.world.badlands"
+  },
+  "description": {
+    "translate": "goal.minegoals.world.badlands.desc"
+  },
+  "icon": "minecraft:terracotta",
+  "criterion": {
+    "type": "minegoals:visit_biome",
+    "biome": "#minecraft:is_badlands"
+  },
+  "rewards": {
+    "experience": 20
+  }
+}

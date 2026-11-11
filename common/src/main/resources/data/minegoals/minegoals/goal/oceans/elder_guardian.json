@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:oceans",
+  "tier": 3,
+  "points": 30,
+  "title": {
+    "translate": "goal.minegoals.oceans.elder_guardian"
+  },
+  "description": {
+    "translate": "goal.minegoals.oceans.elder_guardian.desc"
+  },
+  "icon": "minecraft:prismarine_crystals",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:elder_guardian",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 30
+  }
+}

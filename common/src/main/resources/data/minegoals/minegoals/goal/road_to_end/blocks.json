@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:road_to_end",
+  "tier": 10,
+  "points": 55,
+  "title": {
+    "translate": "goal.minegoals.road_to_end.blocks"
+  },
+  "description": {
+    "translate": "goal.minegoals.road_to_end.blocks.desc"
+  },
+  "icon": "minecraft:cobblestone",
+  "criterion": {
+    "type": "minegoals:hold_item",
+    "item": "minecraft:cobblestone",
+    "count": 128
+  },
+  "rewards": {
+    "experience": 55
+  }
+}

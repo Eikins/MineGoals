@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:nether",
+  "tier": 2,
+  "points": 20,
+  "title": {
+    "translate": "goal.minegoals.nether.strider"
+  },
+  "description": {
+    "translate": "goal.minegoals.nether.strider.desc"
+  },
+  "icon": "minecraft:warped_fungus_on_a_stick",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:nether/ride_strider"
+  },
+  "rewards": {
+    "experience": 20
+  }
+}

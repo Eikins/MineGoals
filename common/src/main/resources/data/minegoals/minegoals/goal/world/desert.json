@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:world",
+  "tier": 1,
+  "points": 10,
+  "title": {
+    "translate": "goal.minegoals.world.desert"
+  },
+  "description": {
+    "translate": "goal.minegoals.world.desert.desc"
+  },
+  "icon": "minecraft:sand",
+  "criterion": {
+    "type": "minegoals:visit_biome",
+    "biome": "minecraft:desert"
+  },
+  "rewards": {
+    "experience": 10
+  }
+}

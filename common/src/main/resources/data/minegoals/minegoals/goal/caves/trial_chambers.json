@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:caves",
+  "tier": 4,
+  "points": 40,
+  "title": {
+    "translate": "goal.minegoals.caves.trial_chambers"
+  },
+  "description": {
+    "translate": "goal.minegoals.caves.trial_chambers.desc"
+  },
+  "icon": "minecraft:trial_spawner",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:adventure/minecraft_trials_edition"
+  },
+  "rewards": {
+    "experience": 40
+  }
+}

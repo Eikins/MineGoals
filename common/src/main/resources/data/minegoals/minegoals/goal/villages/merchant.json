@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:villages",
+  "tier": 2,
+  "points": 20,
+  "title": {
+    "translate": "goal.minegoals.villages.merchant"
+  },
+  "description": {
+    "translate": "goal.minegoals.villages.merchant.desc"
+  },
+  "icon": "minecraft:emerald",
+  "criterion": {
+    "type": "minegoals:custom_stat",
+    "stat": "minecraft:traded_with_villager",
+    "count": 20
+  },
+  "rewards": {
+    "experience": 20
+  }
+}

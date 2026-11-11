@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:villages",
+  "tier": 3,
+  "points": 30,
+  "title": {
+    "translate": "goal.minegoals.villages.hero"
+  },
+  "description": {
+    "translate": "goal.minegoals.villages.hero.desc"
+  },
+  "icon": "minecraft:totem_of_undying",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:adventure/hero_of_the_village"
+  },
+  "rewards": {
+    "experience": 30
+  }
+}

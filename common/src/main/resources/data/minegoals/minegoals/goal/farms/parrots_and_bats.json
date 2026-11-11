@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:farms",
+  "tier": 1,
+  "points": 10,
+  "title": {
+    "translate": "goal.minegoals.farms.parrots_and_bats"
+  },
+  "description": {
+    "translate": "goal.minegoals.farms.parrots_and_bats.desc"
+  },
+  "icon": "minecraft:egg",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:husbandry/breed_an_animal"
+  },
+  "rewards": {
+    "experience": 10
+  }
+}

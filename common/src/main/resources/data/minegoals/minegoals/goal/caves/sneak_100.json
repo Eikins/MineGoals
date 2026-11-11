@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:caves",
+  "tier": 3,
+  "points": 30,
+  "title": {
+    "translate": "goal.minegoals.caves.sneak_100"
+  },
+  "description": {
+    "translate": "goal.minegoals.caves.sneak_100.desc"
+  },
+  "icon": "minecraft:sculk_sensor",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:adventure/avoid_vibration"
+  },
+  "rewards": {
+    "experience": 30
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:oceans",
+  "tier": 1,
+  "points": 10,
+  "title": {
+    "translate": "goal.minegoals.oceans.angler"
+  },
+  "description": {
+    "translate": "goal.minegoals.oceans.angler.desc"
+  },
+  "icon": "minecraft:fishing_rod",
+  "criterion": {
+    "type": "minegoals:custom_stat",
+    "stat": "minecraft:fish_caught",
+    "count": 10
+  },
+  "rewards": {
+    "experience": 10
+  }
+}

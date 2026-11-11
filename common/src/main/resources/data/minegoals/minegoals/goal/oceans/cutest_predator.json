@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:oceans",
+  "tier": 2,
+  "points": 20,
+  "title": {
+    "translate": "goal.minegoals.oceans.cutest_predator"
+  },
+  "description": {
+    "translate": "goal.minegoals.oceans.cutest_predator.desc"
+  },
+  "icon": "minecraft:axolotl_bucket",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:husbandry/axolotl_in_a_bucket"
+  },
+  "rewards": {
+    "experience": 20
+  }
+}

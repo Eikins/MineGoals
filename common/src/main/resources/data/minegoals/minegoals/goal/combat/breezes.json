@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:combat",
+  "tier": 3,
+  "points": 30,
+  "title": {
+    "translate": "goal.minegoals.combat.breezes"
+  },
+  "description": {
+    "translate": "goal.minegoals.combat.breezes.desc"
+  },
+  "icon": "minecraft:breeze_rod",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:breeze",
+    "count": 5
+  },
+  "rewards": {
+    "experience": 30
+  }
+}

@@ -3,7 +3,12 @@ package com.eikins.minegoals;
 import com.eikins.minegoals.data.Category;
 import com.eikins.minegoals.data.Goal;
 import com.eikins.minegoals.data.GoalDefinitions;
+import com.eikins.minegoals.data.RegistryMatcher;
 import com.eikins.minegoals.data.TierVisibility;
+import com.eikins.minegoals.data.criterion.AdvancementCriterion;
+import com.eikins.minegoals.data.criterion.StatCriterion;
+import com.eikins.minegoals.data.criterion.VisitBiomeCriterion;
+import com.eikins.minegoals.data.criterion.VisitDimensionCriterion;
 import com.eikins.minegoals.progress.PlayerGoalProgress;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -11,6 +16,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.SharedConstants;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.Bootstrap;
 import org.junit.jupiter.api.BeforeAll;
@@ -19,7 +25,9 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -28,6 +36,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GoalDataTest {
+
+    private static final int CATEGORY_COUNT = 9;
+    private static final int GOAL_COUNT = 137;
 
     private static GoalDefinitions examples;
 
@@ -41,11 +52,12 @@ class GoalDataTest {
                 parseFolder(data.resolve("goal"), Goal.CODEC));
     }
 
+    /** Parses every JSON file below {@code folder}; ids keep sub-folders, like the real loader. */
     private static <T> Map<Identifier, T> parseFolder(Path folder, Codec<T> codec) throws IOException {
         Map<Identifier, T> result = new HashMap<>();
-        try (Stream<Path> files = Files.list(folder)) {
-            for (Path file : files.toList()) {
-                String name = file.getFileName().toString().replace(".json", "");
+        try (Stream<Path> files = Files.walk(folder)) {
+            for (Path file : files.filter(f -> f.toString().endsWith(".json")).toList()) {
+                String name = folder.relativize(file).toString().replace('\\', '/').replace(".json", "");
                 DataResult<T> parsed = codec.parse(JsonOps.INSTANCE, JsonParser.parseString(Files.readString(file)));
                 result.put(Constants.id(name), parsed.getOrThrow(error -> new AssertionError(file + ": " + error)));
             }
@@ -61,19 +73,116 @@ class GoalDataTest {
         return Constants.id(path);
     }
 
-    // ---- parsing ---------------------------------------------------------------------------------
+    private static Identifier road(String goal) {
+        return id("road_to_end/" + goal);
+    }
+
+    private static void complete(PlayerGoalProgress progress, Identifier goal) {
+        progress.markCompleted(goal);
+    }
+
+    private static void completeTier(PlayerGoalProgress progress, Identifier category, int tier) {
+        for (Identifier goal : examples.goalsIn(category)) {
+            if (examples.goals().get(goal).tier() == tier) {
+                progress.markCompleted(goal);
+            }
+        }
+    }
+
+    // ---- example content -------------------------------------------------------------------------
 
     @Test
     void exampleContentParsesAndValidates() {
-        assertEquals(4, examples.categories().size());
-        assertEquals(32, examples.goals().size(), "every example goal should survive validation");
-        assertEquals(id("mining"), examples.categories().keySet().iterator().next(), "categories sorted by order");
+        assertEquals(CATEGORY_COUNT, examples.categories().size());
+        assertEquals(GOAL_COUNT, examples.goals().size(), "every example goal should survive validation");
+        assertEquals(id("road_to_end"), examples.categories().keySet().iterator().next(), "categories sorted by order");
+        assertTrue(examples.goals().containsKey(road("first_table")), "goal ids keep their category folder");
     }
+
+    @Test
+    void roadToTheEndIsALongGuidedTrack() {
+        Category road = examples.categories().get(id("road_to_end"));
+        assertTrue(road.tiers().size() >= 10);
+        assertEquals(TierVisibility.NEXT, road.tierVisibility());
+        // Every tier needs all goals of the tiers before it.
+        int points = 0;
+        for (int tier = 1; tier <= road.tiers().size(); tier++) {
+            assertEquals(points, road.pointsForTier(tier), "tier " + tier);
+            for (Identifier goal : examples.goalsIn(id("road_to_end"))) {
+                if (examples.goals().get(goal).tier() == tier) {
+                    points += examples.goals().get(goal).points();
+                }
+            }
+        }
+        assertTrue(examples.goals().containsKey(road("free_the_end")));
+        assertEquals(road.tiers().size(), examples.goals().get(road("free_the_end")).tier(), "the dragon is the last tier");
+    }
+
+    /** Catches typos in ids: everything a goal points at must exist in this Minecraft version. */
+    @Test
+    void everyReferenceExistsInVanilla() {
+        List<String> missing = new ArrayList<>();
+        examples.goals().forEach((goalId, goal) -> {
+            switch (goal.criterion()) {
+                case StatCriterion<?> stat -> {
+                    RegistryMatcher<?> target = stat.target();
+                    if (target.isTag()) {
+                        String folder = Registries.tagsDirPath(target.registry());
+                        check(missing, goalId, "data/" + target.id().getNamespace() + "/" + folder + "/" + target.id().getPath() + ".json");
+                    } else if (!stat.kind().registry().containsKey(target.id())) {
+                        missing.add(goalId + " -> " + target);
+                    }
+                }
+                case VisitBiomeCriterion biome -> {
+                    Identifier b = biome.biome().id();
+                    check(missing, goalId, biome.biome().isTag()
+                            ? "data/" + b.getNamespace() + "/tags/worldgen/biome/" + b.getPath() + ".json"
+                            : "data/" + b.getNamespace() + "/worldgen/biome/" + b.getPath() + ".json");
+                }
+                case AdvancementCriterion advancement -> {
+                    Identifier a = advancement.advancement();
+                    check(missing, goalId, "data/" + a.getNamespace() + "/advancement/" + a.getPath() + ".json");
+                }
+                case VisitDimensionCriterion dimension -> {
+                    String path = dimension.dimension().getPath();
+                    if (!List.of("overworld", "the_nether", "the_end").contains(path)) {
+                        missing.add(goalId + " -> " + dimension.dimension());
+                    }
+                }
+                default -> {
+                }
+            }
+        });
+        assertTrue(missing.isEmpty(), "unknown references: " + missing);
+    }
+
+    private static void check(List<String> missing, Identifier goal, String resource) {
+        if (GoalDataTest.class.getClassLoader().getResource(resource) == null) {
+            missing.add(goal + " -> " + resource);
+        }
+    }
+
+    @Test
+    void everyGoalAndCategoryIsTranslated() throws IOException {
+        Path lang = Path.of(System.getProperty("minegoals.resources"), "assets", "minegoals", "lang");
+        for (String file : List.of("en_us.json", "fr_fr.json")) {
+            var keys = JsonParser.parseString(Files.readString(lang.resolve(file))).getAsJsonObject().keySet();
+            for (Identifier goal : examples.goals().keySet()) {
+                String key = "goal.minegoals." + goal.getPath().replace('/', '.');
+                assertTrue(keys.contains(key) && keys.contains(key + ".desc"), file + " misses " + key);
+            }
+            for (Identifier category : examples.categories().keySet()) {
+                assertTrue(keys.contains("category.minegoals." + category.getPath()), file + " misses " + category);
+            }
+        }
+    }
+
+    // ---- parsing ---------------------------------------------------------------------------------
 
     @Test
     void unknownCriterionTypeIsRejected() {
         var result = Goal.CODEC.parse(JsonOps.INSTANCE, json("""
-                {"category": "minegoals:mining", "title": "x", "icon": "minecraft:stone",
+                {"category": "minegoals:oceans", "title": "x", "icon": "minecraft:stone",
                  "criterion": {"type": "minegoals:fly_to_the_moon"}}"""));
         assertTrue(result.isError());
     }
@@ -81,13 +190,25 @@ class GoalDataTest {
     @Test
     void goalDefaultsApply() {
         Goal goal = Goal.CODEC.parse(JsonOps.INSTANCE, json("""
-                {"category": "minegoals:mining", "title": "x", "icon": "minecraft:stone",
+                {"category": "minegoals:oceans", "title": "x", "icon": "minecraft:stone",
                  "criterion": {"type": "minegoals:break_block", "block": "#minecraft:logs"}}""")).getOrThrow();
         assertEquals(1, goal.tier());
         assertEquals(10, goal.points());
         assertEquals(1, goal.count());
         assertTrue(goal.requires().isEmpty());
         assertTrue(goal.rewards().isEmpty());
+    }
+
+    @Test
+    void newCriteriaParse() {
+        Goal fish = Goal.CODEC.parse(JsonOps.INSTANCE, json("""
+                {"category": "minegoals:oceans", "title": "x", "icon": "minecraft:cod",
+                 "criterion": {"type": "minegoals:custom_stat", "stat": "minecraft:fish_caught", "count": 5}}""")).getOrThrow();
+        assertEquals(5, fish.count());
+        Goal adv = Goal.CODEC.parse(JsonOps.INSTANCE, json("""
+                {"category": "minegoals:oceans", "title": "x", "icon": "minecraft:cod",
+                 "criterion": {"type": "minegoals:advancement", "advancement": "minecraft:story/mine_diamond"}}""")).getOrThrow();
+        assertEquals(1, adv.count());
     }
 
     @Test
@@ -98,22 +219,23 @@ class GoalDataTest {
                 {"title": "x", "icon": "minecraft:stone", "tiers": [{"points": 0}, {"points": 20}, {"points": 20}]}""")).isError());
     }
 
+    private static Goal goalJson(String category, String extra) {
+        return Goal.CODEC.parse(JsonOps.INSTANCE, json("""
+                {"category": "%s", "title": "x", "icon": "minecraft:stone", %s
+                 "criterion": {"type": "minegoals:visit_dimension", "dimension": "minecraft:the_end"}}"""
+                .formatted(category, extra))).getOrThrow();
+    }
+
     @Test
     void goalsWithBrokenReferencesAreDropped() {
-        Goal orphan = Goal.CODEC.parse(JsonOps.INSTANCE, json("""
-                {"category": "minegoals:nope", "title": "x", "icon": "minecraft:stone",
-                 "criterion": {"type": "minegoals:visit_dimension", "dimension": "minecraft:the_end"}}""")).getOrThrow();
-        Goal needsOrphan = Goal.CODEC.parse(JsonOps.INSTANCE, json("""
-                {"category": "minegoals:mining", "title": "x", "icon": "minecraft:stone", "requires": ["minegoals:orphan"],
-                 "criterion": {"type": "minegoals:visit_dimension", "dimension": "minecraft:the_end"}}""")).getOrThrow();
         Map<Identifier, Goal> goals = new HashMap<>(examples.goals());
-        goals.put(id("orphan"), orphan);
-        goals.put(id("needs_orphan"), needsOrphan);
+        goals.put(id("orphan"), goalJson("minegoals:nope", ""));
+        goals.put(id("needs_orphan"), goalJson("minegoals:oceans", "\"requires\": [\"minegoals:orphan\"],"));
 
         GoalDefinitions defs = GoalDefinitions.validated(examples.categories(), goals);
         assertFalse(defs.goals().containsKey(id("orphan")));
         assertFalse(defs.goals().containsKey(id("needs_orphan")), "removal must cascade to dependants");
-        assertEquals(32, defs.goals().size());
+        assertEquals(GOAL_COUNT, defs.goals().size());
     }
 
     @Test
@@ -126,111 +248,98 @@ class GoalDataTest {
 
     // ---- progression -----------------------------------------------------------------------------
 
-    private static void complete(PlayerGoalProgress progress, String goal) {
-        progress.markCompleted(id(goal));
-    }
-
     @Test
     void pointsTiersAndLevelAreDerivedFromCompletedGoals() {
         PlayerGoalProgress progress = new PlayerGoalProgress();
-        Identifier mining = id("mining");
-        assertEquals(0, progress.categoryPoints(examples, mining));
-        assertEquals(1, progress.tier(examples, mining));
+        Identifier roadId = id("road_to_end");
+        assertEquals(0, progress.categoryPoints(examples, roadId));
+        assertEquals(1, progress.tier(examples, roadId));
         assertEquals(1, progress.level(examples));
 
-        complete(progress, "lumberjack");
-        complete(progress, "stone_breaker");
-        assertEquals(20, progress.categoryPoints(examples, mining));
-        assertEquals(1, progress.tier(examples, mining), "30 points needed for tier 2");
+        complete(progress, road("lumberjack"));
+        complete(progress, road("first_table"));
+        assertEquals(20, progress.categoryPoints(examples, roadId));
+        assertEquals(1, progress.tier(examples, roadId), "all 3 tier-1 goals needed for tier 2");
 
-        complete(progress, "coal_miner");
-        assertEquals(30, progress.categoryPoints(examples, mining));
-        assertEquals(2, progress.tier(examples, mining));
+        complete(progress, road("wooden_pickaxe"));
+        assertEquals(30, progress.categoryPoints(examples, roadId));
+        assertEquals(2, progress.tier(examples, roadId));
 
-        complete(progress, "iron_miner");
-        complete(progress, "deep_digger");
-        complete(progress, "gold_rush");
-        assertEquals(75, progress.categoryPoints(examples, mining));
-        assertEquals(3, progress.tier(examples, mining));
+        completeTier(progress, roadId, 2);
+        assertEquals(3, progress.tier(examples, roadId));
+        assertEquals(90, progress.totalPoints(examples));
 
-        complete(progress, "zombie_slayer");
-        complete(progress, "bone_collector");
-        complete(progress, "spider_squasher");
-        assertEquals(105, progress.totalPoints(examples));
+        completeTier(progress, id("oceans"), 1);
+        assertEquals(120, progress.totalPoints(examples));
         assertEquals(2, progress.level(examples), "one level every 100 points");
     }
 
     @Test
     void goalsUnlockByTier() {
         PlayerGoalProgress progress = new PlayerGoalProgress();
-        assertTrue(progress.isActive(examples, id("lumberjack")));
-        assertFalse(progress.isUnlocked(examples, id("iron_miner")));
+        assertTrue(progress.isActive(examples, road("lumberjack")));
+        assertFalse(progress.isUnlocked(examples, road("furnace")));
 
-        complete(progress, "lumberjack");
-        complete(progress, "stone_breaker");
-        complete(progress, "coal_miner");
-        assertTrue(progress.isUnlocked(examples, id("iron_miner")));
-        assertFalse(progress.isActive(examples, id("lumberjack")), "completed goals are no longer active");
+        completeTier(progress, id("road_to_end"), 1);
+        assertTrue(progress.isUnlocked(examples, road("furnace")));
+        assertFalse(progress.isActive(examples, road("lumberjack")), "completed goals are no longer active");
     }
 
     @Test
     void goalsUnlockByRequirementsToo() {
-        PlayerGoalProgress progress = new PlayerGoalProgress();
-        // Reach combat tier 3 without visiting the Nether.
-        for (String goal : new String[]{"zombie_slayer", "bone_collector", "spider_squasher",
-                "creeper_defuser", "ender_hunter", "witch_hunter"}) {
-            complete(progress, goal);
-        }
-        assertEquals(3, progress.tier(examples, id("combat")));
-        assertFalse(progress.isUnlocked(examples, id("blaze_runner")), "requires nether_traveler");
+        Map<Identifier, Goal> goals = new HashMap<>(examples.goals());
+        goals.put(id("needs_angler"), goalJson("minegoals:oceans", "\"requires\": [\"minegoals:oceans/angler\"],"));
+        GoalDefinitions defs = GoalDefinitions.validated(examples.categories(), goals);
 
-        complete(progress, "nether_traveler");
-        assertTrue(progress.isUnlocked(examples, id("blaze_runner")));
+        PlayerGoalProgress progress = new PlayerGoalProgress();
+        assertFalse(progress.isUnlocked(defs, id("needs_angler")), "tier 1 but requires angler");
+        progress.markCompleted(id("oceans/angler"));
+        assertTrue(progress.isUnlocked(defs, id("needs_angler")));
     }
 
     @Test
     void countsAreClampedAndChangeDetected() {
         PlayerGoalProgress progress = new PlayerGoalProgress();
-        assertTrue(progress.setCount(id("lumberjack"), 50, 16));
-        assertEquals(16, progress.count(id("lumberjack")));
-        assertFalse(progress.setCount(id("lumberjack"), 20, 16), "already at max, no change");
-        assertFalse(progress.setCount(id("stone_breaker"), 0, 64), "0 on a fresh goal is not a change");
+        assertTrue(progress.setCount(road("lumberjack"), 50, 16));
+        assertEquals(16, progress.count(road("lumberjack")));
+        assertFalse(progress.setCount(road("lumberjack"), 20, 16), "already at max, no change");
+        assertFalse(progress.setCount(road("torches"), 0, 16), "0 on a fresh goal is not a change");
     }
 
     @Test
     void progressRoundTripsThroughItsCodec() {
         PlayerGoalProgress progress = new PlayerGoalProgress();
-        progress.setCount(id("lumberjack"), 7, 16);
-        complete(progress, "coal_miner");
-        progress.setAnnouncedTier(id("mining"), 2);
-        progress.markGoalClaimed(id("coal_miner"));
-        progress.markTierClaimed(id("mining"), 1);
+        progress.setCount(road("lumberjack"), 7, 16);
+        complete(progress, road("first_table"));
+        progress.setAnnouncedTier(id("road_to_end"), 2);
+        progress.markGoalClaimed(road("first_table"));
+        progress.markTierClaimed(id("road_to_end"), 2);
 
         JsonElement encoded = PlayerGoalProgress.CODEC.encodeStart(JsonOps.INSTANCE, progress).getOrThrow();
         PlayerGoalProgress decoded = PlayerGoalProgress.CODEC.parse(JsonOps.INSTANCE, encoded).getOrThrow();
-        assertEquals(7, decoded.count(id("lumberjack")));
-        assertTrue(decoded.isCompleted(id("coal_miner")));
-        assertEquals(2, decoded.announcedTier(id("mining")));
-        assertTrue(decoded.isGoalClaimed(id("coal_miner")));
-        assertTrue(decoded.isTierClaimed(id("mining"), 1));
-        assertFalse(decoded.isTierClaimed(id("mining"), 2));
+        assertEquals(7, decoded.count(road("lumberjack")));
+        assertTrue(decoded.isCompleted(road("first_table")));
+        assertEquals(2, decoded.announcedTier(id("road_to_end")));
+        assertTrue(decoded.isGoalClaimed(road("first_table")));
+        assertTrue(decoded.isTierClaimed(id("road_to_end"), 2));
+        assertFalse(decoded.isTierClaimed(id("road_to_end"), 3));
     }
 
     @Test
-    void resetCategoryClearsGoalsAndRewardedTier() {
+    void resetCategoryClearsGoalsAndClaims() {
         PlayerGoalProgress progress = new PlayerGoalProgress();
-        complete(progress, "lumberjack");
-        complete(progress, "zombie_slayer");
-        progress.setAnnouncedTier(id("mining"), 2);
-        progress.markTierClaimed(id("mining"), 2);
-        progress.markGoalClaimed(id("lumberjack"));
+        complete(progress, road("lumberjack"));
+        complete(progress, id("oceans/angler"));
+        progress.setAnnouncedTier(id("road_to_end"), 2);
+        progress.markTierClaimed(id("road_to_end"), 2);
+        progress.markGoalClaimed(road("lumberjack"));
 
-        progress.resetCategory(examples, id("mining"));
-        assertFalse(progress.isCompleted(id("lumberjack")));
-        assertTrue(progress.isCompleted(id("zombie_slayer")), "other categories untouched");
-        assertEquals(0, progress.announcedTier(id("mining")));
-        assertFalse(progress.isTierClaimed(id("mining"), 2));
-        assertFalse(progress.isGoalClaimed(id("lumberjack")));
+        progress.resetCategory(examples, id("road_to_end"));
+        assertFalse(progress.isCompleted(road("lumberjack")));
+        assertTrue(progress.isCompleted(id("oceans/angler")), "other categories untouched");
+        assertEquals(0, progress.announcedTier(id("road_to_end")));
+        assertFalse(progress.isTierClaimed(id("road_to_end"), 2));
+        assertFalse(progress.isGoalClaimed(road("lumberjack")));
     }
 
     // ---- claims ----------------------------------------------------------------------------------
@@ -238,35 +347,37 @@ class GoalDataTest {
     @Test
     void goalRewardsAreClaimableOnceCompleted() {
         PlayerGoalProgress progress = new PlayerGoalProgress();
-        assertFalse(progress.canClaimGoal(examples, id("lumberjack")), "not completed yet");
+        assertFalse(progress.canClaimGoal(examples, road("lumberjack")), "not completed yet");
 
-        complete(progress, "lumberjack");
-        assertTrue(progress.canClaimGoal(examples, id("lumberjack")));
+        complete(progress, road("lumberjack"));
+        assertTrue(progress.canClaimGoal(examples, road("lumberjack")));
         assertEquals(1, progress.claimableCount(examples));
 
-        progress.markGoalClaimed(id("lumberjack"));
-        assertFalse(progress.canClaimGoal(examples, id("lumberjack")), "claimed only once");
+        progress.markGoalClaimed(road("lumberjack"));
+        assertFalse(progress.canClaimGoal(examples, road("lumberjack")), "claimed only once");
         assertEquals(0, progress.claimableCount(examples));
     }
 
     @Test
     void tierRewardsAreClaimableOnceReached() {
         PlayerGoalProgress progress = new PlayerGoalProgress();
-        Identifier mining = id("mining");
-        assertFalse(progress.canClaimTier(examples, mining, 1), "tier 1 has no reward");
-        assertFalse(progress.canClaimTier(examples, mining, 2), "tier 2 not reached");
+        Identifier roadId = id("road_to_end");
+        assertFalse(progress.canClaimTier(examples, roadId, 1), "tier 1 has no reward");
+        assertFalse(progress.canClaimTier(examples, roadId, 2), "tier 2 not reached");
 
-        for (String goal : new String[]{"lumberjack", "stone_breaker", "coal_miner"}) {
-            complete(progress, goal);
-            progress.markGoalClaimed(id(goal));
+        completeTier(progress, roadId, 1);
+        for (Identifier goal : examples.goalsIn(roadId)) {
+            if (progress.isCompleted(goal)) {
+                progress.markGoalClaimed(goal);
+            }
         }
-        assertTrue(progress.canClaimTier(examples, mining, 2));
-        assertFalse(progress.canClaimTier(examples, mining, 3));
-        assertFalse(progress.canClaimTier(examples, mining, 99), "out of range");
+        assertTrue(progress.canClaimTier(examples, roadId, 2));
+        assertFalse(progress.canClaimTier(examples, roadId, 3));
+        assertFalse(progress.canClaimTier(examples, roadId, 99), "out of range");
         assertEquals(1, progress.claimableCount(examples));
 
-        progress.markTierClaimed(mining, 2);
-        assertFalse(progress.canClaimTier(examples, mining, 2));
+        progress.markTierClaimed(roadId, 2);
+        assertFalse(progress.canClaimTier(examples, roadId, 2));
     }
 
     // ---- tier visibility -------------------------------------------------------------------------
@@ -290,7 +401,6 @@ class GoalDataTest {
         Category fallback = Category.CODEC.parse(JsonOps.INSTANCE, json("""
                 {"title": "x", "icon": "minecraft:stone", "tiers": [{"points": 0}]}""")).getOrThrow();
         assertEquals(TierVisibility.VISIBLE, fallback.tierVisibility());
-        assertEquals(TierVisibility.NEXT, examples.categories().get(id("exploration")).tierVisibility());
         assertTrue(Category.CODEC.parse(JsonOps.INSTANCE, json("""
                 {"title": "x", "icon": "minecraft:stone", "tier_visibility": "sometimes", "tiers": [{"points": 0}]}""")).isError());
     }

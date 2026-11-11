@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:oceans",
+  "tier": 3,
+  "points": 30,
+  "title": {
+    "translate": "goal.minegoals.oceans.monument_guardians"
+  },
+  "description": {
+    "translate": "goal.minegoals.oceans.monument_guardians.desc"
+  },
+  "icon": "minecraft:prismarine_shard",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:guardian",
+    "count": 10
+  },
+  "rewards": {
+    "experience": 30
+  }
+}

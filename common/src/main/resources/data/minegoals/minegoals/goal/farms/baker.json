@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:farms",
+  "tier": 2,
+  "points": 20,
+  "title": {
+    "translate": "goal.minegoals.farms.baker"
+  },
+  "description": {
+    "translate": "goal.minegoals.farms.baker.desc"
+  },
+  "icon": "minecraft:cake",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:cake",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 20
+  }
+}

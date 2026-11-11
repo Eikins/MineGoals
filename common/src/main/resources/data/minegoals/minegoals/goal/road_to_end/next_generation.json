@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:road_to_end",
+  "tier": 12,
+  "points": 65,
+  "title": {
+    "translate": "goal.minegoals.road_to_end.next_generation"
+  },
+  "description": {
+    "translate": "goal.minegoals.road_to_end.next_generation.desc"
+  },
+  "icon": "minecraft:dragon_egg",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:end/dragon_egg"
+  },
+  "rewards": {
+    "experience": 65
+  }
+}

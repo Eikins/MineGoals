@@ -1,0 +1,49 @@
+{
+  "title": {
+    "translate": "category.minegoals.caves"
+  },
+  "icon": "minecraft:sculk_catalyst",
+  "order": 5,
+  "tier_visibility": "next",
+  "tiers": [
+    {
+      "points": 0
+    },
+    {
+      "points": 20,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:amethyst_shard",
+            "count": 4
+          }
+        ],
+        "experience": 100
+      }
+    },
+    {
+      "points": 65,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:echo_shard",
+            "count": 4
+          }
+        ],
+        "experience": 150
+      }
+    },
+    {
+      "points": 135,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:trial_key",
+            "count": 1
+          }
+        ],
+        "experience": 200
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:world",
+  "tier": 4,
+  "points": 40,
+  "title": {
+    "translate": "goal.minegoals.world.adventuring_time"
+  },
+  "description": {
+    "translate": "goal.minegoals.world.adventuring_time.desc"
+  },
+  "icon": "minecraft:diamond_boots",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:adventure/adventuring_time"
+  },
+  "rewards": {
+    "experience": 40
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:magic",
+  "tier": 4,
+  "points": 40,
+  "title": {
+    "translate": "goal.minegoals.magic.bring_home_the_beacon"
+  },
+  "description": {
+    "translate": "goal.minegoals.magic.bring_home_the_beacon.desc"
+  },
+  "icon": "minecraft:beacon",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:nether/create_beacon"
+  },
+  "rewards": {
+    "experience": 40
+  }
+}

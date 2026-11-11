@@ -12,13 +12,15 @@ import java.util.OptionalInt;
 
 /** What a player has to do to complete a goal. */
 public sealed interface GoalCriterion
-        permits StatCriterion, HoldItemCriterion, VisitBiomeCriterion, VisitDimensionCriterion {
+        permits StatCriterion, HoldItemCriterion, VisitBiomeCriterion, VisitDimensionCriterion, AdvancementCriterion {
 
     Map<Identifier, MapCodec<? extends GoalCriterion>> TYPES = Map.of(
             Constants.id("break_block"), StatCriterion.BREAK_BLOCK,
             Constants.id("kill_entity"), StatCriterion.KILL_ENTITY,
             Constants.id("collect_item"), StatCriterion.COLLECT_ITEM,
             Constants.id("craft_item"), StatCriterion.CRAFT_ITEM,
+            Constants.id("custom_stat"), StatCriterion.CUSTOM_STAT,
+            Constants.id("advancement"), AdvancementCriterion.CODEC,
             Constants.id("hold_item"), HoldItemCriterion.CODEC,
             Constants.id("visit_biome"), VisitBiomeCriterion.CODEC,
             Constants.id("visit_dimension"), VisitDimensionCriterion.CODEC

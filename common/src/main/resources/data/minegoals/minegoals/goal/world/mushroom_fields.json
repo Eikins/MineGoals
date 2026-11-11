@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:world",
+  "tier": 2,
+  "points": 20,
+  "title": {
+    "translate": "goal.minegoals.world.mushroom_fields"
+  },
+  "description": {
+    "translate": "goal.minegoals.world.mushroom_fields.desc"
+  },
+  "icon": "minecraft:red_mushroom",
+  "criterion": {
+    "type": "minegoals:visit_biome",
+    "biome": "minecraft:mushroom_fields"
+  },
+  "rewards": {
+    "experience": 20
+  }
+}

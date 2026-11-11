@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:road_to_end",
+  "tier": 5,
+  "points": 30,
+  "title": {
+    "translate": "goal.minegoals.road_to_end.diamonds"
+  },
+  "description": {
+    "translate": "goal.minegoals.road_to_end.diamonds.desc"
+  },
+  "icon": "minecraft:diamond",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:story/mine_diamond"
+  },
+  "rewards": {
+    "experience": 30
+  }
+}

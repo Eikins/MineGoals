@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:farms",
+  "tier": 3,
+  "points": 30,
+  "title": {
+    "translate": "goal.minegoals.farms.total_beelocation"
+  },
+  "description": {
+    "translate": "goal.minegoals.farms.total_beelocation.desc"
+  },
+  "icon": "minecraft:bee_nest",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:husbandry/silk_touch_nest"
+  },
+  "rewards": {
+    "experience": 30
+  }
+}

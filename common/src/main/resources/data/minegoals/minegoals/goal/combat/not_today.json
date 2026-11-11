@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:combat",
+  "tier": 2,
+  "points": 20,
+  "title": {
+    "translate": "goal.minegoals.combat.not_today"
+  },
+  "description": {
+    "translate": "goal.minegoals.combat.not_today.desc"
+  },
+  "icon": "minecraft:shield",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:story/deflect_arrow"
+  },
+  "rewards": {
+    "experience": 20
+  }
+}

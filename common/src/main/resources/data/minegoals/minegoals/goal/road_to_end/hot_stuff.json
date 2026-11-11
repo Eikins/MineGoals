@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:road_to_end",
+  "tier": 5,
+  "points": 30,
+  "title": {
+    "translate": "goal.minegoals.road_to_end.hot_stuff"
+  },
+  "description": {
+    "translate": "goal.minegoals.road_to_end.hot_stuff.desc"
+  },
+  "icon": "minecraft:lava_bucket",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:story/lava_bucket"
+  },
+  "rewards": {
+    "experience": 30
+  }
+}

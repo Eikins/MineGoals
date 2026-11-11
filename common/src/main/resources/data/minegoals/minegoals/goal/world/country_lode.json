@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:world",
+  "tier": 3,
+  "points": 30,
+  "title": {
+    "translate": "goal.minegoals.world.country_lode"
+  },
+  "description": {
+    "translate": "goal.minegoals.world.country_lode.desc"
+  },
+  "icon": "minecraft:lodestone",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:adventure/use_lodestone"
+  },
+  "rewards": {
+    "experience": 30
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:road_to_end",
+  "tier": 6,
+  "points": 35,
+  "title": {
+    "translate": "goal.minegoals.road_to_end.fortress"
+  },
+  "description": {
+    "translate": "goal.minegoals.road_to_end.fortress.desc"
+  },
+  "icon": "minecraft:nether_bricks",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:nether/find_fortress"
+  },
+  "rewards": {
+    "experience": 35
+  }
+}

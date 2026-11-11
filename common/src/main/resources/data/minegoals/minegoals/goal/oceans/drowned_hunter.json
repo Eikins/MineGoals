@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:oceans",
+  "tier": 2,
+  "points": 20,
+  "title": {
+    "translate": "goal.minegoals.oceans.drowned_hunter"
+  },
+  "description": {
+    "translate": "goal.minegoals.oceans.drowned_hunter.desc"
+  },
+  "icon": "minecraft:trident",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:drowned",
+    "count": 10
+  },
+  "rewards": {
+    "experience": 20
+  }
+}

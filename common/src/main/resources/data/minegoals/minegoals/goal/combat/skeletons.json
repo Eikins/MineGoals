@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:combat",
+  "tier": 1,
+  "points": 10,
+  "title": {
+    "translate": "goal.minegoals.combat.skeletons"
+  },
+  "description": {
+    "translate": "goal.minegoals.combat.skeletons.desc"
+  },
+  "icon": "minecraft:bone",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:skeleton",
+    "count": 20
+  },
+  "rewards": {
+    "experience": 10
+  }
+}

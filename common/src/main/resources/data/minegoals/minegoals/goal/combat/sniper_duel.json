@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:combat",
+  "tier": 2,
+  "points": 20,
+  "title": {
+    "translate": "goal.minegoals.combat.sniper_duel"
+  },
+  "description": {
+    "translate": "goal.minegoals.combat.sniper_duel.desc"
+  },
+  "icon": "minecraft:bow",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:adventure/sniper_duel"
+  },
+  "rewards": {
+    "experience": 20
+  }
+}

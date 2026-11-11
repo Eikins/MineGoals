@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:road_to_end",
+  "tier": 8,
+  "points": 45,
+  "title": {
+    "translate": "goal.minegoals.road_to_end.eyes_of_ender"
+  },
+  "description": {
+    "translate": "goal.minegoals.road_to_end.eyes_of_ender.desc"
+  },
+  "icon": "minecraft:ender_eye",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:ender_eye",
+    "count": 12
+  },
+  "rewards": {
+    "experience": 45
+  }
+}
