@@ -38,5 +38,7 @@ public class MineGoalsNeoForge {
         registrar.playToClient(MineGoalsNetwork.Notify.TYPE, MineGoalsNetwork.Notify.STREAM_CODEC);
         registrar.playToServer(MineGoalsNetwork.ClaimReward.TYPE, MineGoalsNetwork.ClaimReward.STREAM_CODEC,
                 (payload, ctx) -> GoalTracker.claim((ServerPlayer) ctx.player(), payload.id(), payload.tier()));
+        registrar.playToServer(MineGoalsNetwork.TrackGoal.TYPE, MineGoalsNetwork.TrackGoal.STREAM_CODEC,
+                (payload, ctx) -> GoalTracker.setTracked((ServerPlayer) ctx.player(), payload.goal(), payload.tracked()));
     }
 }

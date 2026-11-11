@@ -27,7 +27,7 @@ public class MineGoalsNeoForgeClient {
             event.register(MineGoalsNetwork.SyncProgress.TYPE, (payload, ctx) -> ClientPayloadHandlers.onProgress(payload));
             event.register(MineGoalsNetwork.Notify.TYPE, (payload, ctx) -> ClientPayloadHandlers.onNotify(payload));
         });
-        ClientGoalState.setClaimSender(payload -> ClientPacketDistributor.sendToServer(payload));
+        ClientGoalState.setServerSender(payload -> ClientPacketDistributor.sendToServer(payload));
         modBus.addListener((RegisterGuiLayersEvent event) ->
                 event.registerAboveAll(GoalHud.ID, (graphics, deltaTracker) -> GoalHud.render(graphics)));
         modBus.addListener((RegisterKeyMappingsEvent event) -> {

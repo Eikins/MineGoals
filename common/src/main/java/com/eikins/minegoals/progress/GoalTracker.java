@@ -200,6 +200,24 @@ public final class GoalTracker {
     }
 
     /**
+     * Starts or stops tracking a goal for the player. Called from the {@code TrackGoal} payload; completed or unknown
+     * goals cannot be tracked.
+     */
+    public static void setTracked(ServerPlayer player, Identifier goalId, boolean tracked) {
+        GoalDefinitions defs = GoalDefinitions.server();
+        GoalProgressData data = GoalProgressData.get(player.level().getServer());
+        PlayerGoalProgress progress = data.get(player.getUUID());
+        if (tracked && (!defs.goals().containsKey(goalId) || progress.isCompleted(goalId))) {
+            return;
+        }
+        if (progress.setTracked(goalId, tracked)) {
+            data.setDirty();
+        }
+        // Always sync, so a client that toggled optimistically gets the real state back.
+        Services.NETWORK.sendToPlayer(player, new MineGoalsNetwork.SyncProgress(progress.copy()));
+    }
+
+    /**
      * Completes every goal that reached its count and announces newly reached tiers, repeating until nothing
      * changes (a new tier can unlock goals). Rewards are not granted here: the player claims them from the
      * goals screen. Then saves and syncs.

@@ -20,7 +20,7 @@ public class MineGoalsFabricClient implements ClientModInitializer {
         ClientPlayNetworking.registerGlobalReceiver(MineGoalsNetwork.SyncDefinitions.TYPE, (payload, ctx) -> ClientPayloadHandlers.onDefinitions(payload));
         ClientPlayNetworking.registerGlobalReceiver(MineGoalsNetwork.SyncProgress.TYPE, (payload, ctx) -> ClientPayloadHandlers.onProgress(payload));
         ClientPlayNetworking.registerGlobalReceiver(MineGoalsNetwork.Notify.TYPE, (payload, ctx) -> ClientPayloadHandlers.onNotify(payload));
-        ClientGoalState.setClaimSender(ClientPlayNetworking::send);
+        ClientGoalState.setServerSender(ClientPlayNetworking::send);
 
         HudElementRegistry.addLast(GoalHud.ID, (graphics, deltaTracker) -> GoalHud.render(graphics));
 

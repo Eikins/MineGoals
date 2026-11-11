@@ -4,6 +4,7 @@ import com.eikins.minegoals.data.Goal;
 import com.eikins.minegoals.data.GoalDefinitions;
 import com.eikins.minegoals.network.MineGoalsNetwork;
 import com.eikins.minegoals.progress.PlayerGoalProgress;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
@@ -21,7 +22,7 @@ public final class ClientGoalState {
     private static @Nullable Identifier manualCategory;
     private static boolean hudVisible = true;
     /** Sends a payload to the server; set by each loader's client entry point. */
-    private static Consumer<MineGoalsNetwork.ClaimReward> claimSender = payload -> { };
+    private static Consumer<CustomPacketPayload> serverSender = payload -> { };
 
     private ClientGoalState() {
     }
@@ -44,16 +45,36 @@ public final class ClientGoalState {
         }
     }
 
-    /** Stores new progress and focuses the HUD on the category that changed most recently. */
+    /**
+     * Stores new progress, focuses the HUD on the category that changed most recently, and reports tracked goals
+     * that progressed to the tracking toast. A goal that completes is no longer tracked in {@code newProgress}, so
+     * the previous state decides whether it was followed.
+     */
     public static void setProgress(PlayerGoalProgress newProgress) {
+        PlayerGoalProgress previous = progress;
+        boolean focused = false;
         for (Map.Entry<Identifier, Goal> entry : definitions.goals().entrySet()) {
             Identifier id = entry.getKey();
-            if (newProgress.count(id) != progress.count(id) || newProgress.isCompleted(id) != progress.isCompleted(id)) {
+            if (!focused && (newProgress.count(id) != previous.count(id) || newProgress.isCompleted(id) != previous.isCompleted(id))) {
                 focusedCategory = entry.getValue().category();
-                break;
+                focused = true;
+            }
+            boolean progressed = newProgress.count(id) > previous.count(id)
+                    || (newProgress.isCompleted(id) && !previous.isCompleted(id));
+            if (progressed && previous.isTracked(id)) {
+                TrackedGoalsToast.report(id, entry.getValue(), newProgress.count(id), newProgress.isCompleted(id));
             }
         }
         progress = newProgress;
+    }
+
+    /**
+     * Starts or stops tracking a goal. The local copy changes at once so the screen reacts; the server confirms
+     * with a progress sync.
+     */
+    public static void setTracked(Identifier goal, boolean tracked) {
+        progress.setTracked(goal, tracked);
+        serverSender.accept(new MineGoalsNetwork.TrackGoal(goal, tracked));
     }
 
     /** Categories the player can see, in display order: locked categories are hidden. */
@@ -96,12 +117,13 @@ public final class ClientGoalState {
         manualCategory = ids.get((index + 1) % ids.size());
     }
 
-    public static void setClaimSender(Consumer<MineGoalsNetwork.ClaimReward> sender) {
-        claimSender = sender;
+    /** Sets how payloads reach the server; called by each loader's client entry point. */
+    public static void setServerSender(Consumer<CustomPacketPayload> sender) {
+        serverSender = sender;
     }
 
     public static void claim(MineGoalsNetwork.ClaimReward payload) {
-        claimSender.accept(payload);
+        serverSender.accept(payload);
     }
 
     public static boolean isHudVisible() {

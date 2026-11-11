@@ -15,7 +15,7 @@ import net.minecraft.world.item.Item;
 
 /**
  * Payloads. Each loader registers them. Server-to-client handlers live in {@code client.ClientPayloadHandlers};
- * the only client-to-server payload, {@link ClaimReward}, is handled by {@code GoalTracker.claim}.
+ * client-to-server payloads ({@link ClaimReward}, {@link TrackGoal}) are handled by {@code GoalTracker}.
  */
 public final class MineGoalsNetwork {
 
@@ -67,6 +67,20 @@ public final class MineGoalsNetwork {
 
         @Override
         public Type<ClaimReward> type() {
+            return TYPE;
+        }
+    }
+
+    /** Client to server: start ({@code tracked == true}) or stop following a goal. Handled by {@code GoalTracker.setTracked}. */
+    public record TrackGoal(Identifier goal, boolean tracked) implements CustomPacketPayload {
+        public static final Type<TrackGoal> TYPE = new Type<>(Constants.id("track_goal"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, TrackGoal> STREAM_CODEC = StreamCodec.composite(
+                Identifier.STREAM_CODEC, TrackGoal::goal,
+                ByteBufCodecs.BOOL, TrackGoal::tracked,
+                TrackGoal::new);
+
+        @Override
+        public Type<TrackGoal> type() {
             return TYPE;
         }
     }

@@ -32,7 +32,8 @@ import java.util.Optional;
  *   <li>the tier track as advancement frames (the last tier as a challenge frame);</li>
  *   <li>MineGoals rows ({@link GoalRowSprites}): the selected tier pinned on top (taller row), then its goals in a
  *       scrolled list, claimed goals last and darkened. Each row has its icon, a progress bar, three reward slots and
- *       a claim / completed / track button.</li>
+ *       a claim / completed / track button. Tracking a goal shows a toast whenever it progresses
+ *       ({@link TrackedGoalsToast}).</li>
  * </ul>
  * A tier's reward is earned by completing the tier; claiming it unlocks the next tier. Tiers the player has not
  * reached may be hidden, depending on the category's {@link TierVisibility}.
@@ -56,8 +57,8 @@ public class GoalsScreen extends Screen {
     private static final int CLAIM_HINT = 0xFF80FF20;
 
     private final List<Identifier> categoryIds = new ArrayList<>();
-    /** Claim buttons drawn this frame, used to resolve clicks. */
-    private final List<ClaimButton> claimButtons = new ArrayList<>();
+    /** Clickable row buttons (claim, track) drawn this frame, used to resolve clicks. */
+    private final List<RowButton> rowButtons = new ArrayList<>();
     private int selectedCategory;
     private int selectedTier = 1;
     private double scroll;
@@ -251,7 +252,7 @@ public class GoalsScreen extends Screen {
     @Override
     public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
         super.extractRenderState(g, mouseX, mouseY, partialTick);
-        this.claimButtons.clear();
+        this.rowButtons.clear();
         this.refreshCategories();
         GoalDefinitions defs = ClientGoalState.definitions();
         PlayerGoalProgress progress = ClientGoalState.progress();
@@ -483,8 +484,9 @@ public class GoalsScreen extends Screen {
         } else {
             button = Button.TRACK;
         }
-        this.renderButton(g, button, GoalRowSprites.buttonX(x, width), y + style.buttonY, true,
-                MineGoalsNetwork.ClaimReward.tier(categoryId, tier), mouseX, mouseY);
+        MineGoalsNetwork.ClaimReward claim = MineGoalsNetwork.ClaimReward.tier(categoryId, tier);
+        this.renderButton(g, button, GoalRowSprites.buttonX(x, width), y + style.buttonY,
+                button == Button.CLAIM ? () -> this.claim(claim) : null, mouseX, mouseY);
         List<Component> slotTooltip = this.renderRewardSlots(g, rewards, claimed, x, width, y + style.slotsY,
                 mouseX, mouseY, true);
         if (slotTooltip != null) {
@@ -535,11 +537,16 @@ public class GoalsScreen extends Screen {
                 completed ? 1F : GoalRender.fraction(count, goal.count()));
 
         // Every completed goal is claimed: claiming grants its rewards and its points.
-        Button button = claimed ? Button.COMPLETED : completed ? Button.CLAIM : Button.TRACK;
+        boolean tracked = progress.isTracked(id);
+        Button button = claimed ? Button.COMPLETED : completed ? Button.CLAIM : tracked ? Button.TRACKED : Button.TRACK;
         int buttonY = y + style.buttonY;
         boolean clickable = mouseInList && buttonY >= this.listTop() && buttonY + GoalRowSprites.BUTTON_HEIGHT <= this.listBottom();
-        this.renderButton(g, button, GoalRowSprites.buttonX(x, width), buttonY, clickable,
-                MineGoalsNetwork.ClaimReward.goal(id), mouseX, mouseY);
+        Runnable action = !clickable ? null : switch (button) {
+            case CLAIM -> () -> this.claim(MineGoalsNetwork.ClaimReward.goal(id));
+            case TRACK, TRACKED -> () -> this.toggleTracked(id, !tracked);
+            case COMPLETED -> null;
+        };
+        this.renderButton(g, button, GoalRowSprites.buttonX(x, width), buttonY, action, mouseX, mouseY);
         List<Component> slotTooltip = this.renderRewardSlots(g, goal.rewards(), claimed, x, width, y + style.slotsY,
                 mouseX, mouseY, mouseInList);
         if (slotTooltip != null) {
@@ -551,14 +558,21 @@ public class GoalsScreen extends Screen {
         goal.description().ifPresent(d -> lines.add(d.copy().withStyle(ChatFormatting.GRAY)));
         lines.add(Component.literal(count + " / " + goal.count()).withStyle(ChatFormatting.GRAY));
         lines.addAll(describeRewards(goal.rewards()));
+        if (tracked) {
+            lines.add(Component.translatable("minegoals.screen.tracked_hint").withStyle(ChatFormatting.DARK_GRAY));
+        }
         return lines;
     }
 
-    /** The row button: claim (clickable), completed, or "Track" (placeholder for goal tracking, not clickable yet). */
+    /**
+     * The row button: claim, completed, or track / tracked (toggles tracking on goal rows; a placeholder on the tier
+     * row, where it is not clickable).
+     */
     private enum Button {
         CLAIM(GoalRowSprites.BUTTON_CLAIM),
         COMPLETED(GoalRowSprites.BUTTON_COMPLETED),
-        TRACK(GoalRowSprites.BUTTON_TRACK);
+        TRACK(GoalRowSprites.BUTTON_TRACK),
+        TRACKED(GoalRowSprites.BUTTON_TRACK);
 
         final Identifier sprite;
 
@@ -567,25 +581,32 @@ public class GoalsScreen extends Screen {
         }
     }
 
-    /** Draws a row button; a claim button is registered for clicks when {@code clickable} (visible, under the mouse area). */
-    private void renderButton(GuiGraphicsExtractor g, Button button, int x, int y, boolean clickable,
-                              MineGoalsNetwork.ClaimReward payload, int mouseX, int mouseY) {
+    /**
+     * Draws a row button. With an {@code action} (the button is visible and clickable), it is highlighted on hover
+     * and registered for clicks.
+     */
+    private void renderButton(GuiGraphicsExtractor g, Button button, int x, int y, Runnable action,
+                              int mouseX, int mouseY) {
         GoalRowSprites.button(g, button.sprite, x, y);
         Component label = switch (button) {
             case CLAIM -> Component.translatable("minegoals.screen.claim");
             case COMPLETED -> Component.translatable("minegoals.screen.claimed");
             case TRACK -> Component.translatable("minegoals.screen.track");
+            case TRACKED -> Component.translatable("minegoals.screen.tracked");
+        };
+        int color = switch (button) {
+            case COMPLETED -> TEXT_DIM;
+            case TRACKED -> CLAIM_HINT;
+            default -> TEXT;
         };
         int labelWidth = this.font.width(label);
         int textX = x + (GoalRowSprites.BUTTON_WIDTH - labelWidth) / 2 + 1;
-        g.text(this.font, label, textX, y + 2, button == Button.COMPLETED ? TEXT_DIM : TEXT, true);
-        if (button == Button.CLAIM) {
-            if (clickable) {
-                if (inside(mouseX, mouseY, x, y, GoalRowSprites.BUTTON_WIDTH, GoalRowSprites.BUTTON_HEIGHT)) {
-                    g.fill(x + 1, y + 1, x + GoalRowSprites.BUTTON_WIDTH - 1, y + GoalRowSprites.BUTTON_HEIGHT - 1, 0x30FFFFFF);
-                }
-                this.claimButtons.add(new ClaimButton(x, y, payload));
+        g.text(this.font, label, textX, y + 2, color, true);
+        if (action != null) {
+            if (inside(mouseX, mouseY, x, y, GoalRowSprites.BUTTON_WIDTH, GoalRowSprites.BUTTON_HEIGHT)) {
+                g.fill(x + 1, y + 1, x + GoalRowSprites.BUTTON_WIDTH - 1, y + GoalRowSprites.BUTTON_HEIGHT - 1, 0x30FFFFFF);
             }
+            this.rowButtons.add(new RowButton(x, y, action));
         }
     }
 
@@ -772,10 +793,9 @@ public class GoalsScreen extends Screen {
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         double mx = event.x();
         double my = event.y();
-        for (ClaimButton button : this.claimButtons) {
+        for (RowButton button : this.rowButtons) {
             if (inside(mx, my, button.x(), button.y(), GoalRowSprites.BUTTON_WIDTH, GoalRowSprites.BUTTON_HEIGHT)) {
-                ClientGoalState.claim(button.payload());
-                this.playClaimSound(button.payload());
+                button.action().run();
                 return true;
             }
         }
@@ -805,6 +825,16 @@ public class GoalsScreen extends Screen {
         return true;
     }
 
+    private void claim(MineGoalsNetwork.ClaimReward payload) {
+        ClientGoalState.claim(payload);
+        this.playClaimSound(payload);
+    }
+
+    private void toggleTracked(Identifier goal, boolean tracked) {
+        ClientGoalState.setTracked(goal, tracked);
+        this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, tracked ? 1.0F : 0.8F));
+    }
+
     /** UI sound on the client: a light pickup for a goal, the level-up sound for a tier reward. */
     private void playClaimSound(MineGoalsNetwork.ClaimReward payload) {
         boolean tier = payload.tier() > 0;
@@ -821,6 +851,6 @@ public class GoalsScreen extends Screen {
     private record Row(Identifier goal) {
     }
 
-    private record ClaimButton(int x, int y, MineGoalsNetwork.ClaimReward payload) {
+    private record RowButton(int x, int y, Runnable action) {
     }
 }

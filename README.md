@@ -7,6 +7,9 @@ A multi-loader Minecraft **26.3** mod (**Fabric** and **NeoForge**): personal go
 - Each **tier** needs a number of points from its own goals. Reaching it completes the tier; claiming the tier's
   reward unlocks the next tier and its goals.
 - Goal and tier **rewards are claimed** by the player with a "Claim" button in the goals screen.
+- Goals can be **tracked** with the "Track" button: a toast then shows each progress step. Updates are merged into a
+  single toast (it refreshes in place and cycles through goals that progressed together) instead of stacking up.
+  Tracking is saved server-side and stops once the goal is completed.
 - Each category chooses whether players can see tiers they have not reached yet, and whether it is available from
   the start or unlocked later (vanilla advancements or a command).
 - A **journal icon** in the bottom-right corner of the HUD shows the key that opens the goals **screen** (**G**), with

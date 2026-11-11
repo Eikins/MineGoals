@@ -19,7 +19,8 @@ import java.util.Set;
  * so they stay consistent when a datapack changes point values. Rewards are claimed by the player from the
  * goals screen; claimed goals and tiers are stored so a reward is never granted twice. A tier's reward is earned
  * by completing the tier, and claiming it unlocks the next tier. The highest tier
- * already announced per category is stored so the "tier reached" notification fires once.
+ * already announced per category is stored so the "tier reached" notification fires once. Tracked goals are the ones
+ * the player chose to follow: the client shows a toast when they progress. A goal stops being tracked once completed.
  */
 public final class PlayerGoalProgress {
 
@@ -31,7 +32,8 @@ public final class PlayerGoalProgress {
             Codec.unboundedMap(Identifier.CODEC, Codec.INT.listOf()).optionalFieldOf("claimed_tiers", Map.of())
                     .forGetter(p -> copyTiers(p.claimedTiers)),
             Codec.unboundedMap(Identifier.CODEC, Codec.BOOL).optionalFieldOf("category_unlocks", Map.of())
-                    .forGetter(p -> p.categoryUnlocks)
+                    .forGetter(p -> p.categoryUnlocks),
+            Identifier.CODEC.listOf().optionalFieldOf("tracked", List.of()).forGetter(p -> List.copyOf(p.tracked))
     ).apply(i, PlayerGoalProgress::new));
 
     private final Map<Identifier, Integer> counts;
@@ -41,14 +43,15 @@ public final class PlayerGoalProgress {
     private final Map<Identifier, Set<Integer>> claimedTiers;
     /** Explicit category lock state, overriding the category's default (set by unlock conditions or commands). */
     private final Map<Identifier, Boolean> categoryUnlocks;
+    private final Set<Identifier> tracked;
 
     public PlayerGoalProgress() {
-        this(Map.of(), List.of(), Map.of(), List.of(), Map.of(), Map.of());
+        this(Map.of(), List.of(), Map.of(), List.of(), Map.of(), Map.of(), List.of());
     }
 
     private PlayerGoalProgress(Map<Identifier, Integer> counts, List<Identifier> completed, Map<Identifier, Integer> announcedTiers,
                                List<Identifier> claimedGoals, Map<Identifier, List<Integer>> claimedTiers,
-                               Map<Identifier, Boolean> categoryUnlocks) {
+                               Map<Identifier, Boolean> categoryUnlocks, List<Identifier> tracked) {
         this.counts = new HashMap<>(counts);
         this.completed = new HashSet<>(completed);
         this.announcedTiers = new HashMap<>(announcedTiers);
@@ -56,6 +59,7 @@ public final class PlayerGoalProgress {
         this.claimedTiers = new HashMap<>();
         claimedTiers.forEach((category, tiers) -> this.claimedTiers.put(category, new HashSet<>(tiers)));
         this.categoryUnlocks = new HashMap<>(categoryUnlocks);
+        this.tracked = new HashSet<>(tracked);
     }
 
     private static Map<Identifier, List<Integer>> copyTiers(Map<Identifier, Set<Integer>> tiers) {
@@ -66,7 +70,8 @@ public final class PlayerGoalProgress {
 
     public PlayerGoalProgress copy() {
         return new PlayerGoalProgress(this.counts, List.copyOf(this.completed), this.announcedTiers,
-                List.copyOf(this.claimedGoals), copyTiers(this.claimedTiers), this.categoryUnlocks);
+                List.copyOf(this.claimedGoals), copyTiers(this.claimedTiers), this.categoryUnlocks,
+                List.copyOf(this.tracked));
     }
 
     // ---- raw state -------------------------------------------------------------------------------
@@ -91,6 +96,15 @@ public final class PlayerGoalProgress {
         return this.claimedTiers.getOrDefault(category, Set.of()).contains(tier);
     }
 
+    public boolean isTracked(Identifier goal) {
+        return this.tracked.contains(goal);
+    }
+
+    /** Starts or stops following a goal. Returns true if it changed. */
+    public boolean setTracked(Identifier goal, boolean track) {
+        return track ? this.tracked.add(goal) : this.tracked.remove(goal);
+    }
+
     /** Sets the count, clamped to [0, max]. Returns true if it changed. */
     public boolean setCount(Identifier goal, int value, int max) {
         int clamped = Math.max(0, Math.min(value, max));
@@ -98,8 +112,10 @@ public final class PlayerGoalProgress {
         return previous == null ? clamped != 0 : previous != clamped;
     }
 
+    /** Marks the goal completed; a completed goal is no longer tracked. */
     public void markCompleted(Identifier goal) {
         this.completed.add(goal);
+        this.tracked.remove(goal);
     }
 
     public void setAnnouncedTier(Identifier category, int tier) {
@@ -118,6 +134,7 @@ public final class PlayerGoalProgress {
         this.counts.remove(goal);
         this.completed.remove(goal);
         this.claimedGoals.remove(goal);
+        this.tracked.remove(goal);
     }
 
     public void resetCategory(GoalDefinitions defs, Identifier category) {
@@ -143,6 +160,7 @@ public final class PlayerGoalProgress {
         this.claimedGoals.clear();
         this.claimedTiers.clear();
         this.categoryUnlocks.clear();
+        this.tracked.clear();
     }
 
     // ---- derived values --------------------------------------------------------------------------
