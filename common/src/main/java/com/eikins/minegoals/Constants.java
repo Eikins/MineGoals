@@ -10,9 +10,6 @@ public final class Constants {
     public static final String MOD_NAME = "MineGoals";
     public static final Logger LOG = LoggerFactory.getLogger(MOD_NAME);
 
-    /** Points needed for each global level. */
-    public static final int POINTS_PER_LEVEL = 100;
-
     private Constants() {
     }
 

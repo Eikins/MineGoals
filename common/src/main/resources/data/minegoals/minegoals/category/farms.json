@@ -5,9 +5,10 @@
   "icon": "minecraft:wheat",
   "order": 2,
   "tier_visibility": "visible",
+  "background": "minecraft:textures/gui/advancements/backgrounds/husbandry.png",
   "tiers": [
     {
-      "points": 0,
+      "points": 20,
       "rewards": {
         "items": [
           {
@@ -19,7 +20,7 @@
       }
     },
     {
-      "points": 20,
+      "points": 60,
       "rewards": {
         "items": [
           {
@@ -31,7 +32,7 @@
       }
     },
     {
-      "points": 80,
+      "points": 65,
       "rewards": {
         "items": [
           {
@@ -43,7 +44,7 @@
       }
     },
     {
-      "points": 150,
+      "points": 60,
       "rewards": {
         "items": [
           {

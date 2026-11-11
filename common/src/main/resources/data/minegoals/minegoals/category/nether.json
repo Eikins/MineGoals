@@ -11,9 +11,10 @@
       "minecraft:story/enter_the_nether"
     ]
   },
+  "background": "minecraft:textures/gui/advancements/backgrounds/nether.png",
   "tiers": [
     {
-      "points": 0,
+      "points": 30,
       "rewards": {
         "items": [
           {
@@ -25,7 +26,7 @@
       }
     },
     {
-      "points": 30,
+      "points": 60,
       "rewards": {
         "items": [
           {
@@ -37,7 +38,7 @@
       }
     },
     {
-      "points": 90,
+      "points": 65,
       "rewards": {
         "items": [
           {
@@ -49,7 +50,7 @@
       }
     },
     {
-      "points": 155,
+      "points": 90,
       "rewards": {
         "items": [
           {

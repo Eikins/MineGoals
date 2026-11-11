@@ -3,15 +3,16 @@
 A multi-loader Minecraft **26.3** mod (**Fabric** and **NeoForge**): personal goals organised into
 **categories** and **tiers**, battle-pass style, fully defined by datapacks.
 
-- Each goal earns **points** for its category when the player **claims** it.
-- Each **tier** shows its reward on the track. Earning enough points completes the tier; claiming its reward
-  unlocks the next tier and its goals.
+- Each goal earns **points** for its tier when the player **claims** it.
+- Each **tier** needs a number of points from its own goals. Reaching it completes the tier; claiming the tier's
+  reward unlocks the next tier and its goals.
 - Goal and tier **rewards are claimed** by the player with a "Claim" button in the goals screen.
 - Each category chooses whether players can see tiers they have not reached yet, and whether it is available from
   the start or unlocked later (vanilla advancements or a command).
-- Total points give a **global level**: one level every 100 points.
-- A **journal icon** in the bottom-right corner of the HUD shows the key that opens the goals **screen** (**G**), with a
-  green dot on its corner when a reward is ready to be claimed.
+- A **journal icon** in the bottom-right corner of the HUD shows the key that opens the goals **screen** (**G**), with
+  the vanilla "!" badge when a reward is ready to be claimed.
+- The goals screen looks like the vanilla advancements screen and is drawn with vanilla GUI sprites (window, tabs,
+  advancement frames and title boxes, slots, buttons, experience bar).
 - Criteria cover mining, killing, collecting, crafting, holding items, visiting biomes and dimensions, vanilla
   statistics and vanilla advancements.
 - Works in singleplayer and on dedicated servers. Progress is stored server-side, per player.
@@ -46,13 +47,19 @@ Key packages in `common/src/main/java/com/eikins/minegoals/`:
   "order": 10,
   "tier_visibility": "next",
   "tiers": [
-    { "points": 0 },
-    { "points": 30, "rewards": { "items": [{"id": "minecraft:cod", "count": 16}] } },
-    { "points": 75, "rewards": { "experience": 100, "commands": ["say @s is a fishing pro"] } }
+    { "points": 20 },
+    { "points": 45, "rewards": { "items": [{"id": "minecraft:cod", "count": 16}] } },
+    { "points": 60, "rewards": { "experience": 100, "commands": ["say @s is a fishing pro"] } }
   ]
 }
 ```
-- `tiers`: the first tier is at 0 points, and thresholds must strictly increase.
+- `background` (optional): texture tiled behind the category in the goals screen, e.g.
+  `minecraft:textures/gui/advancements/backgrounds/nether.png` (vanilla has `stone`, `adventure`, `husbandry`,
+  `nether` and `end`). Default: `stone`.
+  A tier can set its own `background` too (`{"points": 30, "background": "..."}`); it replaces the category's while
+  that tier is selected. Road to the End uses this to follow the journey (overworld, Nether, stronghold, End).
+- `tiers`: at least one tier. Each tier's `points` is how many points the player must earn **from that tier's own
+  goals** (any non-negative number; every tier counts from 0).
 - `unlock` (optional) controls when the category is available. Without it, the category is unlocked for everyone:
   ```json
   "unlock": {"default": false, "mode": "any", "advancements": ["minecraft:story/enter_the_nether"]}
@@ -67,8 +74,8 @@ Key packages in `common/src/main/java/com/eikins/minegoals/`:
   category's icon and name. A locked category with no `advancements` only unlocks through `/minegoals unlock`. Once unlocked, a category stays
   unlocked (unless `/minegoals lock` is used). Goals of a locked category only count progress if they use
   `track_before_unlock`; nothing can be claimed until the category unlocks.
-- A tier's `points` is the threshold to enter it. Tier N is **complete** when the category reaches tier N+1's
-  threshold (for the last tier: when all its goals are claimed).
+- Tier N is **complete** when the claimed goals of tier N add up to its `points`. Goals of other tiers never count
+  towards it, so a surplus in one tier does not carry over to the next.
 - A tier's `rewards` are earned by completing that tier. The player claims them manually, and claiming them
   **unlocks the next tier**. A tier without rewards unlocks the next one as soon as it is complete.
 - `tier_visibility` (default `visible`) controls what players see of tiers they have not reached:
@@ -76,8 +83,8 @@ Key packages in `common/src/main/java/com/eikins/minegoals/`:
 | Value | Track shows | Goals and rewards of unreached tiers |
 |---|---|---|
 | `visible` | every tier | shown |
-| `next` | reached tiers, then the next one as "???" with its points threshold | hidden |
-| `hidden` | reached tiers only (the HUD also hides the next threshold) | hidden |
+| `next` | reached tiers, then the next one as "???" | hidden |
+| `hidden` | reached tiers only; progress shows the points earned but not the points needed | hidden |
 
 Visibility is cosmetic: clients still receive every definition.
 
@@ -166,10 +173,11 @@ is still locked, so players do not have to do the work again after reaching the 
 Nothing is granted automatically. When a goal or a tier is completed, a green dot appears on the journal icon and the
 screen shows how many rewards are waiting (plus a toast and a chat message when `NOTIFICATIONS` is on). In the
 screen, each tier box on the track only shows its number and state colour (in progress, ready to claim, done, locked).
-The first row of the list is the selected tier: its reward, its state and its progress (category points against the
-next tier's threshold, or completed goals for the last tier). Every row shows its rewards as icons in three fixed slots on the
+The first row of the list is the selected tier: its reward, its state and its progress (points earned from the
+tier's goals / points it needs). Every row shows its rewards as icons in three fixed slots on the
 right: experience first as an XP bottle, then items, then commands as a nether star. Extra rewards are listed in the
-row's tooltip, and claimed rewards turn green with a check mark. The
+row's tooltip, and claimed rewards turn green with a check mark. The selected tier stays pinned above the goals, which scroll;
+claimed goals are listed last, darkened by a mask texture. The
 tier reward row and every completed goal have a **Claim** button. A goal's points are only added to its category when
 it is claimed, so claiming goals is what moves the player along the tiers; a goal without rewards is still claimed for
 its points. The server checks
@@ -185,7 +193,7 @@ these files.
 
 | Category | Tiers | Idea |
 |---|---|---|
-| Road to the End | 12, `next` | A guided path from the first log to the Ender Dragon: stone, iron, diamonds, Nether fortress, blaze rods, ender pearls, stronghold, preparation, the End. Each tier needs every goal of the previous ones, and each tier reward prepares the next step. |
+| Road to the End | 12, `next` | A guided path from the first log to the Ender Dragon: stone, iron, diamonds, Nether fortress, blaze rods, ender pearls, stronghold, preparation, the End. Each tier needs all of its goals, and each tier reward prepares the next step. |
 | Oceans | 4 | Fishing, drowned, coral reefs, ocean monuments, conduit |
 | Farms & Animals | 4 | Crops, breeding, taming, bees, sniffers |
 | Villages & Trading | 4 | Villagers, trading, iron golems, raids |
@@ -196,7 +204,7 @@ these files.
 | Combat | 4 | Common mobs, ranged combat, raids, breezes, the mace |
 | Redstone | 4, hidden until unlocked by a reward | Redstone components, pistons, observers, comparators, crafters. Claiming Road to the End's "First Table" goal runs `/minegoals unlock @s minegoals:redstone` (a command reward with its own icon and name) |
 
-Themed categories unlock a tier at about 75% of the previous goals' points, so players can skip a few goals, and
+Themed tiers need about 75% of their goals' points, so players can skip a few goals, and
 their goals use `track_before_unlock`. Road to the End does not: each step starts counting when it is revealed.
 The content and both lang files are generated by `tools/generate_content.py` (run `python tools/generate_content.py .`
 from the project root). Edit the script rather than the generated JSON, or your changes will be overwritten.
@@ -209,12 +217,12 @@ rebuild to turn the feature back on.
 
 | Flag | Default | Feature |
 |---|---|---|
-| `GOAL_PANEL` | `false` | Top-right goals panel (level, focused category, three active goals), with keys **H** (hide) and **J** (next category) |
+| `GOAL_PANEL` | `false` | Top-right goals panel (focused category, three active goals), with keys **H** (hide) and **J** (next category) |
 | `NOTIFICATIONS` | `false` | Toasts and chat messages when a goal is completed or a tier is reached. The toast for a newly unlocked category is always shown |
 
 ## Commands (operators)
 
-- `/minegoals list [player]`: level, tiers, locked categories and the state of every goal.
+- `/minegoals list [player]`: points, tiers, locked categories and the state of every goal.
 - `/minegoals reset <player> [goal|category]`: resets progress and claims (everything if nothing is given).
 - `/minegoals unlock <player> <category>` / `/minegoals lock <player> <category>`: unlocks or hides a category for
   a player. Usable from reward commands (`/minegoals unlock @s mypack:fishing`), functions and command blocks.

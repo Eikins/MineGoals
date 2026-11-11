@@ -5,9 +5,11 @@
   "icon": "minecraft:ender_eye",
   "order": 0,
   "tier_visibility": "next",
+  "background": "minecraft:textures/gui/advancements/backgrounds/end.png",
   "tiers": [
     {
-      "points": 0,
+      "points": 30,
+      "background": "minecraft:textures/gui/advancements/backgrounds/adventure.png",
       "rewards": {
         "items": [
           {
@@ -19,7 +21,8 @@
       }
     },
     {
-      "points": 30,
+      "points": 60,
+      "background": "minecraft:textures/gui/advancements/backgrounds/stone.png",
       "rewards": {
         "items": [
           {
@@ -31,7 +34,8 @@
       }
     },
     {
-      "points": 90,
+      "points": 60,
+      "background": "minecraft:textures/gui/advancements/backgrounds/adventure.png",
       "rewards": {
         "items": [
           {
@@ -43,7 +47,8 @@
       }
     },
     {
-      "points": 150,
+      "points": 100,
+      "background": "minecraft:textures/gui/advancements/backgrounds/stone.png",
       "rewards": {
         "items": [
           {
@@ -55,7 +60,8 @@
       }
     },
     {
-      "points": 250,
+      "points": 90,
+      "background": "minecraft:textures/gui/advancements/backgrounds/stone.png",
       "rewards": {
         "items": [
           {
@@ -71,7 +77,8 @@
       }
     },
     {
-      "points": 340,
+      "points": 70,
+      "background": "minecraft:textures/gui/advancements/backgrounds/nether.png",
       "rewards": {
         "items": [
           {
@@ -102,7 +109,8 @@
       }
     },
     {
-      "points": 410,
+      "points": 120,
+      "background": "minecraft:textures/gui/advancements/backgrounds/nether.png",
       "rewards": {
         "items": [
           {
@@ -114,7 +122,8 @@
       }
     },
     {
-      "points": 530,
+      "points": 135,
+      "background": "minecraft:textures/gui/advancements/backgrounds/adventure.png",
       "rewards": {
         "items": [
           {
@@ -126,7 +135,8 @@
       }
     },
     {
-      "points": 665,
+      "points": 100,
+      "background": "minecraft:textures/gui/advancements/backgrounds/stone.png",
       "rewards": {
         "items": [
           {
@@ -152,7 +162,8 @@
       }
     },
     {
-      "points": 765,
+      "points": 220,
+      "background": "minecraft:textures/gui/advancements/backgrounds/stone.png",
       "rewards": {
         "items": [
           {
@@ -164,7 +175,8 @@
       }
     },
     {
-      "points": 985,
+      "points": 120,
+      "background": "minecraft:textures/gui/advancements/backgrounds/end.png",
       "rewards": {
         "items": [
           {
@@ -176,7 +188,8 @@
       }
     },
     {
-      "points": 1105,
+      "points": 130,
+      "background": "minecraft:textures/gui/advancements/backgrounds/end.png",
       "rewards": {
         "items": [
           {

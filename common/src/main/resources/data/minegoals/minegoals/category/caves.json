@@ -5,9 +5,10 @@
   "icon": "minecraft:sculk_catalyst",
   "order": 5,
   "tier_visibility": "next",
+  "background": "minecraft:textures/gui/advancements/backgrounds/stone.png",
   "tiers": [
     {
-      "points": 0,
+      "points": 20,
       "rewards": {
         "items": [
           {
@@ -19,7 +20,7 @@
       }
     },
     {
-      "points": 20,
+      "points": 45,
       "rewards": {
         "items": [
           {
@@ -43,7 +44,7 @@
       }
     },
     {
-      "points": 135,
+      "points": 90,
       "rewards": {
         "items": [
           {

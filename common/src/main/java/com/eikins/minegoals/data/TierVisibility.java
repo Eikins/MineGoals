@@ -7,7 +7,7 @@ import net.minecraft.util.StringRepresentable;
 public enum TierVisibility implements StringRepresentable {
     /** Every tier, its goals and its rewards are shown. */
     VISIBLE("visible"),
-    /** Reached tiers are shown; the next one appears as "???" with its threshold only; later ones are hidden. */
+    /** Reached tiers are shown; the next one appears as "???" without its goals or rewards; later ones are hidden. */
     NEXT("next"),
     /** Only reached tiers are shown. */
     HIDDEN("hidden");
@@ -39,7 +39,7 @@ public enum TierVisibility implements StringRepresentable {
         return this == VISIBLE || tier <= reached;
     }
 
-    /** Whether the points needed for the tier after {@code reached} can be shown. */
+    /** Whether the points a tier needs can be shown (hidden categories only show the points earned). */
     public boolean revealsNextThreshold() {
         return this != HIDDEN;
     }

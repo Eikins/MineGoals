@@ -123,15 +123,15 @@ class GoalDataTest {
         Category road = examples.categories().get(id("road_to_end"));
         assertTrue(road.tiers().size() >= 10);
         assertEquals(TierVisibility.NEXT, road.tierVisibility());
-        // Every tier needs all goals of the tiers before it.
-        int points = 0;
+        // Every tier needs all of its own goals.
         for (int tier = 1; tier <= road.tiers().size(); tier++) {
-            assertEquals(points, road.pointsForTier(tier), "tier " + tier);
+            int points = 0;
             for (Identifier goal : examples.goalsIn(id("road_to_end"))) {
                 if (examples.goals().get(goal).tier() == tier) {
                     points += examples.goals().get(goal).points();
                 }
             }
+            assertEquals(points, road.pointsNeeded(tier), "tier " + tier);
         }
         assertTrue(examples.goals().containsKey(road("free_the_end")));
         assertEquals(road.tiers().size(), examples.goals().get(road("free_the_end")).tier(), "the dragon is the last tier");
@@ -266,11 +266,41 @@ class GoalDataTest {
     }
 
     @Test
-    void categoryTiersMustStartAtZeroAndIncrease() {
+    void categoryTiersArePerTierAmounts() {
+        Category category = Category.CODEC.parse(JsonOps.INSTANCE, json("""
+                {"title": "x", "icon": "minecraft:stone", "tiers": [{"points": 30}, {"points": 20}, {"points": 20}]}""")).getOrThrow();
+        assertEquals(30, category.pointsNeeded(1), "any amount per tier, in any order");
+        assertEquals(20, category.pointsNeeded(3));
+        assertEquals(-1, category.pointsNeeded(4));
         assertTrue(Category.CODEC.parse(JsonOps.INSTANCE, json("""
-                {"title": "x", "icon": "minecraft:stone", "tiers": [{"points": 5}]}""")).isError());
+                {"title": "x", "icon": "minecraft:stone", "tiers": []}""")).isError(), "at least one tier");
         assertTrue(Category.CODEC.parse(JsonOps.INSTANCE, json("""
-                {"title": "x", "icon": "minecraft:stone", "tiers": [{"points": 0}, {"points": 20}, {"points": 20}]}""")).isError());
+                {"title": "x", "icon": "minecraft:stone", "tiers": [{"points": -5}]}""")).isError(), "no negative points");
+    }
+
+    @Test
+    void tiersCanOverrideTheCategoryBackground() {
+        Category road = examples.categories().get(id("road_to_end"));
+        assertEquals(Identifier.withDefaultNamespace("textures/gui/advancements/backgrounds/nether.png"),
+                road.backgroundFor(6).orElseThrow(), "the Nether tiers use the Nether background");
+        Category oceans = examples.categories().get(id("oceans"));
+        assertEquals(oceans.background(), oceans.backgroundFor(2), "no tier background: the category's is used");
+        assertTrue(Category.CODEC.parse(JsonOps.INSTANCE, json("""
+                {"title": "x", "icon": "minecraft:stone", "tiers": [{"points": 5}]}""")).getOrThrow()
+                .backgroundFor(1).isEmpty(), "nothing set: the screen falls back to stone");
+    }
+
+    @Test
+    void eachTierOnlyCountsItsOwnGoals() {
+        PlayerGoalProgress progress = new PlayerGoalProgress();
+        Identifier oceans = id("oceans");
+        earnTier(progress, oceans, 1);
+        progress.markTierClaimed(oceans, 1);
+        assertEquals(2, progress.tier(examples, oceans));
+        assertEquals(0, progress.tierPoints(examples, oceans, 2), "tier 1 surplus does not carry over");
+        assertTrue(progress.tierPoints(examples, oceans, 1) >= examples.categories().get(oceans).pointsNeeded(1));
+        assertEquals(progress.tierPoints(examples, oceans, 1), progress.categoryPoints(examples, oceans),
+                "the category total still adds up every tier");
     }
 
     private static Goal goalJson(String category, String extra) {
@@ -303,7 +333,7 @@ class GoalDataTest {
     // ---- progression -----------------------------------------------------------------------------
 
     @Test
-    void pointsTiersAndLevelAreDerivedFromClaimedGoals() {
+    void pointsAndTiersAreDerivedFromClaimedGoals() {
         PlayerGoalProgress progress = new PlayerGoalProgress();
         Identifier roadId = id("road_to_end");
         progress.markCompleted(road("lumberjack"));
@@ -313,7 +343,6 @@ class GoalDataTest {
         progress.resetGoal(road("lumberjack"));
         assertEquals(0, progress.categoryPoints(examples, roadId));
         assertEquals(1, progress.tier(examples, roadId));
-        assertEquals(1, progress.level(examples));
 
         earn(progress, road("lumberjack"));
         earn(progress, road("first_table"));
@@ -335,7 +364,6 @@ class GoalDataTest {
 
         earnTier(progress, id("oceans"), 1);
         assertEquals(120, progress.totalPoints(examples));
-        assertEquals(2, progress.level(examples), "one level every 100 points");
     }
 
     @Test

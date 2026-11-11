@@ -73,7 +73,7 @@ public final class MineGoalsCommand {
         CommandSourceStack source = ctx.getSource();
 
         source.sendSuccess(() -> Component.translatable("minegoals.command.list.header",
-                player.getDisplayName(), progress.level(defs), progress.totalPoints(defs)).withStyle(ChatFormatting.GOLD), false);
+                player.getDisplayName(), progress.totalPoints(defs)).withStyle(ChatFormatting.GOLD), false);
         for (var catEntry : defs.categories().entrySet()) {
             Identifier categoryId = catEntry.getKey();
             Category category = catEntry.getValue();

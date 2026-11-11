@@ -442,16 +442,24 @@ REDSTONE = {
     ],
 }
 
+# Road to the End changes background with the journey: overworld, Nether, stronghold, then the End.
+ROAD_TIER_BACKGROUNDS = ["adventure", "stone", "adventure", "stone", "stone", "nether", "nether", "adventure",
+                         "stone", "stone", "end", "end"]
+
+# Vanilla advancement background tiled behind each category in the goals screen.
+BACKGROUNDS = {
+    "road_to_end": "end", "oceans": "adventure", "farms": "husbandry", "villages": "adventure", "magic": "stone",
+    "caves": "stone", "nether": "nether", "world": "adventure", "combat": "adventure", "redstone": "stone",
+}
+
 CATEGORIES = [ROAD, OCEANS, FARMS, VILLAGES, MAGIC, CAVES, NETHER, WORLD, COMBAT, REDSTONE]
 
 en = {
     "minegoals.screen.title": "MineGoals",
-    "minegoals.screen.level": "Level %s · %s pts",
     "minegoals.screen.empty": "No goals loaded",
     "minegoals.screen.no_goals": "No goals in this tier",
     "minegoals.screen.tier": "Tier %s",
     "minegoals.screen.tier_short": "Tier %s",
-    "minegoals.screen.tier_goals": "%s / %s goals",
     "minegoals.screen.completed": "Completed",
     "minegoals.screen.locked_tier": "Locked · reach tier %s",
     "minegoals.screen.locked_tier_tracked": "Locked · reach tier %s · progress already counts",
@@ -468,10 +476,10 @@ en = {
     "minegoals.screen.reward_special": "Special reward",
     "minegoals.screen.claim": "Claim",
     "minegoals.screen.claimed": "Claimed",
+    "minegoals.screen.track": "Track",
     "minegoals.screen.claimable": "%s reward(s) to claim",
     "minegoals.screen.tier_reward": "Tier %s reward",
     "minegoals.screen.tier_hidden": "Reach this tier to reveal it",
-    "minegoals.hud.level": "Level %s",
     "minegoals.hud.tier": "Tier %s · %s/%s pts",
     "minegoals.hud.tier_hidden": "Tier %s · %s pts",
     "minegoals.hud.tier_max": "Tier %s · %s pts (max)",
@@ -481,7 +489,7 @@ en = {
     "minegoals.notify.tier_reached": "Tier %s reached!",
     "minegoals.notify.claim_hint": "Claim your reward in the goals screen (G).",
     "minegoals.notify.category_unlocked": "New category unlocked!",
-    "minegoals.command.list.header": "%s · level %s · %s points",
+    "minegoals.command.list.header": "%s · %s points",
     "minegoals.command.list.category": " · tier %s/%s · %s pts",
     "minegoals.command.unknown": "Unknown goal or category: %s",
     "minegoals.command.already_completed": "Goal %s is already completed",
@@ -501,12 +509,10 @@ en = {
 }
 fr = {
     "minegoals.screen.title": "MineGoals",
-    "minegoals.screen.level": "Niveau %s · %s pts",
     "minegoals.screen.empty": "Aucun objectif chargé",
     "minegoals.screen.no_goals": "Aucun objectif dans ce palier",
     "minegoals.screen.tier": "Palier %s",
     "minegoals.screen.tier_short": "Palier %s",
-    "minegoals.screen.tier_goals": "%s / %s objectifs",
     "minegoals.screen.completed": "Terminé",
     "minegoals.screen.locked_tier": "Verrouillé · atteins le palier %s",
     "minegoals.screen.locked_tier_tracked": "Verrouillé · atteins le palier %s · la progression compte déjà",
@@ -523,10 +529,10 @@ fr = {
     "minegoals.screen.reward_special": "Récompense spéciale",
     "minegoals.screen.claim": "Récupérer",
     "minegoals.screen.claimed": "Récupéré",
+    "minegoals.screen.track": "Track",
     "minegoals.screen.claimable": "%s récompense(s) à récupérer",
     "minegoals.screen.tier_reward": "Récompense du palier %s",
     "minegoals.screen.tier_hidden": "Atteins ce palier pour le révéler",
-    "minegoals.hud.level": "Niveau %s",
     "minegoals.hud.tier": "Palier %s · %s/%s pts",
     "minegoals.hud.tier_hidden": "Palier %s · %s pts",
     "minegoals.hud.tier_max": "Palier %s · %s pts (max)",
@@ -536,7 +542,7 @@ fr = {
     "minegoals.notify.tier_reached": "Palier %s atteint !",
     "minegoals.notify.claim_hint": "Récupère ta récompense dans l'écran des objectifs (G).",
     "minegoals.notify.category_unlocked": "Nouvelle catégorie débloquée !",
-    "minegoals.command.list.header": "%s · niveau %s · %s points",
+    "minegoals.command.list.header": "%s · %s points",
     "minegoals.command.list.category": " · palier %s/%s · %s pts",
     "minegoals.command.unknown": "Objectif ou catégorie inconnu : %s",
     "minegoals.command.already_completed": "L'objectif %s est déjà terminé",
@@ -567,29 +573,24 @@ for cat in CATEGORIES:
     en[cat_key], fr[cat_key] = cat["en"], cat["fr"]
 
     tiers_json = []
-    cumulative = 0
-    previous_threshold = -1
     for t, (tier_reward, goals) in enumerate(cat["tiers"], start=1):
-        # Threshold: points of all earlier goals (road) or 75% of them, rounded down to 5 (themes).
-        if t == 1:
-            threshold = 0
-        elif road:
-            threshold = cumulative
-        else:
-            threshold = max(previous_threshold + 5, int(math.floor(cumulative * cat["ratio"] / 5.0)) * 5)
-        previous_threshold = threshold
+        points = 10 + 5 * (t - 1) if road else 10 * t
+        # Points this tier needs, from its own goals: all of them on the road, about 75% (rounded down to 5) in themes.
+        tier_total = points * len(goals)
+        needed = tier_total if road else max(points, int(math.floor(tier_total * cat["ratio"] / 5.0)) * 5)
 
         # A tier's reward is earned by completing it; claiming the reward unlocks the next tier.
         if road:
             tier_reward = {**ROAD_TIER_REWARDS[t - 1], "experience": 25 * t}
         else:
             tier_reward = {"items": [{"id": cat["tier_items"][t - 1], "count": 4 if t < 4 else 1}], "experience": 50 * t}
-        tier = {"points": threshold}
+        tier = {"points": needed}
+        if road:
+            tier["background"] = "minecraft:textures/gui/advancements/backgrounds/%s.png" % ROAD_TIER_BACKGROUNDS[t - 1]
         if tier_reward:
             tier["rewards"] = tier_reward
         tiers_json.append(tier)
 
-        points = 10 + 5 * (t - 1) if road else 10 * t
         for goal in goals:
             gid, icon, crit, en_t, en_d, fr_t, fr_d = goal[:7]
             extra = goal[7] if len(goal) > 7 else {}
@@ -616,7 +617,6 @@ for cat in CATEGORIES:
             obj.update(extra)
             write(os.path.join(data, "goal", cid, gid + ".json"), obj)
             total_goals += 1
-            cumulative += points
 
     write(os.path.join(data, "category", cid + ".json"), {
         "title": {"translate": cat_key},
@@ -624,6 +624,7 @@ for cat in CATEGORIES:
         "order": cat["order"],
         "tier_visibility": cat["visibility"],
         **({"unlock": cat["unlock"]} if "unlock" in cat else {}),
+        "background": "minecraft:textures/gui/advancements/backgrounds/%s.png" % BACKGROUNDS[cid],
         "tiers": tiers_json,
     })
 

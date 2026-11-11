@@ -5,9 +5,10 @@
   "icon": "minecraft:filled_map",
   "order": 7,
   "tier_visibility": "visible",
+  "background": "minecraft:textures/gui/advancements/backgrounds/adventure.png",
   "tiers": [
     {
-      "points": 0,
+      "points": 30,
       "rewards": {
         "items": [
           {
@@ -19,7 +20,7 @@
       }
     },
     {
-      "points": 30,
+      "points": 60,
       "rewards": {
         "items": [
           {
@@ -43,7 +44,7 @@
       }
     },
     {
-      "points": 180,
+      "points": 90,
       "rewards": {
         "items": [
           {

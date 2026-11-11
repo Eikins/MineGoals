@@ -8,9 +8,10 @@
   "unlock": {
     "default": false
   },
+  "background": "minecraft:textures/gui/advancements/backgrounds/stone.png",
   "tiers": [
     {
-      "points": 0,
+      "points": 30,
       "rewards": {
         "items": [
           {
@@ -22,7 +23,7 @@
       }
     },
     {
-      "points": 30,
+      "points": 60,
       "rewards": {
         "items": [
           {
@@ -46,7 +47,7 @@
       }
     },
     {
-      "points": 180,
+      "points": 90,
       "rewards": {
         "items": [
           {
