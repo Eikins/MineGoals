@@ -19,6 +19,8 @@ loom {
             setConfigName('Fabric Client')
             ideConfigGenerated(true)
             runDir('runs/client')
+            // Fixed name, so the dev player keeps the same UUID (and its stats, advancements and goals) between launches.
+            programArgs('--username', 'Dev')
         }
         server {
             server()
