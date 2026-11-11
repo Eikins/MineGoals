@@ -11,6 +11,7 @@
   "minegoals.screen.category_max": "%s points · tous les paliers atteints",
   "minegoals.screen.completed": "Terminé",
   "minegoals.screen.locked_tier": "Verrouillé · atteins le palier %s",
+  "minegoals.screen.locked_tier_tracked": "Verrouillé · atteins le palier %s · la progression compte déjà",
   "minegoals.screen.locked_requires": "Verrouillé · nécessite : %s",
   "minegoals.screen.rewards": "Récompenses :",
   "minegoals.screen.reward_xp": "%s XP",

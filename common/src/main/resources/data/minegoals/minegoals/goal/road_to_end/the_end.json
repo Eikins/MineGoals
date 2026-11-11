@@ -14,6 +14,12 @@
     "advancement": "minecraft:story/enter_the_end"
   },
   "rewards": {
-    "experience": 60
+    "experience": 60,
+    "items": [
+      {
+        "id": "minecraft:golden_apple",
+        "count": 2
+      }
+    ]
   }
 }

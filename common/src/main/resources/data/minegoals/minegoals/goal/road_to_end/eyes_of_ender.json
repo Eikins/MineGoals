@@ -15,6 +15,12 @@
     "count": 12
   },
   "rewards": {
-    "experience": 45
+    "experience": 45,
+    "items": [
+      {
+        "id": "minecraft:ender_eye",
+        "count": 2
+      }
+    ]
   }
 }

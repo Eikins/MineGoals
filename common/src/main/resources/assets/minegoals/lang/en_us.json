@@ -11,6 +11,7 @@
   "minegoals.screen.category_max": "%s points · all tiers reached",
   "minegoals.screen.completed": "Completed",
   "minegoals.screen.locked_tier": "Locked · reach tier %s",
+  "minegoals.screen.locked_tier_tracked": "Locked · reach tier %s · progress already counts",
   "minegoals.screen.locked_requires": "Locked · requires: %s",
   "minegoals.screen.rewards": "Rewards:",
   "minegoals.screen.reward_xp": "%s XP",

@@ -40,7 +40,7 @@ public final class GoalTracker {
         for (Map.Entry<Identifier, Goal> entry : defs.goals().entrySet()) {
             Goal goal = entry.getValue();
             int gain = goal.criterion().onStat(stat, delta);
-            if (gain > 0 && progress.isActive(defs, entry.getKey())) {
+            if (gain > 0 && progress.isTracking(defs, entry.getKey())) {
                 changed |= progress.setCount(entry.getKey(), progress.count(entry.getKey()) + gain, goal.count());
             }
         }
@@ -59,7 +59,7 @@ public final class GoalTracker {
         for (Map.Entry<Identifier, Goal> entry : defs.goals().entrySet()) {
             Goal goal = entry.getValue();
             OptionalInt value = goal.criterion().poll(player);
-            if (value.isPresent() && progress.isActive(defs, entry.getKey())) {
+            if (value.isPresent() && progress.isTracking(defs, entry.getKey())) {
                 changed |= progress.setCount(entry.getKey(), value.getAsInt(), goal.count());
             }
         }

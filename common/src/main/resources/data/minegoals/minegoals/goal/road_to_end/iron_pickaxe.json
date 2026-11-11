@@ -14,6 +14,12 @@
     "advancement": "minecraft:story/iron_tools"
   },
   "rewards": {
-    "experience": 25
+    "experience": 25,
+    "items": [
+      {
+        "id": "minecraft:bread",
+        "count": 8
+      }
+    ]
   }
 }

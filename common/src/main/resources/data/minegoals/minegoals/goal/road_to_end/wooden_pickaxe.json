@@ -15,6 +15,12 @@
     "count": 1
   },
   "rewards": {
-    "experience": 10
+    "experience": 10,
+    "items": [
+      {
+        "id": "minecraft:torch",
+        "count": 4
+      }
+    ]
   }
 }

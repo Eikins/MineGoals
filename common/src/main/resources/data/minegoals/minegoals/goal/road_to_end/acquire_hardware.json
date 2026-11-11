@@ -14,6 +14,12 @@
     "advancement": "minecraft:story/smelt_iron"
   },
   "rewards": {
-    "experience": 25
+    "experience": 25,
+    "items": [
+      {
+        "id": "minecraft:iron_ingot",
+        "count": 4
+      }
+    ]
   }
 }

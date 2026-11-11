@@ -14,6 +14,12 @@
     "advancement": "minecraft:story/enter_the_nether"
   },
   "rewards": {
-    "experience": 35
+    "experience": 35,
+    "items": [
+      {
+        "id": "minecraft:gold_ingot",
+        "count": 4
+      }
+    ]
   }
 }

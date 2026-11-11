@@ -14,6 +14,12 @@
     "advancement": "minecraft:story/form_obsidian"
   },
   "rewards": {
-    "experience": 30
+    "experience": 30,
+    "items": [
+      {
+        "id": "minecraft:obsidian",
+        "count": 4
+      }
+    ]
   }
 }

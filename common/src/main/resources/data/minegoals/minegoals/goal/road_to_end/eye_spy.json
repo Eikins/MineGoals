@@ -14,6 +14,12 @@
     "advancement": "minecraft:story/follow_ender_eye"
   },
   "rewards": {
-    "experience": 50
+    "experience": 50,
+    "items": [
+      {
+        "id": "minecraft:iron_ingot",
+        "count": 8
+      }
+    ]
   }
 }

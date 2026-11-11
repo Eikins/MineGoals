@@ -441,7 +441,9 @@ public class GoalsScreen extends Screen {
 
     private Component lockReason(GoalDefinitions defs, PlayerGoalProgress progress, Goal goal) {
         if (progress.tier(defs, goal.category()) < goal.tier()) {
-            return Component.translatable("minegoals.screen.locked_tier", goal.tier());
+            return goal.trackBeforeUnlock()
+                    ? Component.translatable("minegoals.screen.locked_tier_tracked", goal.tier())
+                    : Component.translatable("minegoals.screen.locked_tier", goal.tier());
         }
         List<Component> missing = new ArrayList<>();
         for (Identifier required : goal.requires()) {

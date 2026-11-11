@@ -15,6 +15,12 @@
     "count": 5
   },
   "rewards": {
-    "experience": 20
+    "experience": 20,
+    "items": [
+      {
+        "id": "minecraft:iron_ingot",
+        "count": 2
+      }
+    ]
   }
 }

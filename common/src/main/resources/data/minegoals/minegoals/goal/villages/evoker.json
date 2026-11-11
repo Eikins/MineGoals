@@ -16,5 +16,6 @@
   },
   "rewards": {
     "experience": 40
-  }
+  },
+  "track_before_unlock": true
 }

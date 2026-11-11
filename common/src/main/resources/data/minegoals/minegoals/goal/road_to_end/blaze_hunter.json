@@ -15,6 +15,12 @@
     "count": 8
   },
   "rewards": {
-    "experience": 40
+    "experience": 40,
+    "items": [
+      {
+        "id": "minecraft:blaze_rod",
+        "count": 2
+      }
+    ]
   }
 }

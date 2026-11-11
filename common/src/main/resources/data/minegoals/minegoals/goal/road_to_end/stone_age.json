@@ -14,6 +14,12 @@
     "advancement": "minecraft:story/mine_stone"
   },
   "rewards": {
-    "experience": 15
+    "experience": 15,
+    "items": [
+      {
+        "id": "minecraft:coal",
+        "count": 8
+      }
+    ]
   }
 }

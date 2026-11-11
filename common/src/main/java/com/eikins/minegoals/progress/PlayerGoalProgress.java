@@ -159,15 +159,7 @@ public final class PlayerGoalProgress {
 
     public boolean isUnlocked(GoalDefinitions defs, Identifier goalId) {
         Goal goal = defs.goals().get(goalId);
-        if (goal == null || this.tier(defs, goal.category()) < goal.tier()) {
-            return false;
-        }
-        for (Identifier required : goal.requires()) {
-            if (!this.completed.contains(required)) {
-                return false;
-            }
-        }
-        return true;
+        return goal != null && this.tier(defs, goal.category()) >= goal.tier() && this.requirementsMet(goal);
     }
 
     /** Completed, has rewards, and not claimed yet. */
@@ -200,6 +192,27 @@ public final class PlayerGoalProgress {
             }
         }
         return count;
+    }
+
+    /**
+     * Whether progress should be counted for this goal: not completed, requirements met, and either its tier is
+     * reached or the goal tracks progress before unlocking.
+     */
+    public boolean isTracking(GoalDefinitions defs, Identifier goalId) {
+        Goal goal = defs.goals().get(goalId);
+        if (goal == null || this.completed.contains(goalId) || !this.requirementsMet(goal)) {
+            return false;
+        }
+        return goal.trackBeforeUnlock() || this.tier(defs, goal.category()) >= goal.tier();
+    }
+
+    private boolean requirementsMet(Goal goal) {
+        for (Identifier required : goal.requires()) {
+            if (!this.completed.contains(required)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** Unlocked and not yet completed. */

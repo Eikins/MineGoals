@@ -13,7 +13,11 @@ import net.minecraft.world.item.Item;
 import java.util.List;
 import java.util.Optional;
 
-/** A personal goal, loaded from {@code data/<ns>/minegoals/goal/<name>.json}. */
+/**
+ * A personal goal, loaded from {@code data/<ns>/minegoals/goal/<name>.json}.
+ * With {@code trackBeforeUnlock}, progress is counted while the goal's tier is not reached yet, so the goal
+ * completes as soon as the tier unlocks. Goals waiting on {@code requires} never count early.
+ */
 public record Goal(
         Identifier category,
         int tier,
@@ -23,7 +27,8 @@ public record Goal(
         Item icon,
         List<Identifier> requires,
         GoalCriterion criterion,
-        Rewards rewards
+        Rewards rewards,
+        boolean trackBeforeUnlock
 ) {
 
     public static final Codec<Goal> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -35,7 +40,8 @@ public record Goal(
             BuiltInRegistries.ITEM.byNameCodec().fieldOf("icon").forGetter(Goal::icon),
             Identifier.CODEC.listOf().optionalFieldOf("requires", List.of()).forGetter(Goal::requires),
             GoalCriterion.CODEC.fieldOf("criterion").forGetter(Goal::criterion),
-            Rewards.CODEC.optionalFieldOf("rewards", Rewards.NONE).forGetter(Goal::rewards)
+            Rewards.CODEC.optionalFieldOf("rewards", Rewards.NONE).forGetter(Goal::rewards),
+            Codec.BOOL.optionalFieldOf("track_before_unlock", false).forGetter(Goal::trackBeforeUnlock)
     ).apply(i, Goal::new));
 
     public int count() {

@@ -15,6 +15,12 @@
     "count": 64
   },
   "rewards": {
-    "experience": 55
+    "experience": 55,
+    "items": [
+      {
+        "id": "minecraft:spectral_arrow",
+        "count": 16
+      }
+    ]
   }
 }

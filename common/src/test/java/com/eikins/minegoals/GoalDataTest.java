@@ -298,6 +298,41 @@ class GoalDataTest {
     }
 
     @Test
+    void themedGoalsTrackBeforeTheirTierUnlocks() {
+        PlayerGoalProgress progress = new PlayerGoalProgress();
+        Identifier themed = id("oceans/tactical_fishing");
+        assertEquals(2, examples.goals().get(themed).tier());
+        assertFalse(progress.isUnlocked(examples, themed));
+        assertTrue(progress.isTracking(examples, themed), "themed goals count while their tier is locked");
+        assertFalse(progress.isActive(examples, themed), "but cannot complete before the tier unlocks");
+
+        assertFalse(progress.isTracking(examples, road("furnace")), "Road to the End stays step by step");
+        assertTrue(progress.isTracking(examples, road("lumberjack")), "unlocked goals always track");
+
+        progress.markCompleted(themed);
+        assertFalse(progress.isTracking(examples, themed), "completed goals stop tracking");
+    }
+
+    @Test
+    void requirementsBlockEarlyTracking() {
+        Map<Identifier, Goal> goals = new HashMap<>(examples.goals());
+        goals.put(id("early_but_needs_angler"), goalJson("minegoals:oceans",
+                "\"tier\": 3, \"track_before_unlock\": true, \"requires\": [\"minegoals:oceans/angler\"],"));
+        GoalDefinitions defs = GoalDefinitions.validated(examples.categories(), goals);
+
+        PlayerGoalProgress progress = new PlayerGoalProgress();
+        assertFalse(progress.isTracking(defs, id("early_but_needs_angler")), "requires is never bypassed");
+        progress.markCompleted(id("oceans/angler"));
+        assertTrue(progress.isTracking(defs, id("early_but_needs_angler")), "tier lock is bypassed");
+        assertFalse(progress.isActive(defs, id("early_but_needs_angler")));
+    }
+
+    @Test
+    void trackBeforeUnlockDefaultsToFalse() {
+        assertFalse(goalJson("minegoals:oceans", "").trackBeforeUnlock());
+    }
+
+    @Test
     void countsAreClampedAndChangeDetected() {
         PlayerGoalProgress progress = new PlayerGoalProgress();
         assertTrue(progress.setCount(road("lumberjack"), 50, 16));

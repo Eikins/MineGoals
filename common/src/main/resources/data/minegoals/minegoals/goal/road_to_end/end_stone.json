@@ -15,6 +15,12 @@
     "count": 16
   },
   "rewards": {
-    "experience": 60
+    "experience": 60,
+    "items": [
+      {
+        "id": "minecraft:arrow",
+        "count": 32
+      }
+    ]
   }
 }

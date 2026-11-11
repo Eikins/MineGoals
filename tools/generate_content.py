@@ -328,6 +328,45 @@ COMBAT = {
     ],
 }
 
+# Item rewards for Road to the End goals, on top of their XP: each one helps with the next steps.
+ROAD_ITEMS = {
+    "lumberjack": [("minecraft:apple", 3)],
+    "first_table": [("minecraft:stick", 8)],
+    "wooden_pickaxe": [("minecraft:torch", 4)],
+    "stone_age": [("minecraft:coal", 8)],
+    "better_tools": [("minecraft:stone_sword", 1)],
+    "furnace": [("minecraft:cooked_porkchop", 4)],
+    "torches": [("minecraft:coal", 8)],
+    "first_night": [("minecraft:bread", 4)],
+    "night_guard": [("minecraft:iron_ingot", 2)],
+    "coal_miner": [("minecraft:torch", 16)],
+    "acquire_hardware": [("minecraft:iron_ingot", 4)],
+    "iron_pickaxe": [("minecraft:bread", 8)],
+    "suit_up": [("minecraft:iron_ingot", 6)],
+    "shield": [("minecraft:arrow", 16)],
+    "diamonds": [("minecraft:diamond", 1)],
+    "hot_stuff": [("minecraft:bucket", 1)],
+    "ice_bucket": [("minecraft:obsidian", 4)],
+    "we_need_to_go_deeper": [("minecraft:gold_ingot", 4)],
+    "fortress": [("minecraft:golden_carrot", 8)],
+    "into_fire": [("minecraft:golden_apple", 1)],
+    "blaze_hunter": [("minecraft:blaze_rod", 2)],
+    "blaze_powder": [("minecraft:ender_pearl", 2)],
+    "ender_hunter": [("minecraft:ender_pearl", 2)],
+    "pearl_collector": [("minecraft:carved_pumpkin", 1)],
+    "eyes_of_ender": [("minecraft:ender_eye", 2)],
+    "eye_spy": [("minecraft:iron_ingot", 8)],
+    "silverfish": [("minecraft:torch", 32)],
+    "bow": [("minecraft:arrow", 32)],
+    "quiver": [("minecraft:spectral_arrow", 16)],
+    "blocks": [("minecraft:cobblestone", 64)],
+    "water_bucket": [("minecraft:golden_apple", 1)],
+    "the_end": [("minecraft:golden_apple", 2)],
+    "end_stone": [("minecraft:arrow", 32)],
+    "free_the_end": [("minecraft:experience_bottle", 16)],
+    "next_generation": [("minecraft:totem_of_undying", 1)],
+}
+
 CATEGORIES = [ROAD, OCEANS, FARMS, VILLAGES, MAGIC, CAVES, NETHER, WORLD, COMBAT]
 
 en = {
@@ -343,6 +382,7 @@ en = {
     "minegoals.screen.category_max": "%s points · all tiers reached",
     "minegoals.screen.completed": "Completed",
     "minegoals.screen.locked_tier": "Locked · reach tier %s",
+    "minegoals.screen.locked_tier_tracked": "Locked · reach tier %s · progress already counts",
     "minegoals.screen.locked_requires": "Locked · requires: %s",
     "minegoals.screen.rewards": "Rewards:",
     "minegoals.screen.reward_xp": "%s XP",
@@ -385,6 +425,7 @@ fr = {
     "minegoals.screen.category_max": "%s points · tous les paliers atteints",
     "minegoals.screen.completed": "Terminé",
     "minegoals.screen.locked_tier": "Verrouillé · atteins le palier %s",
+    "minegoals.screen.locked_tier_tracked": "Verrouillé · atteins le palier %s · la progression compte déjà",
     "minegoals.screen.locked_requires": "Verrouillé · nécessite : %s",
     "minegoals.screen.rewards": "Récompenses :",
     "minegoals.screen.reward_xp": "%s XP",
@@ -465,6 +506,11 @@ for cat in CATEGORIES:
                 "criterion": crit,
                 "rewards": {"experience": points},
             }
+            if road and gid in ROAD_ITEMS:
+                obj["rewards"]["items"] = [{"id": i, "count": c} for i, c in ROAD_ITEMS[gid]]
+            # Themed categories count progress before a tier unlocks; the road stays step by step.
+            if not road:
+                obj["track_before_unlock"] = True
             obj.update(extra)
             write(os.path.join(data, "goal", cid, gid + ".json"), obj)
             total_goals += 1

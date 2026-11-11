@@ -14,6 +14,12 @@
     "advancement": "minecraft:end/dragon_egg"
   },
   "rewards": {
-    "experience": 65
+    "experience": 65,
+    "items": [
+      {
+        "id": "minecraft:totem_of_undying",
+        "count": 1
+      }
+    ]
   }
 }
