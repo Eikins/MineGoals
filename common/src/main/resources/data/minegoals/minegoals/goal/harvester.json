@@ -1,0 +1,17 @@
+{
+  "category": "minegoals:crafting",
+  "tier": 1,
+  "points": 10,
+  "title": {
+    "translate": "goal.minegoals.harvester"
+  },
+  "description": {
+    "translate": "goal.minegoals.harvester.desc"
+  },
+  "icon": "minecraft:wheat",
+  "criterion": {
+    "type": "minegoals:collect_item",
+    "item": "minecraft:wheat",
+    "count": 16
+  }
+}

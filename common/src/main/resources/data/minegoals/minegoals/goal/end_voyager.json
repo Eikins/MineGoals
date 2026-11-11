@@ -1,0 +1,19 @@
+{
+  "category": "minegoals:exploration",
+  "tier": 3,
+  "points": 25,
+  "title": {
+    "translate": "goal.minegoals.end_voyager"
+  },
+  "description": {
+    "translate": "goal.minegoals.end_voyager.desc"
+  },
+  "icon": "minecraft:end_stone",
+  "criterion": {
+    "type": "minegoals:visit_dimension",
+    "dimension": "minecraft:the_end"
+  },
+  "requires": [
+    "minegoals:nether_traveler"
+  ]
+}

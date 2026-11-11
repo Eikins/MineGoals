@@ -1,0 +1,16 @@
+{
+  "category": "minegoals:exploration",
+  "tier": 2,
+  "points": 15,
+  "title": {
+    "translate": "goal.minegoals.mountaineer"
+  },
+  "description": {
+    "translate": "goal.minegoals.mountaineer.desc"
+  },
+  "icon": "minecraft:snowball",
+  "criterion": {
+    "type": "minegoals:visit_biome",
+    "biome": "#minecraft:is_mountain"
+  }
+}

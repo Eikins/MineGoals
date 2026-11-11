@@ -1,0 +1,17 @@
+{
+  "category": "minegoals:combat",
+  "tier": 2,
+  "points": 15,
+  "title": {
+    "translate": "goal.minegoals.ender_hunter"
+  },
+  "description": {
+    "translate": "goal.minegoals.ender_hunter.desc"
+  },
+  "icon": "minecraft:ender_pearl",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:enderman",
+    "count": 3
+  }
+}

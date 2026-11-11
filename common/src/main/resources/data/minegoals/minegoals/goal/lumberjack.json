@@ -1,0 +1,17 @@
+{
+  "category": "minegoals:mining",
+  "tier": 1,
+  "points": 10,
+  "title": {
+    "translate": "goal.minegoals.lumberjack"
+  },
+  "description": {
+    "translate": "goal.minegoals.lumberjack.desc"
+  },
+  "icon": "minecraft:oak_log",
+  "criterion": {
+    "type": "minegoals:break_block",
+    "block": "#minecraft:logs",
+    "count": 16
+  }
+}

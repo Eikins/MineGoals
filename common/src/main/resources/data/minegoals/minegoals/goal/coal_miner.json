@@ -1,0 +1,17 @@
+{
+  "category": "minegoals:mining",
+  "tier": 1,
+  "points": 10,
+  "title": {
+    "translate": "goal.minegoals.coal_miner"
+  },
+  "description": {
+    "translate": "goal.minegoals.coal_miner.desc"
+  },
+  "icon": "minecraft:coal",
+  "criterion": {
+    "type": "minegoals:break_block",
+    "block": "#minecraft:coal_ores",
+    "count": 8
+  }
+}

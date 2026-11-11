@@ -1,0 +1,17 @@
+{
+  "category": "minegoals:combat",
+  "tier": 1,
+  "points": 10,
+  "title": {
+    "translate": "goal.minegoals.spider_squasher"
+  },
+  "description": {
+    "translate": "goal.minegoals.spider_squasher.desc"
+  },
+  "icon": "minecraft:string",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:spider",
+    "count": 5
+  }
+}

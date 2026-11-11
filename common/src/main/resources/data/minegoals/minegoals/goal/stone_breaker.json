@@ -1,0 +1,17 @@
+{
+  "category": "minegoals:mining",
+  "tier": 1,
+  "points": 10,
+  "title": {
+    "translate": "goal.minegoals.stone_breaker"
+  },
+  "description": {
+    "translate": "goal.minegoals.stone_breaker.desc"
+  },
+  "icon": "minecraft:cobblestone",
+  "criterion": {
+    "type": "minegoals:break_block",
+    "block": "minecraft:stone",
+    "count": 64
+  }
+}

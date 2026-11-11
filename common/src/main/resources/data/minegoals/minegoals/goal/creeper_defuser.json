@@ -1,0 +1,17 @@
+{
+  "category": "minegoals:combat",
+  "tier": 2,
+  "points": 15,
+  "title": {
+    "translate": "goal.minegoals.creeper_defuser"
+  },
+  "description": {
+    "translate": "goal.minegoals.creeper_defuser.desc"
+  },
+  "icon": "minecraft:gunpowder",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:creeper",
+    "count": 5
+  }
+}

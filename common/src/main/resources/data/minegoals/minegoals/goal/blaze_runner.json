@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:combat",
+  "tier": 3,
+  "points": 25,
+  "title": {
+    "translate": "goal.minegoals.blaze_runner"
+  },
+  "description": {
+    "translate": "goal.minegoals.blaze_runner.desc"
+  },
+  "icon": "minecraft:blaze_rod",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:blaze",
+    "count": 10
+  },
+  "requires": [
+    "minegoals:nether_traveler"
+  ]
+}

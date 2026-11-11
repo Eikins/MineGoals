@@ -1,0 +1,35 @@
+{
+  "title": {
+    "translate": "category.minegoals.mining"
+  },
+  "icon": "minecraft:iron_pickaxe",
+  "order": 0,
+  "tiers": [
+    {
+      "points": 0
+    },
+    {
+      "points": 30,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:iron_ingot",
+            "count": 8
+          }
+        ]
+      }
+    },
+    {
+      "points": 75,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:diamond",
+            "count": 3
+          }
+        ],
+        "experience": 100
+      }
+    }
+  ]
+}

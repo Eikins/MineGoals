@@ -1,0 +1,25 @@
+{
+  "category": "minegoals:mining",
+  "tier": 2,
+  "points": 15,
+  "title": {
+    "translate": "goal.minegoals.iron_miner"
+  },
+  "description": {
+    "translate": "goal.minegoals.iron_miner.desc"
+  },
+  "icon": "minecraft:raw_iron",
+  "criterion": {
+    "type": "minegoals:break_block",
+    "block": "#minecraft:iron_ores",
+    "count": 16
+  },
+  "rewards": {
+    "items": [
+      {
+        "id": "minecraft:iron_ingot",
+        "count": 4
+      }
+    ]
+  }
+}

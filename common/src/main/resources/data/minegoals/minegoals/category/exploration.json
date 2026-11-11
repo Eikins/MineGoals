@@ -1,0 +1,39 @@
+{
+  "title": {
+    "translate": "category.minegoals.exploration"
+  },
+  "icon": "minecraft:compass",
+  "order": 2,
+  "tiers": [
+    {
+      "points": 0
+    },
+    {
+      "points": 30,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:map",
+            "count": 1
+          },
+          {
+            "id": "minecraft:bread",
+            "count": 16
+          }
+        ]
+      }
+    },
+    {
+      "points": 75,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:ender_pearl",
+            "count": 4
+          }
+        ],
+        "experience": 100
+      }
+    }
+  ]
+}

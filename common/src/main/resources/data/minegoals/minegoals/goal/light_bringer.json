@@ -1,0 +1,17 @@
+{
+  "category": "minegoals:crafting",
+  "tier": 1,
+  "points": 10,
+  "title": {
+    "translate": "goal.minegoals.light_bringer"
+  },
+  "description": {
+    "translate": "goal.minegoals.light_bringer.desc"
+  },
+  "icon": "minecraft:torch",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:torch",
+    "count": 32
+  }
+}

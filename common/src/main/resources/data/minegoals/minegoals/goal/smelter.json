@@ -1,0 +1,17 @@
+{
+  "category": "minegoals:crafting",
+  "tier": 2,
+  "points": 15,
+  "title": {
+    "translate": "goal.minegoals.smelter"
+  },
+  "description": {
+    "translate": "goal.minegoals.smelter.desc"
+  },
+  "icon": "minecraft:furnace",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:furnace",
+    "count": 1
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "title": {
+    "translate": "category.minegoals.combat"
+  },
+  "icon": "minecraft:iron_sword",
+  "order": 1,
+  "tiers": [
+    {
+      "points": 0
+    },
+    {
+      "points": 30,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:arrow",
+            "count": 32
+          }
+        ]
+      }
+    },
+    {
+      "points": 75,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:golden_apple",
+            "count": 2
+          }
+        ],
+        "experience": 100
+      }
+    }
+  ]
+}

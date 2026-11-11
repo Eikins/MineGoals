@@ -1,0 +1,17 @@
+{
+  "category": "minegoals:combat",
+  "tier": 1,
+  "points": 10,
+  "title": {
+    "translate": "goal.minegoals.bone_collector"
+  },
+  "description": {
+    "translate": "goal.minegoals.bone_collector.desc"
+  },
+  "icon": "minecraft:bone",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:skeleton",
+    "count": 10
+  }
+}

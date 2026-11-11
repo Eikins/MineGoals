@@ -1,0 +1,17 @@
+{
+  "category": "minegoals:crafting",
+  "tier": 3,
+  "points": 25,
+  "title": {
+    "translate": "goal.minegoals.diamond_hoarder"
+  },
+  "description": {
+    "translate": "goal.minegoals.diamond_hoarder.desc"
+  },
+  "icon": "minecraft:diamond_block",
+  "criterion": {
+    "type": "minegoals:hold_item",
+    "item": "minecraft:diamond",
+    "count": 10
+  }
+}

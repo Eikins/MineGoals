@@ -1,0 +1,17 @@
+{
+  "category": "minegoals:crafting",
+  "tier": 2,
+  "points": 15,
+  "title": {
+    "translate": "goal.minegoals.iron_tools"
+  },
+  "description": {
+    "translate": "goal.minegoals.iron_tools.desc"
+  },
+  "icon": "minecraft:iron_pickaxe",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:iron_pickaxe",
+    "count": 1
+  }
+}

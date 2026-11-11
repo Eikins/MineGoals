@@ -1,0 +1,17 @@
+{
+  "category": "minegoals:combat",
+  "tier": 2,
+  "points": 15,
+  "title": {
+    "translate": "goal.minegoals.witch_hunter"
+  },
+  "description": {
+    "translate": "goal.minegoals.witch_hunter.desc"
+  },
+  "icon": "minecraft:glass_bottle",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:witch",
+    "count": 1
+  }
+}

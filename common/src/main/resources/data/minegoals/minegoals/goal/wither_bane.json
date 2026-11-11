@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:combat",
+  "tier": 3,
+  "points": 25,
+  "title": {
+    "translate": "goal.minegoals.wither_bane"
+  },
+  "description": {
+    "translate": "goal.minegoals.wither_bane.desc"
+  },
+  "icon": "minecraft:wither_skeleton_skull",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:wither_skeleton",
+    "count": 5
+  },
+  "requires": [
+    "minegoals:nether_traveler"
+  ]
+}

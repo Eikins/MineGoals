@@ -1,0 +1,16 @@
+{
+  "category": "minegoals:exploration",
+  "tier": 3,
+  "points": 25,
+  "title": {
+    "translate": "goal.minegoals.mushroom_finder"
+  },
+  "description": {
+    "translate": "goal.minegoals.mushroom_finder.desc"
+  },
+  "icon": "minecraft:red_mushroom",
+  "criterion": {
+    "type": "minegoals:visit_biome",
+    "biome": "minecraft:mushroom_fields"
+  }
+}
