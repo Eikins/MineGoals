@@ -3,7 +3,7 @@
 A multi-loader Minecraft **26.3** mod (**Fabric** and **NeoForge**): personal goals organised into
 **categories** and **tiers**, battle-pass style, fully defined by datapacks.
 
-- Each completed goal earns **points** for its category.
+- Each goal earns **points** for its category when the player **claims** it.
 - Each **tier** shows its reward on the track. Earning enough points completes the tier; claiming its reward
   unlocks the next tier and its goals.
 - Goal and tier **rewards are claimed** by the player with a "Claim" button in the goals screen.
@@ -53,7 +53,7 @@ Key packages in `common/src/main/java/com/eikins/minegoals/`:
 ```
 - `tiers`: the first tier is at 0 points, and thresholds must strictly increase.
 - A tier's `points` is the threshold to enter it. Tier N is **complete** when the category reaches tier N+1's
-  threshold (for the last tier: when all its goals are completed).
+  threshold (for the last tier: when all its goals are claimed).
 - A tier's `rewards` are earned by completing that tier. The player claims them manually, and claiming them
   **unlocks the next tier**. A tier without rewards unlocks the next one as soon as it is complete.
 - `tier_visibility` (default `visible`) controls what players see of tiers they have not reached:
@@ -85,7 +85,7 @@ Visibility is cosmetic: clients still receive every definition.
 |---|---|---|
 | `category` | required | Category id |
 | `tier` | `1` | Category tier that unlocks the goal (unlocked once the previous tier is complete and claimed) |
-| `points` | `10` | Points earned on completion |
+| `points` | `10` | Points earned when the completed goal is claimed |
 | `title`, `description` | | Plain text or a JSON text component (`{"translate": ...}`) |
 | `icon` | required | Item id |
 | `requires` | `[]` | Goals to complete first (in addition to the tier) |
@@ -145,7 +145,9 @@ The first row of the list is the selected tier: its reward, its state and its pr
 next tier's threshold, or completed goals for the last tier). Every row shows its rewards as icons in three fixed slots on the
 right: experience first as an XP bottle, then items, then commands as a nether star. Extra rewards are listed in the
 row's tooltip, and claimed rewards turn green with a check mark. The
-tier reward row and every completed goal have a **Claim** button. The server checks
+tier reward row and every completed goal have a **Claim** button. A goal's points are only added to its category when
+it is claimed, so claiming goals is what moves the player along the tiers; a goal without rewards is still claimed for
+its points. The server checks
 every claim, so a reward can only be claimed once.
 
 Goal files can be grouped in sub-folders: `goal/road_to_end/first_table.json` has the id

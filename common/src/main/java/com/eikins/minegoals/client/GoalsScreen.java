@@ -528,7 +528,6 @@ public class GoalsScreen extends Screen {
         Goal goal = defs.goals().get(id);
         boolean completed = progress.isCompleted(id);
         boolean unlocked = progress.isUnlocked(defs, id);
-        boolean hasRewards = !goal.rewards().isEmpty();
         int count = progress.count(id);
 
         // Reward slots on the right; everything else fits between the icon and the slots.
@@ -537,7 +536,7 @@ public class GoalsScreen extends Screen {
         g.fill(x, y, x + width, y + ROW_HEIGHT - 2, GoalRender.PANEL_LIGHT);
         g.item(new ItemStack(goal.icon()), x + 4, y + 7);
 
-        int rightWidth = hasRewards && completed ? CLAIM_WIDTH : 0;
+        int rightWidth = completed ? CLAIM_WIDTH : 0;
         int titleColor = completed ? GoalRender.GREEN : unlocked ? GoalRender.WHITE : GoalRender.DARK_GRAY;
         String pointsText = "+" + goal.points() + " pts";
         int pointsWidth = this.font.width(pointsText);
@@ -554,7 +553,8 @@ public class GoalsScreen extends Screen {
         }
         GoalRender.clippedText(g, this.font, subtitle, x + 24, y + 13, right - (x + 24) - 4 - rightWidth, GoalRender.GRAY);
 
-        if (completed && hasRewards) {
+        // Every completed goal is claimed: claiming grants its rewards and its points.
+        if (completed) {
             boolean claimed = progress.isGoalClaimed(id);
             this.renderClaimArea(g, right - CLAIM_WIDTH, y + 15, !claimed, claimed, null,
                     MineGoalsNetwork.ClaimReward.goal(id), mouseX, mouseY, mouseInList);
