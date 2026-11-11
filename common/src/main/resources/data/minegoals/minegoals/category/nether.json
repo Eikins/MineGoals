@@ -7,7 +7,16 @@
   "tier_visibility": "visible",
   "tiers": [
     {
-      "points": 0
+      "points": 0,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:gold_ingot",
+            "count": 4
+          }
+        ],
+        "experience": 50
+      }
     },
     {
       "points": 30,

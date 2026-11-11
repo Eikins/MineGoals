@@ -17,7 +17,8 @@ import java.util.Set;
 /**
  * One player's progress. Category points, tiers and the global level are derived from completed goals,
  * so they stay consistent when a datapack changes point values. Rewards are claimed by the player from the
- * goals screen; claimed goals and tiers are stored so a reward is never granted twice. The highest tier
+ * goals screen; claimed goals and tiers are stored so a reward is never granted twice. A tier's reward is earned
+ * by completing the tier, and claiming it unlocks the next tier. The highest tier
  * already announced per category is stored so the "tier reached" notification fires once.
  */
 public final class PlayerGoalProgress {
@@ -139,9 +140,41 @@ public final class PlayerGoalProgress {
         return points;
     }
 
+    /**
+     * Unlocked tier (1-based). Tier N+1 unlocks once tier N is complete and its reward is claimed (or it has none),
+     * so the player moves through the track by claiming each tier's reward.
+     */
     public int tier(GoalDefinitions defs, Identifier category) {
         Category cat = defs.categories().get(category);
-        return cat == null ? 0 : cat.tierFor(this.categoryPoints(defs, category));
+        if (cat == null) {
+            return 0;
+        }
+        int tier = 1;
+        while (tier < cat.tiers().size() && this.isTierComplete(defs, category, tier)
+                && (cat.tiers().get(tier - 1).rewards().isEmpty() || this.isTierClaimed(category, tier))) {
+            tier++;
+        }
+        return tier;
+    }
+
+    /**
+     * Whether tier {@code tier} (1-based) is complete: the category's points reach the next tier's threshold, or,
+     * for the last tier, every goal of that tier is completed.
+     */
+    public boolean isTierComplete(GoalDefinitions defs, Identifier category, int tier) {
+        Category cat = defs.categories().get(category);
+        if (cat == null || tier < 1 || tier > cat.tiers().size()) {
+            return false;
+        }
+        if (tier < cat.tiers().size()) {
+            return this.categoryPoints(defs, category) >= cat.pointsForTier(tier + 1);
+        }
+        for (Identifier goal : defs.goalsIn(category)) {
+            if (defs.goals().get(goal).tier() == tier && !this.completed.contains(goal)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public int totalPoints(GoalDefinitions defs) {
@@ -168,12 +201,13 @@ public final class PlayerGoalProgress {
         return goal != null && !goal.rewards().isEmpty() && this.completed.contains(goalId) && !this.claimedGoals.contains(goalId);
     }
 
-    /** Reached, has rewards, and not claimed yet. Tiers are 1-based. */
+    /** Unlocked, complete, has rewards, and not claimed yet. Tiers are 1-based. Claiming unlocks the next tier. */
     public boolean canClaimTier(GoalDefinitions defs, Identifier categoryId, int tier) {
         Category category = defs.categories().get(categoryId);
         return category != null && tier >= 1 && tier <= category.tiers().size()
                 && !category.tiers().get(tier - 1).rewards().isEmpty()
-                && tier <= this.tier(defs, categoryId) && !this.isTierClaimed(categoryId, tier);
+                && !this.isTierClaimed(categoryId, tier)
+                && tier <= this.tier(defs, categoryId) && this.isTierComplete(defs, categoryId, tier);
     }
 
     /** Number of goal and tier rewards waiting to be claimed. */

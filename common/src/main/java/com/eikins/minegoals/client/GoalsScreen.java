@@ -22,14 +22,15 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Goals screen: global level on top, one tab per category, a battle-pass style tier track, and below it the
- * selected tier's reward followed by its goals. Rewards are claimed by clicking their "Claim" button.
+ * Goals screen: global level on top, one tab per category, a battle-pass style tier track showing each tier's
+ * reward, and below it the selected tier's reward row followed by its goals. Rewards are claimed by clicking their
+ * "Claim" button; a tier's reward is earned by completing the tier, and claiming it unlocks the next tier.
  * Tiers the player has not reached may be hidden, depending on the category's {@link TierVisibility}.
  */
 public class GoalsScreen extends Screen {
 
     private static final int TAB_HEIGHT = 20;
-    private static final int TRACK_HEIGHT = 30;
+    private static final int TRACK_HEIGHT = 42;
     private static final int ROW_HEIGHT = 32;
     private static final int CLAIM_WIDTH = 52;
     private static final int CLAIM_HEIGHT = 12;
@@ -248,7 +249,7 @@ public class GoalsScreen extends Screen {
     private void renderTrack(GuiGraphicsExtractor g, GoalDefinitions defs, PlayerGoalProgress progress,
                              Identifier categoryId, Category category, int mouseX, int mouseY) {
         int tiers = this.shownTiers(defs, progress, categoryId);
-        int reached = progress.tier(defs, categoryId);
+        int unlocked = progress.tier(defs, categoryId);
         int points = progress.categoryPoints(defs, categoryId);
         TierVisibility visibility = category.tierVisibility();
         int box = this.tierBoxWidth(tiers);
@@ -257,29 +258,34 @@ public class GoalsScreen extends Screen {
         for (int i = 0; i < tiers; i++) {
             int tier = i + 1;
             int x = this.tierBoxX(tiers, i);
-            boolean isReached = tier <= reached;
-            boolean isNext = tier == reached + 1;
-            boolean revealed = visibility.revealsContent(tier, reached);
+            Rewards rewards = category.tiers().get(i).rewards();
+            TierState state = tierState(defs, progress, categoryId, tier, unlocked);
+            boolean revealed = visibility.revealsContent(tier, unlocked);
             if (i > 0) {
                 int prevEnd = this.tierBoxX(tiers, i - 1) + box;
-                g.fill(prevEnd, y + TRACK_HEIGHT / 2 - 1, x, y + TRACK_HEIGHT / 2 + 1, isReached ? GoalRender.GREEN : GoalRender.DARK_GRAY);
+                g.fill(prevEnd, y + TRACK_HEIGHT / 2 - 1, x, y + TRACK_HEIGHT / 2 + 1,
+                        tier <= unlocked ? GoalRender.GREEN : GoalRender.DARK_GRAY);
             }
-            int background = isReached ? 0xFF1F5A1F : isNext ? 0xFF5A4A1A : 0xFF2A2A2A;
-            g.fill(x, y, x + box, y + TRACK_HEIGHT, background);
+            g.fill(x, y, x + box, y + TRACK_HEIGHT, state.background);
             if (tier == this.selectedTier) {
                 g.outline(x - 1, y - 1, box + 2, TRACK_HEIGHT + 2, GoalRender.WHITE);
             }
-            if (progress.canClaimTier(defs, categoryId, tier)) {
-                g.fill(x + box - 5, y + 1, x + box - 1, y + 5, GoalRender.GREEN);
-            }
+
             // Long tracks get narrow boxes: drop the words and keep the numbers.
             boolean wide = box >= 50;
             Component name = !revealed
                     ? Component.literal("???")
                     : wide ? Component.translatable("minegoals.screen.tier_short", tier) : Component.literal(String.valueOf(tier));
-            g.centeredText(this.font, name, x + box / 2, y + 5, isReached ? GoalRender.WHITE : GoalRender.GRAY);
+            g.centeredText(this.font, name, x + box / 2, y + 3, tier <= unlocked ? GoalRender.WHITE : GoalRender.GRAY);
+            if (revealed) {
+                this.renderRewardIcons(g, rewards, x, y + 13, box);
+            }
             String threshold = category.tiers().get(i).points() + (wide ? " pts" : "");
-            g.centeredText(this.font, threshold, x + box / 2, y + 17, isReached ? GoalRender.GREEN : GoalRender.GRAY);
+            g.centeredText(this.font, threshold, x + box / 2, y + TRACK_HEIGHT - 10,
+                    tier <= unlocked ? GoalRender.GREEN : GoalRender.GRAY);
+            if (state == TierState.CLAIMABLE) {
+                g.fill(x + box - 5, y + 1, x + box - 1, y + 5, GoalRender.GREEN);
+            }
 
             if (inside(mouseX, mouseY, x, y, box, TRACK_HEIGHT)) {
                 List<Component> lines = new ArrayList<>();
@@ -287,7 +293,8 @@ public class GoalsScreen extends Screen {
                 lines.add(Component.translatable("minegoals.screen.tier_threshold", category.tiers().get(i).points())
                         .withStyle(ChatFormatting.GRAY));
                 if (revealed) {
-                    lines.addAll(describeRewards(category.tiers().get(i).rewards()));
+                    lines.addAll(describeRewards(rewards));
+                    lines.add(state.label(tier).copy().withStyle(ChatFormatting.DARK_GRAY));
                 } else {
                     lines.add(Component.translatable("minegoals.screen.tier_hidden").withStyle(ChatFormatting.DARK_GRAY));
                 }
@@ -295,9 +302,11 @@ public class GoalsScreen extends Screen {
             }
         }
 
-        int next = category.pointsForTier(reached + 1);
+        int next = category.pointsForTier(unlocked + 1);
         Component summary;
-        if (next < 0) {
+        if (progress.canClaimTier(defs, categoryId, unlocked)) {
+            summary = Component.translatable("minegoals.screen.category_claim", unlocked);
+        } else if (next < 0) {
             summary = Component.translatable("minegoals.screen.category_max", points);
         } else if (visibility.revealsNextThreshold()) {
             summary = Component.translatable("minegoals.screen.category_progress", points, next);
@@ -307,6 +316,57 @@ public class GoalsScreen extends Screen {
         Component line = Component.empty().append(category.title().copy().withStyle(ChatFormatting.WHITE))
                 .append(Component.literal(" · ")).append(summary);
         g.centeredText(this.font, line, this.left + this.panelWidth / 2, y + TRACK_HEIGHT + 3, GoalRender.GRAY);
+    }
+
+    /** Draws the reward's items (or an XP bottle) centred in a tier box, as many as fit. */
+    private void renderRewardIcons(GuiGraphicsExtractor g, Rewards rewards, int x, int y, int width) {
+        List<ItemStack> icons = new ArrayList<>();
+        for (Rewards.ItemReward item : rewards.items()) {
+            icons.add(new ItemStack(item.item(), item.count()));
+        }
+        if (icons.isEmpty() && rewards.experience() > 0) {
+            icons.add(new ItemStack(Items.EXPERIENCE_BOTTLE));
+        }
+        if (icons.isEmpty()) {
+            return;
+        }
+        int fit = Math.min(icons.size(), Math.max(1, (width - 2) / 17));
+        int start = x + (width - fit * 17 + 1) / 2;
+        for (int i = 0; i < fit; i++) {
+            g.item(icons.get(i), start + i * 17, y);
+            g.itemDecorations(this.font, icons.get(i), start + i * 17, y);
+        }
+    }
+
+    private static TierState tierState(GoalDefinitions defs, PlayerGoalProgress progress, Identifier categoryId,
+                                       int tier, int unlocked) {
+        if (tier > unlocked) {
+            return TierState.LOCKED;
+        }
+        if (progress.canClaimTier(defs, categoryId, tier)) {
+            return TierState.CLAIMABLE;
+        }
+        return progress.isTierComplete(defs, categoryId, tier) ? TierState.DONE : TierState.IN_PROGRESS;
+    }
+
+    /** Where a tier stands for the player, with its colour on the track. */
+    private enum TierState {
+        DONE(0xFF1F5A1F, "minegoals.screen.tier_state.done"),
+        CLAIMABLE(0xFF6A561A, "minegoals.screen.tier_state.claimable"),
+        IN_PROGRESS(0xFF2C3450, "minegoals.screen.tier_state.in_progress"),
+        LOCKED(0xFF2A2A2A, "minegoals.screen.tier_state.locked");
+
+        final int background;
+        private final String key;
+
+        TierState(int background, String key) {
+            this.background = background;
+            this.key = key;
+        }
+
+        Component label(int tier) {
+            return Component.translatable(this.key, tier);
+        }
     }
 
     private void renderRows(GuiGraphicsExtractor g, GoalDefinitions defs, PlayerGoalProgress progress,
@@ -353,21 +413,24 @@ public class GoalsScreen extends Screen {
                                                 Identifier categoryId, Category category, int x, int y, int width,
                                                 int mouseX, int mouseY, boolean mouseInList) {
         Rewards rewards = category.tiers().get(this.selectedTier - 1).rewards();
-        boolean reached = this.selectedTier <= progress.tier(defs, categoryId);
+        int unlocked = progress.tier(defs, categoryId);
+        TierState state = tierState(defs, progress, categoryId, this.selectedTier, unlocked);
         boolean claimed = progress.isTierClaimed(categoryId, this.selectedTier);
 
         g.fill(x, y, x + width, y + ROW_HEIGHT - 2, 0xE0302818);
         g.item(new ItemStack(Items.CHEST), x + 4, y + 7);
         g.text(this.font, Component.translatable("minegoals.screen.tier_reward", this.selectedTier), x + 24, y + 3, GoalRender.GOLD, false);
         GoalRender.clippedText(g, this.font, summarizeRewards(rewards), x + 24, y + 13, width - 32 - CLAIM_WIDTH, GoalRender.GRAY);
-        Component state = reached ? null : Component.translatable("minegoals.screen.locked_tier", this.selectedTier);
-        this.renderClaimArea(g, x + width - 4 - CLAIM_WIDTH, y + 9,
-                reached && !claimed, claimed, state,
+        if (state != TierState.CLAIMABLE && !claimed) {
+            GoalRender.clippedText(g, this.font, state.label(this.selectedTier), x + 24, y + 22, width - 28, GoalRender.DARK_GRAY);
+        }
+        this.renderClaimArea(g, x + width - 4 - CLAIM_WIDTH, y + 9, state == TierState.CLAIMABLE, claimed, null,
                 MineGoalsNetwork.ClaimReward.tier(categoryId, this.selectedTier), mouseX, mouseY, mouseInList);
 
         List<Component> lines = new ArrayList<>();
         lines.add(Component.translatable("minegoals.screen.tier_reward", this.selectedTier).withStyle(ChatFormatting.GOLD));
         lines.addAll(describeRewards(rewards));
+        lines.add(Component.translatable("minegoals.screen.tier_reward_hint").withStyle(ChatFormatting.DARK_GRAY));
         return lines;
     }
 
@@ -440,7 +503,11 @@ public class GoalsScreen extends Screen {
     }
 
     private Component lockReason(GoalDefinitions defs, PlayerGoalProgress progress, Goal goal) {
-        if (progress.tier(defs, goal.category()) < goal.tier()) {
+        int unlocked = progress.tier(defs, goal.category());
+        if (unlocked < goal.tier()) {
+            if (goal.tier() == unlocked + 1 && progress.canClaimTier(defs, goal.category(), unlocked)) {
+                return Component.translatable("minegoals.screen.locked_claim", unlocked);
+            }
             return goal.trackBeforeUnlock()
                     ? Component.translatable("minegoals.screen.locked_tier_tracked", goal.tier())
                     : Component.translatable("minegoals.screen.locked_tier", goal.tier());

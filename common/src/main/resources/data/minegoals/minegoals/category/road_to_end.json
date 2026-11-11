@@ -7,15 +7,24 @@
   "tier_visibility": "next",
   "tiers": [
     {
-      "points": 0
+      "points": 0,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:bread",
+            "count": 8
+          }
+        ],
+        "experience": 25
+      }
     },
     {
       "points": 30,
       "rewards": {
         "items": [
           {
-            "id": "minecraft:bread",
-            "count": 8
+            "id": "minecraft:white_bed",
+            "count": 1
           }
         ],
         "experience": 50
@@ -26,8 +35,8 @@
       "rewards": {
         "items": [
           {
-            "id": "minecraft:white_bed",
-            "count": 1
+            "id": "minecraft:iron_ingot",
+            "count": 8
           }
         ],
         "experience": 75
@@ -38,8 +47,8 @@
       "rewards": {
         "items": [
           {
-            "id": "minecraft:iron_ingot",
-            "count": 8
+            "id": "minecraft:golden_apple",
+            "count": 1
           }
         ],
         "experience": 100
@@ -47,18 +56,6 @@
     },
     {
       "points": 250,
-      "rewards": {
-        "items": [
-          {
-            "id": "minecraft:golden_apple",
-            "count": 1
-          }
-        ],
-        "experience": 125
-      }
-    },
-    {
-      "points": 340,
       "rewards": {
         "items": [
           {
@@ -70,6 +67,18 @@
             "count": 16
           }
         ],
+        "experience": 125
+      }
+    },
+    {
+      "points": 340,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:arrow",
+            "count": 32
+          }
+        ],
         "experience": 150
       }
     },
@@ -78,8 +87,8 @@
       "rewards": {
         "items": [
           {
-            "id": "minecraft:arrow",
-            "count": 32
+            "id": "minecraft:ender_pearl",
+            "count": 2
           }
         ],
         "experience": 175
@@ -90,7 +99,7 @@
       "rewards": {
         "items": [
           {
-            "id": "minecraft:ender_pearl",
+            "id": "minecraft:golden_apple",
             "count": 2
           }
         ],
@@ -102,8 +111,12 @@
       "rewards": {
         "items": [
           {
-            "id": "minecraft:golden_apple",
-            "count": 2
+            "id": "minecraft:arrow",
+            "count": 64
+          },
+          {
+            "id": "minecraft:cooked_beef",
+            "count": 32
           }
         ],
         "experience": 225
@@ -114,19 +127,24 @@
       "rewards": {
         "items": [
           {
-            "id": "minecraft:arrow",
-            "count": 64
-          },
-          {
-            "id": "minecraft:cooked_beef",
-            "count": 32
+            "id": "minecraft:golden_apple",
+            "count": 3
           }
         ],
         "experience": 250
       }
     },
     {
-      "points": 985
+      "points": 985,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:spectral_arrow",
+            "count": 32
+          }
+        ],
+        "experience": 275
+      }
     },
     {
       "points": 1105,

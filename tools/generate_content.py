@@ -43,53 +43,54 @@ def items(*pairs): return {"items": [{"id": i, "count": c} for i, c in pairs]}
 ROAD = {
     "id": "road_to_end", "icon": "minecraft:ender_eye", "order": 0, "visibility": "next", "ratio": 1.0,
     "en": "Road to the End", "fr": "En route vers l'End",
+    # Tier rewards for the road are in ROAD_TIER_REWARDS below.
     "tiers": [
         (None, [
             ("lumberjack", "minecraft:oak_log", B("#minecraft:logs", 16), "Lumberjack", "Chop 16 logs", "Bûcheron", "Coupe 16 bûches"),
             ("first_table", "minecraft:crafting_table", CR("minecraft:crafting_table"), "First Table", "Craft a crafting table", "Premier établi", "Fabrique un établi"),
             ("wooden_pickaxe", "minecraft:wooden_pickaxe", CR("minecraft:wooden_pickaxe"), "Getting Started", "Craft a wooden pickaxe", "Premiers pas", "Fabrique une pioche en bois"),
         ]),
-        (items(("minecraft:bread", 8)), [
+        (None, [
             ("stone_age", "minecraft:cobblestone", ADV("story/mine_stone"), "Stone Age", "Mine stone with your new pickaxe", "L'âge de pierre", "Mine de la pierre avec ta nouvelle pioche"),
             ("better_tools", "minecraft:stone_pickaxe", ADV("story/upgrade_tools"), "Getting an Upgrade", "Craft a stone pickaxe", "Amélioration", "Fabrique une pioche en pierre"),
             ("furnace", "minecraft:furnace", CR("minecraft:furnace"), "Smelter", "Craft a furnace", "Fondeur", "Fabrique un four"),
             ("torches", "minecraft:torch", CR("minecraft:torch", 16), "Light Bringer", "Craft 16 torches", "Porteur de lumière", "Fabrique 16 torches"),
         ]),
-        (items(("minecraft:white_bed", 1)), [
+        (None, [
             ("first_night", "minecraft:red_bed", ADV("adventure/sleep_in_bed"), "Sweet Dreams", "Sleep in a bed", "Fais de beaux rêves", "Dors dans un lit"),
             ("night_guard", "minecraft:rotten_flesh", K("minecraft:zombie", 5), "Night Guard", "Kill 5 zombies", "Garde de nuit", "Tue 5 zombies"),
             ("coal_miner", "minecraft:coal", B("#minecraft:coal_ores", 16), "Coal Miner", "Mine 16 coal ores", "Mineur de charbon", "Mine 16 minerais de charbon"),
         ]),
-        (items(("minecraft:iron_ingot", 8)), [
+        (None, [
             ("acquire_hardware", "minecraft:iron_ingot", ADV("story/smelt_iron"), "Acquire Hardware", "Smelt an iron ingot", "Quincaillerie", "Fais fondre un lingot de fer"),
             ("iron_pickaxe", "minecraft:iron_pickaxe", ADV("story/iron_tools"), "Isn't It Iron Pick", "Craft an iron pickaxe", "Pioche en fer", "Fabrique une pioche en fer"),
             ("suit_up", "minecraft:iron_chestplate", ADV("story/obtain_armor"), "Suit Up", "Wear a piece of iron armor", "Équipe-toi", "Porte une pièce d'armure en fer"),
             ("shield", "minecraft:shield", CR("minecraft:shield"), "Shield Up", "Craft a shield", "Bouclier levé", "Fabrique un bouclier"),
         ]),
-        (items(("minecraft:golden_apple", 1)), [
+        (None, [
             ("diamonds", "minecraft:diamond", ADV("story/mine_diamond"), "Diamonds!", "Find a diamond", "Des diamants !", "Trouve un diamant"),
             ("hot_stuff", "minecraft:lava_bucket", ADV("story/lava_bucket"), "Hot Stuff", "Fill a bucket with lava", "Ça chauffe", "Remplis un seau de lave"),
             ("ice_bucket", "minecraft:obsidian", ADV("story/form_obsidian"), "Ice Bucket Challenge", "Obtain a block of obsidian", "Défi du seau d'eau", "Obtiens un bloc d'obsidienne"),
         ]),
-        (items(("minecraft:flint_and_steel", 1), ("minecraft:cooked_beef", 16)), [
+        (None, [
             ("we_need_to_go_deeper", "minecraft:netherrack", ADV("story/enter_the_nether"), "We Need to Go Deeper", "Build a portal and enter the Nether", "Il faut creuser plus profond", "Construis un portail et entre dans le Nether"),
             ("fortress", "minecraft:nether_bricks", ADV("nether/find_fortress"), "A Terrible Fortress", "Find a Nether fortress", "Une terrible forteresse", "Trouve une forteresse du Nether"),
         ]),
-        (items(("minecraft:arrow", 32)), [
+        (None, [
             ("into_fire", "minecraft:blaze_rod", ADV("nether/obtain_blaze_rod"), "Into Fire", "Get a blaze rod", "Dans le feu", "Obtiens un bâton de blaze"),
             ("blaze_hunter", "minecraft:blaze_powder", K("minecraft:blaze", 8), "Blaze Hunter", "Kill 8 blazes", "Chasseur de blazes", "Tue 8 blazes"),
             ("blaze_powder", "minecraft:blaze_powder", CR("minecraft:blaze_powder", 12), "Fuel for the Eyes", "Craft 12 blaze powder", "Carburant pour les yeux", "Fabrique 12 poudres de blaze"),
         ]),
-        (items(("minecraft:ender_pearl", 2)), [
+        (None, [
             ("ender_hunter", "minecraft:ender_pearl", K("minecraft:enderman", 12), "Ender Hunter", "Kill 12 endermen", "Chasseur d'Endermen", "Tue 12 endermen"),
             ("pearl_collector", "minecraft:ender_pearl", P("minecraft:ender_pearl", 12), "Pearl Collector", "Pick up 12 ender pearls", "Collecteur de perles", "Ramasse 12 perles de l'Ender"),
             ("eyes_of_ender", "minecraft:ender_eye", CR("minecraft:ender_eye", 12), "Eyes of Ender", "Craft 12 eyes of ender", "Yeux de l'Ender", "Fabrique 12 yeux de l'Ender"),
         ]),
-        (items(("minecraft:golden_apple", 2)), [
+        (None, [
             ("eye_spy", "minecraft:ender_eye", ADV("story/follow_ender_eye"), "Eye Spy", "Follow an eye of ender into a stronghold", "Œil pour œil", "Suis un œil de l'Ender jusqu'à un fort"),
             ("silverfish", "minecraft:stone_bricks", K("minecraft:silverfish", 5), "Pest Control", "Kill 5 silverfish (they hide in stronghold walls)", "Dératisation", "Tue 5 poissons d'argent (ils se cachent dans les murs du fort)"),
         ]),
-        (items(("minecraft:arrow", 64), ("minecraft:cooked_beef", 32)), [
+        (None, [
             ("bow", "minecraft:bow", CR("minecraft:bow"), "Archer", "Craft a bow", "Archer", "Fabrique un arc"),
             ("quiver", "minecraft:arrow", H("minecraft:arrow", 64), "Full Quiver", "Carry 64 arrows", "Carquois plein", "Porte 64 flèches sur toi"),
             ("blocks", "minecraft:cobblestone", H("minecraft:cobblestone", 128), "Pillar Supplies", "Carry 128 cobblestone", "Provisions de blocs", "Porte 128 pierres taillées sur toi"),
@@ -99,7 +100,7 @@ ROAD = {
             ("the_end", "minecraft:end_stone", ADV("story/enter_the_end"), "The End?", "Enter the End portal", "La fin ?", "Entre dans le portail de l'End"),
             ("end_stone", "minecraft:end_stone", B("minecraft:end_stone", 16), "Island Souvenir", "Mine 16 end stone", "Souvenir de l'île", "Mine 16 blocs de pierre de l'End"),
         ]),
-        (items(("minecraft:elytra", 1)), [
+        (None, [
             ("free_the_end", "minecraft:dragon_head", ADV("end/kill_dragon"), "Free the End", "Slay the Ender Dragon", "Libère l'End", "Tue le dragon de l'Ender"),
             ("next_generation", "minecraft:dragon_egg", ADV("end/dragon_egg"), "The Next Generation", "Hold the dragon egg", "La génération suivante", "Tiens l'œuf de dragon"),
         ]),
@@ -328,6 +329,23 @@ COMBAT = {
     ],
 }
 
+# Reward for completing each Road to the End tier; claiming it unlocks the next tier, so each one prepares the
+# next step (e.g. completing the diamond tier gives flint and steel for the Nether portal).
+ROAD_TIER_REWARDS = [
+    items(("minecraft:bread", 8)),                                      # 1 first steps -> food for the stone age
+    items(("minecraft:white_bed", 1)),                                  # 2 stone age -> survive the night
+    items(("minecraft:iron_ingot", 8)),                                 # 3 first night -> iron age
+    items(("minecraft:golden_apple", 1)),                               # 4 iron age -> diamonds
+    items(("minecraft:flint_and_steel", 1), ("minecraft:cooked_beef", 16)),  # 5 diamonds -> the Nether
+    items(("minecraft:arrow", 32)),                                     # 6 fortress -> blazes
+    items(("minecraft:ender_pearl", 2)),                                # 7 blazes -> endermen
+    items(("minecraft:golden_apple", 2)),                               # 8 eyes of ender -> stronghold
+    items(("minecraft:arrow", 64), ("minecraft:cooked_beef", 32)),      # 9 stronghold -> preparation
+    items(("minecraft:golden_apple", 3)),                               # 10 preparation -> the End
+    items(("minecraft:spectral_arrow", 32)),                            # 11 the End -> the dragon
+    items(("minecraft:elytra", 1)),                                     # 12 the dragon
+]
+
 # Item rewards for Road to the End goals, on top of their XP: each one helps with the next steps.
 ROAD_ITEMS = {
     "lumberjack": [("minecraft:apple", 3)],
@@ -383,6 +401,13 @@ en = {
     "minegoals.screen.completed": "Completed",
     "minegoals.screen.locked_tier": "Locked · reach tier %s",
     "minegoals.screen.locked_tier_tracked": "Locked · reach tier %s · progress already counts",
+    "minegoals.screen.locked_claim": "Locked · claim the tier %s reward to unlock",
+    "minegoals.screen.category_claim": "Claim the tier %s reward to continue",
+    "minegoals.screen.tier_reward_hint": "Earned by completing this tier. Claiming it unlocks the next tier.",
+    "minegoals.screen.tier_state.done": "Completed",
+    "minegoals.screen.tier_state.claimable": "Complete · claim the reward to unlock the next tier",
+    "minegoals.screen.tier_state.in_progress": "In progress · complete tier %s to earn this reward",
+    "minegoals.screen.tier_state.locked": "Locked",
     "minegoals.screen.locked_requires": "Locked · requires: %s",
     "minegoals.screen.rewards": "Rewards:",
     "minegoals.screen.reward_xp": "%s XP",
@@ -426,6 +451,13 @@ fr = {
     "minegoals.screen.completed": "Terminé",
     "minegoals.screen.locked_tier": "Verrouillé · atteins le palier %s",
     "minegoals.screen.locked_tier_tracked": "Verrouillé · atteins le palier %s · la progression compte déjà",
+    "minegoals.screen.locked_claim": "Verrouillé · récupère la récompense du palier %s pour débloquer",
+    "minegoals.screen.category_claim": "Récupère la récompense du palier %s pour continuer",
+    "minegoals.screen.tier_reward_hint": "Obtenue en terminant ce palier. La récupérer débloque le palier suivant.",
+    "minegoals.screen.tier_state.done": "Terminé",
+    "minegoals.screen.tier_state.claimable": "Terminé · récupère la récompense pour débloquer le palier suivant",
+    "minegoals.screen.tier_state.in_progress": "En cours · termine le palier %s pour gagner cette récompense",
+    "minegoals.screen.tier_state.locked": "Verrouillé",
     "minegoals.screen.locked_requires": "Verrouillé · nécessite : %s",
     "minegoals.screen.rewards": "Récompenses :",
     "minegoals.screen.reward_xp": "%s XP",
@@ -480,10 +512,11 @@ for cat in CATEGORIES:
             threshold = max(previous_threshold + 5, int(math.floor(cumulative * cat["ratio"] / 5.0)) * 5)
         previous_threshold = threshold
 
-        if tier_reward is None and not road and t > 1:
+        # A tier's reward is earned by completing it; claiming the reward unlocks the next tier.
+        if road:
+            tier_reward = {**ROAD_TIER_REWARDS[t - 1], "experience": 25 * t}
+        else:
             tier_reward = {"items": [{"id": cat["tier_items"][t - 1], "count": 4 if t < 4 else 1}], "experience": 50 * t}
-        elif tier_reward is not None and t > 1:
-            tier_reward = {**tier_reward, "experience": 25 * t}
         tier = {"points": threshold}
         if tier_reward:
             tier["rewards"] = tier_reward

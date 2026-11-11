@@ -1,6 +1,7 @@
 package com.eikins.minegoals.client;
 
 import com.eikins.minegoals.Constants;
+import com.eikins.minegoals.FeatureFlags;
 import com.eikins.minegoals.data.Category;
 import com.eikins.minegoals.data.Goal;
 import com.eikins.minegoals.data.GoalDefinitions;
@@ -31,7 +32,15 @@ public final class GoalHud {
     private GoalHud() {
     }
 
+    /** HUD entry point registered by both loaders: the journal icon, plus the goals panel when enabled. */
     public static void render(GuiGraphicsExtractor g) {
+        JournalHud.render(g);
+        if (FeatureFlags.GOAL_PANEL) {
+            renderPanel(g);
+        }
+    }
+
+    private static void renderPanel(GuiGraphicsExtractor g) {
         Minecraft mc = Minecraft.getInstance();
         GoalDefinitions defs = ClientGoalState.definitions();
         if (!ClientGoalState.isHudVisible() || mc.player == null || defs.categories().isEmpty() || mc.gui.hud.isHidden()) {

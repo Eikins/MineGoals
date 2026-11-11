@@ -259,13 +259,18 @@ class GoalDataTest {
         complete(progress, road("lumberjack"));
         complete(progress, road("first_table"));
         assertEquals(20, progress.categoryPoints(examples, roadId));
-        assertEquals(1, progress.tier(examples, roadId), "all 3 tier-1 goals needed for tier 2");
+        assertFalse(progress.isTierComplete(examples, roadId, 1), "all 3 tier-1 goals needed");
 
         complete(progress, road("wooden_pickaxe"));
         assertEquals(30, progress.categoryPoints(examples, roadId));
+        assertTrue(progress.isTierComplete(examples, roadId, 1));
+        assertEquals(1, progress.tier(examples, roadId), "tier 2 waits for the tier 1 reward to be claimed");
+
+        progress.markTierClaimed(roadId, 1);
         assertEquals(2, progress.tier(examples, roadId));
 
         completeTier(progress, roadId, 2);
+        progress.markTierClaimed(roadId, 2);
         assertEquals(3, progress.tier(examples, roadId));
         assertEquals(90, progress.totalPoints(examples));
 
@@ -281,6 +286,8 @@ class GoalDataTest {
         assertFalse(progress.isUnlocked(examples, road("furnace")));
 
         completeTier(progress, id("road_to_end"), 1);
+        assertFalse(progress.isUnlocked(examples, road("furnace")), "tier 1 complete but its reward is not claimed");
+        progress.markTierClaimed(id("road_to_end"), 1);
         assertTrue(progress.isUnlocked(examples, road("furnace")));
         assertFalse(progress.isActive(examples, road("lumberjack")), "completed goals are no longer active");
     }
@@ -394,11 +401,10 @@ class GoalDataTest {
     }
 
     @Test
-    void tierRewardsAreClaimableOnceReached() {
+    void tierRewardIsEarnedByCompletingTheTierAndClaimingUnlocksTheNext() {
         PlayerGoalProgress progress = new PlayerGoalProgress();
         Identifier roadId = id("road_to_end");
-        assertFalse(progress.canClaimTier(examples, roadId, 1), "tier 1 has no reward");
-        assertFalse(progress.canClaimTier(examples, roadId, 2), "tier 2 not reached");
+        assertFalse(progress.canClaimTier(examples, roadId, 1), "tier 1 not complete yet");
 
         completeTier(progress, roadId, 1);
         for (Identifier goal : examples.goalsIn(roadId)) {
@@ -406,16 +412,36 @@ class GoalDataTest {
                 progress.markGoalClaimed(goal);
             }
         }
-        assertTrue(progress.canClaimTier(examples, roadId, 2));
-        assertFalse(progress.canClaimTier(examples, roadId, 3));
+        assertTrue(progress.canClaimTier(examples, roadId, 1));
+        assertFalse(progress.canClaimTier(examples, roadId, 2), "tier 2 locked and not complete");
         assertFalse(progress.canClaimTier(examples, roadId, 99), "out of range");
         assertEquals(1, progress.claimableCount(examples));
 
-        progress.markTierClaimed(roadId, 2);
-        assertFalse(progress.canClaimTier(examples, roadId, 2));
+        progress.markTierClaimed(roadId, 1);
+        assertFalse(progress.canClaimTier(examples, roadId, 1), "claimed only once");
+        assertEquals(2, progress.tier(examples, roadId));
     }
 
-    // ---- tier visibility -------------------------------------------------------------------------
+    @Test
+    void earlyTrackedPointsStillUnlockOneClaimAtATime() {
+        PlayerGoalProgress progress = new PlayerGoalProgress();
+        Identifier oceans = id("oceans");
+        // Complete every Oceans goal (possible with track_before_unlock): all tiers are complete...
+        completeTier(progress, oceans, 1);
+        completeTier(progress, oceans, 2);
+        completeTier(progress, oceans, 3);
+        completeTier(progress, oceans, 4);
+        assertEquals(1, progress.tier(examples, oceans), "...but tiers still open one claim at a time");
+        assertTrue(progress.canClaimTier(examples, oceans, 1));
+        assertFalse(progress.canClaimTier(examples, oceans, 2), "tier 2 is still locked");
+
+        progress.markTierClaimed(oceans, 1);
+        progress.markTierClaimed(oceans, 2);
+        progress.markTierClaimed(oceans, 3);
+        assertEquals(4, progress.tier(examples, oceans));
+        assertTrue(progress.isTierComplete(examples, oceans, 4), "last tier: every goal done");
+        assertTrue(progress.canClaimTier(examples, oceans, 4));
+    }
 
     @Test
     void tierVisibilityControlsWhatIsShown() {

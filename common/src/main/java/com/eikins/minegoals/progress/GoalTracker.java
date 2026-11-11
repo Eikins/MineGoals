@@ -1,5 +1,6 @@
 package com.eikins.minegoals.progress;
 
+import com.eikins.minegoals.FeatureFlags;
 import com.eikins.minegoals.data.Category;
 import com.eikins.minegoals.data.Goal;
 import com.eikins.minegoals.data.GoalDefinitions;
@@ -118,8 +119,8 @@ public final class GoalTracker {
             progress.markTierClaimed(id, tier);
             defs.categories().get(id).tiers().get(tier - 1).rewards().grant(player);
         }
-        data.setDirty();
-        Services.NETWORK.sendToPlayer(player, new MineGoalsNetwork.SyncProgress(progress.copy()));
+        // Claiming a tier unlocks the next one, whose goals may already be done when they track early.
+        evaluate(player, data, progress, defs, true);
     }
 
     /**
@@ -167,6 +168,9 @@ public final class GoalTracker {
     }
 
     private static void notify(ServerPlayer player, Component title, Component message, boolean hasReward) {
+        if (!FeatureFlags.NOTIFICATIONS) {
+            return;
+        }
         MutableComponent chat = Component.empty()
                 .append(Component.literal("[MineGoals] ").withStyle(ChatFormatting.GOLD))
                 .append(title.copy().withStyle(ChatFormatting.YELLOW))
