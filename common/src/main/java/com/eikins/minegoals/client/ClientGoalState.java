@@ -56,30 +56,38 @@ public final class ClientGoalState {
         progress = newProgress;
     }
 
+    /** Categories the player can see, in display order: locked categories are hidden. */
+    public static List<Identifier> visibleCategories() {
+        return definitions.categories().keySet().stream()
+                .filter(id -> progress.isCategoryUnlocked(definitions, id))
+                .toList();
+    }
+
     /**
      * Category shown in the HUD: the one picked with the cycle key, else the last one that progressed, else the
-     * first with an active goal.
+     * first with an active goal. Locked categories are skipped.
      */
     public static @Nullable Identifier focusedCategory() {
-        if (manualCategory != null) {
+        List<Identifier> visible = visibleCategories();
+        if (manualCategory != null && visible.contains(manualCategory)) {
             return manualCategory;
         }
-        if (focusedCategory != null) {
+        if (focusedCategory != null && visible.contains(focusedCategory)) {
             return focusedCategory;
         }
-        for (Identifier category : definitions.categories().keySet()) {
+        for (Identifier category : visible) {
             for (Identifier goal : definitions.goalsIn(category)) {
                 if (progress.isActive(definitions, goal)) {
                     return category;
                 }
             }
         }
-        return definitions.categories().keySet().stream().findFirst().orElse(null);
+        return visible.stream().findFirst().orElse(null);
     }
 
     /** Shows the next category in the HUD (wrapping around) and stops following progress. */
     public static void cycleCategory() {
-        List<Identifier> ids = List.copyOf(definitions.categories().keySet());
+        List<Identifier> ids = visibleCategories();
         if (ids.isEmpty()) {
             return;
         }

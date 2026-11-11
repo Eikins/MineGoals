@@ -22,11 +22,13 @@ import net.minecraft.server.level.ServerPlayer;
 
 import java.util.stream.Stream;
 
-/** {@code /minegoals list|reset|complete} for operators. */
+/** {@code /minegoals list|reset|unlock|lock|complete} for operators. */
 public final class MineGoalsCommand {
 
     private static final SuggestionProvider<CommandSourceStack> GOALS = (ctx, builder) ->
             SharedSuggestionProvider.suggestResource(GoalDefinitions.server().goals().keySet(), builder);
+    private static final SuggestionProvider<CommandSourceStack> CATEGORIES = (ctx, builder) ->
+            SharedSuggestionProvider.suggestResource(GoalDefinitions.server().categories().keySet(), builder);
     private static final SuggestionProvider<CommandSourceStack> GOALS_AND_CATEGORIES = (ctx, builder) ->
             SharedSuggestionProvider.suggestResource(Stream.concat(
                     GoalDefinitions.server().categories().keySet().stream(),
@@ -48,6 +50,16 @@ public final class MineGoalsCommand {
                                 .then(Commands.argument("target", IdentifierArgument.id())
                                         .suggests(GOALS_AND_CATEGORIES)
                                         .executes(ctx -> reset(ctx, IdentifierArgument.getId(ctx, "target"))))))
+                .then(Commands.literal("unlock")
+                        .then(Commands.argument("player", EntityArgument.player())
+                                .then(Commands.argument("category", IdentifierArgument.id())
+                                        .suggests(CATEGORIES)
+                                        .executes(ctx -> setLocked(ctx, true)))))
+                .then(Commands.literal("lock")
+                        .then(Commands.argument("player", EntityArgument.player())
+                                .then(Commands.argument("category", IdentifierArgument.id())
+                                        .suggests(CATEGORIES)
+                                        .executes(ctx -> setLocked(ctx, false)))))
                 .then(Commands.literal("complete")
                         .then(Commands.argument("player", EntityArgument.player())
                                 .then(Commands.argument("goal", IdentifierArgument.id())
@@ -65,8 +77,10 @@ public final class MineGoalsCommand {
         for (var catEntry : defs.categories().entrySet()) {
             Identifier categoryId = catEntry.getKey();
             Category category = catEntry.getValue();
+            boolean locked = !progress.isCategoryUnlocked(defs, categoryId);
             source.sendSuccess(() -> Component.empty()
-                    .append(category.title().copy().withStyle(ChatFormatting.YELLOW))
+                    .append(Component.literal(locked ? "🔒 " : "").withStyle(ChatFormatting.DARK_GRAY))
+                    .append(category.title().copy().withStyle(locked ? ChatFormatting.DARK_GRAY : ChatFormatting.YELLOW))
                     .append(Component.translatable("minegoals.command.list.category",
                             progress.tier(defs, categoryId), category.tiers().size(),
                             progress.categoryPoints(defs, categoryId))), false);
@@ -104,6 +118,20 @@ public final class MineGoalsCommand {
         GoalTracker.refresh(player);
         String what = target == null ? "*" : target.toString();
         ctx.getSource().sendSuccess(() -> Component.translatable("minegoals.command.reset", what, player.getDisplayName()), true);
+        return 1;
+    }
+
+    private static int setLocked(CommandContext<CommandSourceStack> ctx, boolean unlocked) throws CommandSyntaxException {
+        ServerPlayer player = EntityArgument.getPlayer(ctx, "player");
+        Identifier category = IdentifierArgument.getId(ctx, "category");
+        if (!GoalDefinitions.server().categories().containsKey(category)) {
+            ctx.getSource().sendFailure(Component.translatable("minegoals.command.unknown", category.toString()));
+            return 0;
+        }
+        GoalTracker.setCategoryUnlocked(player, category, unlocked);
+        ctx.getSource().sendSuccess(() -> Component.translatable(
+                unlocked ? "minegoals.command.unlock" : "minegoals.command.lock",
+                category.toString(), player.getDisplayName()), true);
         return 1;
     }
 

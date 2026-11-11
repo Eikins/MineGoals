@@ -1,0 +1,61 @@
+{
+  "title": {
+    "translate": "category.minegoals.redstone"
+  },
+  "icon": "minecraft:redstone",
+  "order": 9,
+  "tier_visibility": "visible",
+  "unlock": {
+    "default": false
+  },
+  "tiers": [
+    {
+      "points": 0,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:redstone",
+            "count": 4
+          }
+        ],
+        "experience": 50
+      }
+    },
+    {
+      "points": 30,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:slime_ball",
+            "count": 4
+          }
+        ],
+        "experience": 100
+      }
+    },
+    {
+      "points": 90,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:quartz",
+            "count": 4
+          }
+        ],
+        "experience": 150
+      }
+    },
+    {
+      "points": 180,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:redstone_block",
+            "count": 1
+          }
+        ],
+        "experience": 200
+      }
+    }
+  ]
+}

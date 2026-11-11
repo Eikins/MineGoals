@@ -29,7 +29,9 @@ public final class PlayerGoalProgress {
             Codec.unboundedMap(Identifier.CODEC, Codec.INT).optionalFieldOf("announced_tiers", Map.of()).forGetter(p -> p.announcedTiers),
             Identifier.CODEC.listOf().optionalFieldOf("claimed_goals", List.of()).forGetter(p -> List.copyOf(p.claimedGoals)),
             Codec.unboundedMap(Identifier.CODEC, Codec.INT.listOf()).optionalFieldOf("claimed_tiers", Map.of())
-                    .forGetter(p -> copyTiers(p.claimedTiers))
+                    .forGetter(p -> copyTiers(p.claimedTiers)),
+            Codec.unboundedMap(Identifier.CODEC, Codec.BOOL).optionalFieldOf("category_unlocks", Map.of())
+                    .forGetter(p -> p.categoryUnlocks)
     ).apply(i, PlayerGoalProgress::new));
 
     private final Map<Identifier, Integer> counts;
@@ -37,19 +39,23 @@ public final class PlayerGoalProgress {
     private final Map<Identifier, Integer> announcedTiers;
     private final Set<Identifier> claimedGoals;
     private final Map<Identifier, Set<Integer>> claimedTiers;
+    /** Explicit category lock state, overriding the category's default (set by unlock conditions or commands). */
+    private final Map<Identifier, Boolean> categoryUnlocks;
 
     public PlayerGoalProgress() {
-        this(Map.of(), List.of(), Map.of(), List.of(), Map.of());
+        this(Map.of(), List.of(), Map.of(), List.of(), Map.of(), Map.of());
     }
 
     private PlayerGoalProgress(Map<Identifier, Integer> counts, List<Identifier> completed, Map<Identifier, Integer> announcedTiers,
-                               List<Identifier> claimedGoals, Map<Identifier, List<Integer>> claimedTiers) {
+                               List<Identifier> claimedGoals, Map<Identifier, List<Integer>> claimedTiers,
+                               Map<Identifier, Boolean> categoryUnlocks) {
         this.counts = new HashMap<>(counts);
         this.completed = new HashSet<>(completed);
         this.announcedTiers = new HashMap<>(announcedTiers);
         this.claimedGoals = new HashSet<>(claimedGoals);
         this.claimedTiers = new HashMap<>();
         claimedTiers.forEach((category, tiers) -> this.claimedTiers.put(category, new HashSet<>(tiers)));
+        this.categoryUnlocks = new HashMap<>(categoryUnlocks);
     }
 
     private static Map<Identifier, List<Integer>> copyTiers(Map<Identifier, Set<Integer>> tiers) {
@@ -60,7 +66,7 @@ public final class PlayerGoalProgress {
 
     public PlayerGoalProgress copy() {
         return new PlayerGoalProgress(this.counts, List.copyOf(this.completed), this.announcedTiers,
-                List.copyOf(this.claimedGoals), copyTiers(this.claimedTiers));
+                List.copyOf(this.claimedGoals), copyTiers(this.claimedTiers), this.categoryUnlocks);
     }
 
     // ---- raw state -------------------------------------------------------------------------------
@@ -120,15 +126,36 @@ public final class PlayerGoalProgress {
         this.claimedTiers.remove(category);
     }
 
+    /** Locks or unlocks a category for this player, overriding its default. */
+    public void setCategoryUnlocked(Identifier category, boolean unlocked) {
+        this.categoryUnlocks.put(category, unlocked);
+    }
+
+    /** Whether the player explicitly has a lock state for the category (from conditions or commands). */
+    public boolean hasCategoryOverride(Identifier category) {
+        return this.categoryUnlocks.containsKey(category);
+    }
+
     public void resetAll() {
         this.counts.clear();
         this.completed.clear();
         this.announcedTiers.clear();
         this.claimedGoals.clear();
         this.claimedTiers.clear();
+        this.categoryUnlocks.clear();
     }
 
     // ---- derived values --------------------------------------------------------------------------
+
+    /** Whether the category is available to this player: its explicit state if any, else its default. */
+    public boolean isCategoryUnlocked(GoalDefinitions defs, Identifier category) {
+        Boolean explicit = this.categoryUnlocks.get(category);
+        if (explicit != null) {
+            return explicit;
+        }
+        Category cat = defs.categories().get(category);
+        return cat != null && cat.unlock().byDefault();
+    }
 
     /** Points earned in a category: a goal's points count once the player has claimed it. */
     public int categoryPoints(GoalDefinitions defs, Identifier category) {
@@ -193,20 +220,23 @@ public final class PlayerGoalProgress {
 
     public boolean isUnlocked(GoalDefinitions defs, Identifier goalId) {
         Goal goal = defs.goals().get(goalId);
-        return goal != null && this.tier(defs, goal.category()) >= goal.tier() && this.requirementsMet(goal);
+        return goal != null && this.isCategoryUnlocked(defs, goal.category())
+                && this.tier(defs, goal.category()) >= goal.tier() && this.requirementsMet(goal);
     }
 
     /** Completed and not claimed yet. Claiming grants the goal's rewards and its points. */
     public boolean canClaimGoal(GoalDefinitions defs, Identifier goalId) {
         Goal goal = defs.goals().get(goalId);
         // Every completed goal is claimed, even without rewards, since claiming is what grants its points.
-        return goal != null && this.completed.contains(goalId) && !this.claimedGoals.contains(goalId);
+        return goal != null && this.completed.contains(goalId) && !this.claimedGoals.contains(goalId)
+                && this.isCategoryUnlocked(defs, goal.category());
     }
 
     /** Unlocked, complete, has rewards, and not claimed yet. Tiers are 1-based. Claiming unlocks the next tier. */
     public boolean canClaimTier(GoalDefinitions defs, Identifier categoryId, int tier) {
         Category category = defs.categories().get(categoryId);
         return category != null && tier >= 1 && tier <= category.tiers().size()
+                && this.isCategoryUnlocked(defs, categoryId)
                 && !category.tiers().get(tier - 1).rewards().isEmpty()
                 && !this.isTierClaimed(categoryId, tier)
                 && tier <= this.tier(defs, categoryId) && this.isTierComplete(defs, categoryId, tier);
@@ -231,15 +261,16 @@ public final class PlayerGoalProgress {
     }
 
     /**
-     * Whether progress should be counted for this goal: not completed, requirements met, and either its tier is
-     * reached or the goal tracks progress before unlocking.
+     * Whether progress should be counted for this goal: not completed, requirements met, and either the goal is
+     * unlocked (category and tier) or it tracks progress before unlocking ({@code track_before_unlock}).
      */
     public boolean isTracking(GoalDefinitions defs, Identifier goalId) {
         Goal goal = defs.goals().get(goalId);
         if (goal == null || this.completed.contains(goalId) || !this.requirementsMet(goal)) {
             return false;
         }
-        return goal.trackBeforeUnlock() || this.tier(defs, goal.category()) >= goal.tier();
+        return goal.trackBeforeUnlock()
+                || (this.isCategoryUnlocked(defs, goal.category()) && this.tier(defs, goal.category()) >= goal.tier());
     }
 
     private boolean requirementsMet(Goal goal) {

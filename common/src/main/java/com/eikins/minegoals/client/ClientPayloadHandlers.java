@@ -2,6 +2,7 @@ package com.eikins.minegoals.client;
 
 import com.eikins.minegoals.network.MineGoalsNetwork;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.ItemStack;
 
 /** Client handlers for the server payloads. Must run on the client main thread. */
 public final class ClientPayloadHandlers {
@@ -18,6 +19,7 @@ public final class ClientPayloadHandlers {
     }
 
     public static void onNotify(MineGoalsNetwork.Notify payload) {
-        Minecraft.getInstance().gui.toastManager().addToast(new GoalToast(payload.title(), payload.message()));
+        Minecraft.getInstance().gui.toastManager().addToast(
+                new GoalToast(payload.title(), payload.message(), new ItemStack(payload.icon())));
     }
 }

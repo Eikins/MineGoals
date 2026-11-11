@@ -19,15 +19,18 @@ import java.util.List;
  * {@code {"id": ..., "count": 1-99, "components": {...}}}, where components are the same data components as in
  * {@code /give} (custom name, enchantments, lore...). Parsing components such as enchantments needs registry access,
  * which {@link GoalDataLoader} provides.
+ * <p>
+ * Commands are {@link CommandReward}s: a command string, or an object with the commands to run and how the reward
+ * looks in the goals screen (icon, name, description).
  */
-public record Rewards(List<ItemStackTemplate> items, int experience, List<String> commands) {
+public record Rewards(List<ItemStackTemplate> items, int experience, List<CommandReward> commands) {
 
     public static final Rewards NONE = new Rewards(List.of(), 0, List.of());
 
     public static final Codec<Rewards> CODEC = RecordCodecBuilder.create(i -> i.group(
             ItemStackTemplate.CODEC.listOf().optionalFieldOf("items", List.of()).forGetter(Rewards::items),
             ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("experience", 0).forGetter(Rewards::experience),
-            Codec.STRING.listOf().optionalFieldOf("commands", List.of()).forGetter(Rewards::commands)
+            CommandReward.CODEC.listOf().optionalFieldOf("commands", List.of()).forGetter(Rewards::commands)
     ).apply(i, Rewards::new));
 
     public boolean isEmpty() {
@@ -50,11 +53,13 @@ public record Rewards(List<ItemStackTemplate> items, int experience, List<String
             var source = player.createCommandSourceStack()
                     .withPermission(LevelBasedPermissionSet.GAMEMASTER)
                     .withSuppressedOutput();
-            for (String command : this.commands) {
-                try {
-                    server.getCommands().performPrefixedCommand(source, command);
-                } catch (Exception e) {
-                    Constants.LOG.error("Reward command failed: {}", command, e);
+            for (CommandReward reward : this.commands) {
+                for (String command : reward.run()) {
+                    try {
+                        server.getCommands().performPrefixedCommand(source, command);
+                    } catch (Exception e) {
+                        Constants.LOG.error("Reward command failed: {}", command, e);
+                    }
                 }
             }
         }

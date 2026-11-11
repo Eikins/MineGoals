@@ -21,6 +21,18 @@
         "id": "minecraft:stick",
         "count": 8
       }
+    ],
+    "commands": [
+      {
+        "run": "minegoals unlock @s minegoals:redstone",
+        "icon": "minecraft:redstone",
+        "name": {
+          "translate": "reward.minegoals.unlock_redstone"
+        },
+        "description": {
+          "translate": "reward.minegoals.unlock_redstone.desc"
+        }
+      }
     ]
   }
 }

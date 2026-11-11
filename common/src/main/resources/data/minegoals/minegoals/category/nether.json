@@ -5,6 +5,12 @@
   "icon": "minecraft:netherite_ingot",
   "order": 6,
   "tier_visibility": "visible",
+  "unlock": {
+    "default": false,
+    "advancements": [
+      "minecraft:story/enter_the_nether"
+    ]
+  },
   "tiers": [
     {
       "points": 0,

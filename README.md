@@ -7,7 +7,8 @@ A multi-loader Minecraft **26.3** mod (**Fabric** and **NeoForge**): personal go
 - Each **tier** shows its reward on the track. Earning enough points completes the tier; claiming its reward
   unlocks the next tier and its goals.
 - Goal and tier **rewards are claimed** by the player with a "Claim" button in the goals screen.
-- Each category chooses whether players can see tiers they have not reached yet.
+- Each category chooses whether players can see tiers they have not reached yet, and whether it is available from
+  the start or unlocked later (vanilla advancements or a command).
 - Total points give a **global level**: one level every 100 points.
 - A **journal icon** in the bottom-right corner of the HUD shows the key that opens the goals **screen** (**G**), with a
   green dot on its corner when a reward is ready to be claimed.
@@ -52,6 +53,20 @@ Key packages in `common/src/main/java/com/eikins/minegoals/`:
 }
 ```
 - `tiers`: the first tier is at 0 points, and thresholds must strictly increase.
+- `unlock` (optional) controls when the category is available. Without it, the category is unlocked for everyone:
+  ```json
+  "unlock": {"default": false, "mode": "any", "advancements": ["minecraft:story/enter_the_nether"]}
+  ```
+  | Field | Default | Description |
+  |---|---|---|
+  | `default` | `true` | Unlocked from the start. When `false`, the category is **hidden** until it unlocks |
+  | `advancements` | `[]` | Vanilla (or datapack) advancements that unlock it; checked every second |
+  | `mode` | `all` | `all`: every advancement is needed; `any`: one is enough |
+
+  When a category unlocks (by advancement or command), the player gets a toast in the top-right corner with the
+  category's icon and name. A locked category with no `advancements` only unlocks through `/minegoals unlock`. Once unlocked, a category stays
+  unlocked (unless `/minegoals lock` is used). Goals of a locked category only count progress if they use
+  `track_before_unlock`; nothing can be claimed until the category unlocks.
 - A tier's `points` is the threshold to enter it. Tier N is **complete** when the category reaches tier N+1's
   threshold (for the last tier: when all its goals are claimed).
 - A tier's `rewards` are earned by completing that tier. The player claims them manually, and claiming them
@@ -136,7 +151,17 @@ is still locked, so players do not have to do the work again after reaching the 
   Enchantments and other registry entries are checked when the datapack loads; an invalid reward makes the goal or
   category fail to load, with the error in the logs.
 - `experience` is given as experience points.
-- `commands` run as the player (`@s`) with permission level 2.
+- `commands` run as the player (`@s`) with permission level 2. Each entry is a command string (shown as a nether
+  star named "Special reward"), or an object that also says how the reward looks in the goals screen:
+  ```json
+  {"run": ["effect give @s minecraft:speed 120", "playsound minecraft:entity.player.levelup player @s"],
+   "icon": {"id": "minecraft:potion", "components": {"minecraft:potion_contents": {"potion": "minecraft:swiftness"}}},
+   "name": "Speed boost",
+   "description": "Two minutes of Speed"}
+  ```
+  `run` is one command or a list. `icon` is an item (id or `{"id", "components"}`) or a texture:
+  `{"texture": "minegoals:textures/gui/reward/speed.png"}` (full path, drawn at 16x16; textures come from a mod or
+  resource pack, not from a datapack). `name` and `description` are text or JSON text components.
 
 Nothing is granted automatically. When a goal or a tier is completed, a green dot appears on the journal icon and the
 screen shows how many rewards are waiting (plus a toast and a chat message when `NOTIFICATIONS` is on). In the
@@ -154,7 +179,7 @@ Goal files can be grouped in sub-folders: `goal/road_to_end/first_table.json` ha
 `minegoals:road_to_end/first_table`.
 
 ### Example content
-The mod ships 9 categories and 137 goals in `common/src/main/resources/data/minegoals/`. A datapack can override
+The mod ships 10 categories and 152 goals in `common/src/main/resources/data/minegoals/`. A datapack can override
 these files.
 
 | Category | Tiers | Idea |
@@ -165,9 +190,10 @@ these files.
 | Villages & Trading | 4 | Villagers, trading, iron golems, raids |
 | Magic | 4 | Enchanting, anvils, brewing, beacons |
 | Caves & Depths | 4, `next` | Deepslate, geodes, deep dark, sculk, trial chambers, warden |
-| Advanced Nether | 4 | Nether biomes, bastions, striders, netherite, the Wither |
+| Advanced Nether | 4, hidden until the player enters the Nether | Nether biomes, bastions, striders, netherite, the Wither |
 | World Exploration | 4 | Biomes, maps, archaeology, lodestones, End cities, elytra |
 | Combat | 4 | Common mobs, ranged combat, raids, breezes, the mace |
+| Redstone | 4, hidden until unlocked by a reward | Redstone components, pistons, observers, comparators, crafters. Claiming Road to the End's "First Table" goal runs `/minegoals unlock @s minegoals:redstone` (a command reward with its own icon and name) |
 
 Themed categories unlock a tier at about 75% of the previous goals' points, so players can skip a few goals, and
 their goals use `track_before_unlock`. Road to the End does not: each step starts counting when it is revealed.
@@ -183,12 +209,14 @@ rebuild to turn the feature back on.
 | Flag | Default | Feature |
 |---|---|---|
 | `GOAL_PANEL` | `false` | Top-right goals panel (level, focused category, three active goals), with keys **H** (hide) and **J** (next category) |
-| `NOTIFICATIONS` | `false` | Toasts and chat messages when a goal is completed or a tier is reached |
+| `NOTIFICATIONS` | `false` | Toasts and chat messages when a goal is completed or a tier is reached. The toast for a newly unlocked category is always shown |
 
 ## Commands (operators)
 
-- `/minegoals list [player]`: level, tiers and the state of every goal.
+- `/minegoals list [player]`: level, tiers, locked categories and the state of every goal.
 - `/minegoals reset <player> [goal|category]`: resets progress and claims (everything if nothing is given).
+- `/minegoals unlock <player> <category>` / `/minegoals lock <player> <category>`: unlocks or hides a category for
+  a player. Usable from reward commands (`/minegoals unlock @s mypack:fishing`), functions and command blocks.
 - `/minegoals complete <player> <goal>`: completes a goal, even a locked one; its rewards become claimable.
 
 ## Development

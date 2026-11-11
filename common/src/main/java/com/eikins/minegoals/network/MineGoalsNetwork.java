@@ -3,6 +3,7 @@ package com.eikins.minegoals.network;
 import com.eikins.minegoals.Constants;
 import com.eikins.minegoals.data.GoalDefinitions;
 import com.eikins.minegoals.progress.PlayerGoalProgress;
+import net.minecraft.core.Holder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -10,6 +11,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.Item;
 
 /**
  * Payloads. Each loader registers them. Server-to-client handlers live in {@code client.ClientPayloadHandlers};
@@ -69,12 +71,13 @@ public final class MineGoalsNetwork {
         }
     }
 
-    /** Shows a toast: a goal was completed or a tier was reached. */
-    public record Notify(Component title, Component message) implements CustomPacketPayload {
+    /** Shows a toast with an item icon: a category was unlocked, a goal was completed or a tier was reached. */
+    public record Notify(Component title, Component message, Holder<Item> icon) implements CustomPacketPayload {
         public static final Type<Notify> TYPE = new Type<>(Constants.id("notify"));
         public static final StreamCodec<RegistryFriendlyByteBuf, Notify> STREAM_CODEC = StreamCodec.composite(
                 ComponentSerialization.STREAM_CODEC, Notify::title,
                 ComponentSerialization.STREAM_CODEC, Notify::message,
+                Item.STREAM_CODEC, Notify::icon,
                 Notify::new);
 
         @Override

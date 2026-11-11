@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:redstone",
+  "tier": 1,
+  "points": 10,
+  "title": {
+    "translate": "goal.minegoals.redstone.redstone_torches"
+  },
+  "description": {
+    "translate": "goal.minegoals.redstone.redstone_torches.desc"
+  },
+  "icon": "minecraft:redstone_torch",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:redstone_torch",
+    "count": 8
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

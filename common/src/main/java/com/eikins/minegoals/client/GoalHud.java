@@ -82,10 +82,9 @@ public final class GoalHud {
         int tier = progress.tier(defs, categoryId);
         int next = category.pointsForTier(tier + 1);
         int current = category.pointsForTier(tier);
-        int categoryCount = defs.categories().size();
-        String position = categoryCount > 1
-                ? (List.copyOf(defs.categories().keySet()).indexOf(categoryId) + 1) + "/" + categoryCount
-                : "";
+        List<Identifier> visible = ClientGoalState.visibleCategories();
+        int categoryCount = visible.size();
+        String position = categoryCount > 1 ? (visible.indexOf(categoryId) + 1) + "/" + categoryCount : "";
         GoalRender.clippedText(g, font, category.title(), x + 4, y + 20, WIDTH - 12 - font.width(position), GoalRender.WHITE);
         g.text(font, position, x + WIDTH - 4 - font.width(position), y + 20, GoalRender.DARK_GRAY, false);
         boolean showNext = next >= 0 && category.tierVisibility().revealsNextThreshold();

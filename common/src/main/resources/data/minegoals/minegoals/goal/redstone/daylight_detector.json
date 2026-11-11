@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:redstone",
+  "tier": 3,
+  "points": 30,
+  "title": {
+    "translate": "goal.minegoals.redstone.daylight_detector"
+  },
+  "description": {
+    "translate": "goal.minegoals.redstone.daylight_detector.desc"
+  },
+  "icon": "minecraft:daylight_detector",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:daylight_detector",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 30
+  },
+  "track_before_unlock": true
+}

@@ -7,6 +7,7 @@ import com.eikins.minegoals.data.GoalDefinitions;
 import com.eikins.minegoals.network.MineGoalsNetwork;
 import com.eikins.minegoals.platform.Services;
 import net.minecraft.ChatFormatting;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
@@ -14,6 +15,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stat;
 import net.minecraft.stats.StatType;
 import net.minecraft.stats.Stats;
+import net.minecraft.world.item.Items;
 
 import java.util.Map;
 import java.util.OptionalInt;
@@ -56,7 +58,7 @@ public final class GoalTracker {
         GoalProgressData data = GoalProgressData.get(player.level().getServer());
         PlayerGoalProgress progress = data.get(player.getUUID());
 
-        boolean changed = false;
+        boolean changed = unlockCategories(player, progress, defs);
         for (Map.Entry<Identifier, Goal> entry : defs.goals().entrySet()) {
             Goal goal = entry.getValue();
             OptionalInt value = goal.criterion().poll(player);
@@ -66,6 +68,54 @@ public final class GoalTracker {
         }
         if (changed) {
             evaluate(player, data, progress, defs, true);
+        }
+    }
+
+    /**
+     * Unlocks every locked category whose advancement conditions the player now meets. Categories locked by a
+     * command stay locked. Returns whether anything changed.
+     */
+    private static boolean unlockCategories(ServerPlayer player, PlayerGoalProgress progress, GoalDefinitions defs) {
+        boolean changed = false;
+        for (Map.Entry<Identifier, Category> entry : defs.categories().entrySet()) {
+            Identifier categoryId = entry.getKey();
+            if (progress.isCategoryUnlocked(defs, categoryId) || progress.hasCategoryOverride(categoryId)) {
+                continue;
+            }
+            if (entry.getValue().unlock().conditionsMet(advancement -> hasAdvancement(player, advancement))) {
+                progress.setCategoryUnlocked(categoryId, true);
+                notifyCategoryUnlocked(player, entry.getValue());
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    private static boolean hasAdvancement(ServerPlayer player, Identifier id) {
+        AdvancementHolder holder = player.level().getServer().getAdvancements().get(id);
+        return holder != null && player.getAdvancements().getOrStartProgress(holder).isDone();
+    }
+
+    /** Locks or unlocks a category for a player. Used by {@code /minegoals lock|unlock}. */
+    public static void setCategoryUnlocked(ServerPlayer player, Identifier category, boolean unlocked) {
+        GoalDefinitions defs = GoalDefinitions.server();
+        GoalProgressData data = GoalProgressData.get(player.level().getServer());
+        PlayerGoalProgress progress = data.get(player.getUUID());
+        boolean wasUnlocked = progress.isCategoryUnlocked(defs, category);
+        progress.setCategoryUnlocked(category, unlocked);
+        if (unlocked && !wasUnlocked && defs.categories().containsKey(category)) {
+            notifyCategoryUnlocked(player, defs.categories().get(category));
+        }
+        evaluate(player, data, progress, defs, true);
+    }
+
+    /** Always shows a toast with the category's icon, even when {@link FeatureFlags#NOTIFICATIONS} is off. */
+    private static void notifyCategoryUnlocked(ServerPlayer player, Category category) {
+        Services.NETWORK.sendToPlayer(player, new MineGoalsNetwork.Notify(
+                Component.translatable("minegoals.notify.category_unlocked"), category.title(),
+                category.icon().builtInRegistryHolder()));
+        if (FeatureFlags.NOTIFICATIONS) {
+            sendChat(player, Component.translatable("minegoals.notify.category_unlocked"), category.title(), false);
         }
     }
 
@@ -167,10 +217,17 @@ public final class GoalTracker {
         notify(player, Component.translatable("minegoals.notify.goal_completed"), goal.title(), !goal.rewards().isEmpty());
     }
 
+    /** Goal and tier notifications (toast and chat), only when {@link FeatureFlags#NOTIFICATIONS} is on. */
     private static void notify(ServerPlayer player, Component title, Component message, boolean hasReward) {
         if (!FeatureFlags.NOTIFICATIONS) {
             return;
         }
+        sendChat(player, title, message, hasReward);
+        Services.NETWORK.sendToPlayer(player,
+                new MineGoalsNetwork.Notify(title, message, Items.GOLDEN_APPLE.builtInRegistryHolder()));
+    }
+
+    private static void sendChat(ServerPlayer player, Component title, Component message, boolean hasReward) {
         MutableComponent chat = Component.empty()
                 .append(Component.literal("[MineGoals] ").withStyle(ChatFormatting.GOLD))
                 .append(title.copy().withStyle(ChatFormatting.YELLOW))
@@ -181,6 +238,5 @@ public final class GoalTracker {
                     .append(Component.translatable("minegoals.notify.claim_hint").withStyle(ChatFormatting.GREEN));
         }
         player.sendSystemMessage(chat);
-        Services.NETWORK.sendToPlayer(player, new MineGoalsNetwork.Notify(title, message));
     }
 }

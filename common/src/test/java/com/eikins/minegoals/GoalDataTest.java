@@ -1,6 +1,8 @@
 package com.eikins.minegoals;
 
 import com.eikins.minegoals.data.Category;
+import com.eikins.minegoals.data.CategoryUnlock;
+import com.eikins.minegoals.data.CommandReward;
 import com.eikins.minegoals.data.Goal;
 import com.eikins.minegoals.data.GoalDefinitions;
 import com.eikins.minegoals.data.RegistryMatcher;
@@ -43,8 +45,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GoalDataTest {
 
-    private static final int CATEGORY_COUNT = 9;
-    private static final int GOAL_COUNT = 137;
+    private static final int CATEGORY_COUNT = 10;
+    private static final int GOAL_COUNT = 152;
 
     private static GoalDefinitions examples;
     /** JSON ops with vanilla registries, as the real loader uses, so item components can resolve enchantments. */
@@ -170,6 +172,8 @@ class GoalDataTest {
                 }
             }
         });
+        examples.categories().forEach((categoryId, category) -> category.unlock().advancements().forEach(a ->
+                check(missing, categoryId, "data/" + a.getNamespace() + "/advancement/" + a.getPath() + ".json")));
         assertTrue(missing.isEmpty(), "unknown references: " + missing);
     }
 
@@ -511,6 +515,123 @@ class GoalDataTest {
         assertTrue(progress.isTierComplete(examples, oceans, 4), "last tier: every goal done");
         assertTrue(progress.canClaimTier(examples, oceans, 4));
     }
+
+    // ---- category unlocking ----------------------------------------------------------------------
+
+    @Test
+    void categoriesAreUnlockedByDefaultExceptNetherAndRedstone() {
+        PlayerGoalProgress progress = new PlayerGoalProgress();
+        for (Identifier category : examples.categories().keySet()) {
+            boolean expected = !category.equals(id("nether")) && !category.equals(id("redstone"));
+            assertEquals(expected, progress.isCategoryUnlocked(examples, category), category.toString());
+        }
+        CategoryUnlock nether = examples.categories().get(id("nether")).unlock();
+        assertEquals(List.of(Identifier.withDefaultNamespace("story/enter_the_nether")), nether.advancements());
+    }
+
+    @Test
+    void redstoneIsUnlockedByARoadToTheEndGoalReward() {
+        CategoryUnlock redstone = examples.categories().get(id("redstone")).unlock();
+        assertFalse(redstone.byDefault());
+        assertTrue(redstone.advancements().isEmpty(), "only a command unlocks it");
+
+        Goal firstTable = examples.goals().get(road("first_table"));
+        assertEquals(1, firstTable.tier(), "the unlock reward is in the first tier");
+        CommandReward unlock = firstTable.rewards().commands().getFirst();
+        assertEquals(List.of("minegoals unlock @s minegoals:redstone"), unlock.run());
+        assertTrue(unlock.icon().isPresent() && unlock.name().isPresent() && unlock.description().isPresent());
+    }
+
+    @Test
+    void lockedCategoryGoalsOnlyTrackEarly() {
+        PlayerGoalProgress progress = new PlayerGoalProgress();
+        Identifier goal = id("nether/crimson_forest");
+        assertFalse(progress.isUnlocked(examples, goal), "category is locked");
+        assertTrue(progress.isTracking(examples, goal), "themed goals track before unlocking");
+        assertTrue(progress.isTracking(examples, road("lumberjack")), "other categories are unaffected");
+
+        progress.markCompleted(goal);
+        assertFalse(progress.canClaimGoal(examples, goal), "nothing is claimed in a locked category");
+
+        progress.setCategoryUnlocked(id("nether"), true);
+        assertTrue(progress.canClaimGoal(examples, goal));
+        assertTrue(progress.isUnlocked(examples, id("nether/warped_forest")));
+    }
+
+    @Test
+    void commandsCanLockAndUnlockAnyCategory() {
+        PlayerGoalProgress progress = new PlayerGoalProgress();
+        progress.setCategoryUnlocked(id("oceans"), false);
+        assertFalse(progress.isCategoryUnlocked(examples, id("oceans")));
+        assertFalse(progress.isUnlocked(examples, id("oceans/angler")));
+        assertTrue(progress.hasCategoryOverride(id("oceans")));
+
+        JsonElement encoded = PlayerGoalProgress.CODEC.encodeStart(ops, progress).getOrThrow();
+        PlayerGoalProgress decoded = PlayerGoalProgress.CODEC.parse(ops, encoded).getOrThrow();
+        assertFalse(decoded.isCategoryUnlocked(examples, id("oceans")), "lock state is saved");
+
+        decoded.resetAll();
+        assertTrue(decoded.isCategoryUnlocked(examples, id("oceans")), "reset all goes back to the defaults");
+    }
+
+    @Test
+    void unlockConditionsCombineWithAllOrAny() {
+        Identifier a = Identifier.withDefaultNamespace("a");
+        Identifier b = Identifier.withDefaultNamespace("b");
+        java.util.function.Predicate<Identifier> onlyA = a::equals;
+        assertFalse(new CategoryUnlock(false, CategoryUnlock.Mode.ALL, List.of(a, b)).conditionsMet(onlyA));
+        assertTrue(new CategoryUnlock(false, CategoryUnlock.Mode.ANY, List.of(a, b)).conditionsMet(onlyA));
+        assertFalse(new CategoryUnlock(false, CategoryUnlock.Mode.ANY, List.of()).conditionsMet(onlyA),
+                "no conditions: only a command can unlock it");
+
+        Category parsed = Category.CODEC.parse(ops, json("""
+                {"title": "x", "icon": "minecraft:stone", "tiers": [{"points": 0}],
+                 "unlock": {"default": false, "mode": "any", "advancements": ["minecraft:story/mine_diamond"]}}""")).getOrThrow();
+        assertFalse(parsed.unlock().byDefault());
+        assertEquals(CategoryUnlock.Mode.ANY, parsed.unlock().mode());
+    }
+
+    // ---- command rewards -------------------------------------------------------------------------
+
+    @Test
+    void commandRewardsAcceptAStringOrADisplayObject() {
+        Rewards rewards = Rewards.CODEC.parse(ops, json("""
+                {"commands": [
+                  "say hi",
+                  {"run": ["effect give @s minecraft:speed 60", "say fast"],
+                   "icon": {"id": "minecraft:potion", "components": {"minecraft:potion_contents": {"potion": "minecraft:swiftness"}}},
+                   "name": "Speed boost", "description": {"text": "60 seconds"}},
+                  {"run": "say texture", "icon": {"texture": "minegoals:textures/gui/reward/star.png"}}
+                ]}""")).getOrThrow();
+        List<CommandReward> commands = rewards.commands();
+        assertEquals(List.of("say hi"), commands.get(0).run());
+        assertTrue(commands.get(0).icon().isEmpty());
+
+        CommandReward speed = commands.get(1);
+        assertEquals(2, speed.run().size());
+        assertTrue(speed.icon().orElseThrow() instanceof CommandReward.ItemIcon);
+        assertEquals("Speed boost", speed.name().orElseThrow().getString());
+        assertEquals("60 seconds", speed.description().orElseThrow().getString());
+
+        CommandReward texture = commands.get(2);
+        assertEquals(Identifier.fromNamespaceAndPath("minegoals", "textures/gui/reward/star.png"),
+                ((CommandReward.TextureIcon) texture.icon().orElseThrow()).texture());
+
+        JsonElement encoded = Rewards.CODEC.encodeStart(ops, rewards).getOrThrow();
+        assertTrue(encoded.getAsJsonObject().getAsJsonArray("commands").get(0).isJsonPrimitive(),
+                "plain commands are written back as strings");
+        assertEquals(3, Rewards.CODEC.parse(ops, encoded).getOrThrow().commands().size());
+    }
+
+    @Test
+    void exampleCommandRewardHasItsOwnIcon() {
+        var commands = examples.categories().get(id("road_to_end")).tiers().get(5).rewards().commands();
+        assertEquals(1, commands.size());
+        assertTrue(commands.getFirst().icon().orElseThrow() instanceof CommandReward.ItemIcon);
+        assertTrue(commands.getFirst().name().isPresent());
+    }
+
+    // ---- tier visibility -------------------------------------------------------------------------
 
     @Test
     void tierVisibilityControlsWhatIsShown() {

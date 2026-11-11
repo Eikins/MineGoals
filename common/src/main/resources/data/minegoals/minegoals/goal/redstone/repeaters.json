@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:redstone",
+  "tier": 1,
+  "points": 10,
+  "title": {
+    "translate": "goal.minegoals.redstone.repeaters"
+  },
+  "description": {
+    "translate": "goal.minegoals.redstone.repeaters.desc"
+  },
+  "icon": "minecraft:repeater",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:repeater",
+    "count": 4
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

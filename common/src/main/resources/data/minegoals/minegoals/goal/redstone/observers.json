@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:redstone",
+  "tier": 2,
+  "points": 20,
+  "title": {
+    "translate": "goal.minegoals.redstone.observers"
+  },
+  "description": {
+    "translate": "goal.minegoals.redstone.observers.desc"
+  },
+  "icon": "minecraft:observer",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:observer",
+    "count": 2
+  },
+  "rewards": {
+    "experience": 20
+  },
+  "track_before_unlock": true
+}

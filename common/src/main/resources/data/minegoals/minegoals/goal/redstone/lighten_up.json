@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:redstone",
+  "tier": 3,
+  "points": 30,
+  "title": {
+    "translate": "goal.minegoals.redstone.lighten_up"
+  },
+  "description": {
+    "translate": "goal.minegoals.redstone.lighten_up.desc"
+  },
+  "icon": "minecraft:copper_bulb",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:adventure/lighten_up"
+  },
+  "rewards": {
+    "experience": 30
+  },
+  "track_before_unlock": true
+}

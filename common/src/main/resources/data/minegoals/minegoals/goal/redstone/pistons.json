@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:redstone",
+  "tier": 2,
+  "points": 20,
+  "title": {
+    "translate": "goal.minegoals.redstone.pistons"
+  },
+  "description": {
+    "translate": "goal.minegoals.redstone.pistons.desc"
+  },
+  "icon": "minecraft:piston",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:piston",
+    "count": 4
+  },
+  "rewards": {
+    "experience": 20
+  },
+  "track_before_unlock": true
+}

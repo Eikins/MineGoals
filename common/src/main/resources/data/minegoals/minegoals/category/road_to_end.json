@@ -79,6 +79,25 @@
             "count": 32
           }
         ],
+        "commands": [
+          {
+            "run": "effect give @s minecraft:fire_resistance 300",
+            "icon": {
+              "id": "minecraft:potion",
+              "components": {
+                "minecraft:potion_contents": {
+                  "potion": "minecraft:fire_resistance"
+                }
+              }
+            },
+            "name": {
+              "translate": "reward.minegoals.fire_resistance"
+            },
+            "description": {
+              "translate": "reward.minegoals.fire_resistance.desc"
+            }
+          }
+        ],
         "experience": 150
       }
     },

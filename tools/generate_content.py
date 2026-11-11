@@ -248,6 +248,7 @@ CAVES = {
 
 NETHER = {
     "id": "nether", "icon": "minecraft:netherite_ingot", "order": 6, "visibility": "visible", "ratio": 0.75,
+    "unlock": {"default": False, "advancements": ["minecraft:story/enter_the_nether"]},
     "en": "Advanced Nether", "fr": "Nether avancé", "tier_items": ["minecraft:gold_ingot", "minecraft:crying_obsidian", "minecraft:netherite_scrap", "minecraft:netherite_upgrade_smithing_template"],
     "tiers": [
         (None, [
@@ -343,7 +344,13 @@ ROAD_TIER_REWARDS = [
     items(("minecraft:iron_ingot", 8)),                                 # 3 first night -> iron age
     items(("minecraft:golden_apple", 1)),                               # 4 iron age -> diamonds
     items(("minecraft:flint_and_steel", 1), ("minecraft:cooked_beef", 16)),  # 5 diamonds -> the Nether
-    items(("minecraft:arrow", 32)),                                     # 6 fortress -> blazes
+    {**items(("minecraft:arrow", 32)),                                  # 6 fortress -> blazes
+     "commands": [{
+         "run": "effect give @s minecraft:fire_resistance 300",
+         "icon": {"id": "minecraft:potion", "components": {"minecraft:potion_contents": {"potion": "minecraft:fire_resistance"}}},
+         "name": {"translate": "reward.minegoals.fire_resistance"},
+         "description": {"translate": "reward.minegoals.fire_resistance.desc"},
+     }]},
     items(("minecraft:ender_pearl", 2)),                                # 7 blazes -> endermen
     items(("minecraft:golden_apple", 2)),                               # 8 eyes of ender -> stronghold
     {"items": [stack("minecraft:bow", enchantments={"minecraft:power": 3, "minecraft:unbreaking": 2}),
@@ -353,6 +360,16 @@ ROAD_TIER_REWARDS = [
     {"items": [stack("minecraft:elytra", custom_name={"translate": "item.minegoals.dragon_wings", "color": "light_purple", "italic": False},
                      rarity="epic")]},                                  # 12 the dragon
 ]
+
+# Command rewards on Road to the End goals, shown with their own icon, name and description.
+ROAD_COMMANDS = {
+    "first_table": [{
+        "run": "minegoals unlock @s minegoals:redstone",
+        "icon": "minecraft:redstone",
+        "name": {"translate": "reward.minegoals.unlock_redstone"},
+        "description": {"translate": "reward.minegoals.unlock_redstone.desc"},
+    }],
+}
 
 # Item rewards for Road to the End goals, on top of their XP: each one helps with the next steps.
 ROAD_ITEMS = {
@@ -393,7 +410,39 @@ ROAD_ITEMS = {
     "next_generation": [("minecraft:totem_of_undying", 1)],
 }
 
-CATEGORIES = [ROAD, OCEANS, FARMS, VILLAGES, MAGIC, CAVES, NETHER, WORLD, COMBAT]
+REDSTONE = {
+    "id": "redstone", "icon": "minecraft:redstone", "order": 9, "visibility": "visible", "ratio": 0.75,
+    # Hidden until a command unlocks it: the reward of Road to the End's "first_table" goal runs /minegoals unlock.
+    "unlock": {"default": False},
+    "en": "Redstone", "fr": "Redstone", "tier_items": ["minecraft:redstone", "minecraft:slime_ball", "minecraft:quartz", "minecraft:redstone_block"],
+    "tiers": [
+        (None, [
+            ("redstone_dust", "minecraft:redstone", P("minecraft:redstone", 32), "Red Dust", "Pick up 32 redstone dust", "Poussière rouge", "Ramasse 32 poudres de redstone"),
+            ("redstone_torches", "minecraft:redstone_torch", CR("minecraft:redstone_torch", 8), "Signal Fire", "Craft 8 redstone torches", "Signal allumé", "Fabrique 8 torches de redstone"),
+            ("lever", "minecraft:lever", CR("minecraft:lever"), "Flip the Switch", "Craft a lever", "Actionne le levier", "Fabrique un levier"),
+            ("repeaters", "minecraft:repeater", CR("minecraft:repeater", 4), "Delay Line", "Craft 4 redstone repeaters", "Ligne à retard", "Fabrique 4 répéteurs de redstone"),
+        ]),
+        (None, [
+            ("pistons", "minecraft:piston", CR("minecraft:piston", 4), "Push It", "Craft 4 pistons", "Poussée", "Fabrique 4 pistons"),
+            ("sticky_pistons", "minecraft:sticky_piston", CR("minecraft:sticky_piston", 2), "Sticky Situation", "Craft 2 sticky pistons", "Situation collante", "Fabrique 2 pistons collants"),
+            ("observers", "minecraft:observer", CR("minecraft:observer", 2), "Watchful Eye", "Craft 2 observers", "Œil attentif", "Fabrique 2 observateurs"),
+            ("hoppers", "minecraft:hopper", CR("minecraft:hopper", 2), "Item Transport", "Craft 2 hoppers", "Transport d'objets", "Fabrique 2 entonnoirs"),
+        ]),
+        (None, [
+            ("comparators", "minecraft:comparator", CR("minecraft:comparator", 2), "Logic Gate", "Craft 2 redstone comparators", "Porte logique", "Fabrique 2 comparateurs de redstone"),
+            ("daylight_detector", "minecraft:daylight_detector", CR("minecraft:daylight_detector"), "Sundial", "Craft a daylight detector", "Cadran solaire", "Fabrique un capteur de lumière du jour"),
+            ("lighten_up", "minecraft:copper_bulb", ADV("adventure/lighten_up"), "Lighten Up", "Turn a copper bulb on after scraping it", "Allume-toi", "Allume une ampoule en cuivre après l'avoir grattée"),
+            ("sticky_situation", "minecraft:honey_block", ADV("adventure/honey_block_slide"), "Sticky Slide", "Slide down a honey block to break your fall", "Glissade collante", "Glisse le long d'un bloc de miel pour amortir ta chute"),
+        ]),
+        (None, [
+            ("crafters", "minecraft:crafter", ADV("adventure/crafters_crafting_crafters"), "Crafters Crafting Crafters", "Be near a crafter when it crafts a crafter", "Des fabricants qui fabriquent des fabricants", "Sois près d'un fabricant quand il fabrique un fabricant"),
+            ("redstone_lamps", "minecraft:redstone_lamp", CR("minecraft:redstone_lamp", 8), "Light Show", "Craft 8 redstone lamps", "Spectacle de lumière", "Fabrique 8 lampes de redstone"),
+            ("redstone_blocks", "minecraft:redstone_block", CR("minecraft:redstone_block", 16), "Power Plant", "Craft 16 blocks of redstone", "Centrale électrique", "Fabrique 16 blocs de redstone"),
+        ]),
+    ],
+}
+
+CATEGORIES = [ROAD, OCEANS, FARMS, VILLAGES, MAGIC, CAVES, NETHER, WORLD, COMBAT, REDSTONE]
 
 en = {
     "minegoals.screen.title": "MineGoals",
@@ -431,12 +480,19 @@ en = {
     "minegoals.notify.goal_completed": "Goal completed!",
     "minegoals.notify.tier_reached": "Tier %s reached!",
     "minegoals.notify.claim_hint": "Claim your reward in the goals screen (G).",
+    "minegoals.notify.category_unlocked": "New category unlocked!",
     "minegoals.command.list.header": "%s · level %s · %s points",
     "minegoals.command.list.category": " · tier %s/%s · %s pts",
     "minegoals.command.unknown": "Unknown goal or category: %s",
     "minegoals.command.already_completed": "Goal %s is already completed",
     "minegoals.command.reset": "Reset %s for %s",
     "minegoals.command.complete": "Completed %s for %s",
+    "minegoals.command.unlock": "Unlocked category %s for %s",
+    "minegoals.command.lock": "Locked category %s for %s",
+    "reward.minegoals.fire_resistance": "Fire Resistance (5 min)",
+    "reward.minegoals.fire_resistance.desc": "Shrug off blaze fireballs in the fortress",
+    "reward.minegoals.unlock_redstone": "New category: Redstone",
+    "reward.minegoals.unlock_redstone.desc": "Unlocks the Redstone goals",
     "key.minegoals.open": "Open goals",
     "key.minegoals.toggle_hud": "Toggle goals HUD",
     "key.minegoals.next_category": "Next category in goals HUD",
@@ -479,12 +535,19 @@ fr = {
     "minegoals.notify.goal_completed": "Objectif terminé !",
     "minegoals.notify.tier_reached": "Palier %s atteint !",
     "minegoals.notify.claim_hint": "Récupère ta récompense dans l'écran des objectifs (G).",
+    "minegoals.notify.category_unlocked": "Nouvelle catégorie débloquée !",
     "minegoals.command.list.header": "%s · niveau %s · %s points",
     "minegoals.command.list.category": " · palier %s/%s · %s pts",
     "minegoals.command.unknown": "Objectif ou catégorie inconnu : %s",
     "minegoals.command.already_completed": "L'objectif %s est déjà terminé",
     "minegoals.command.reset": "%s remis à zéro pour %s",
     "minegoals.command.complete": "%s terminé pour %s",
+    "minegoals.command.unlock": "Catégorie %s débloquée pour %s",
+    "minegoals.command.lock": "Catégorie %s verrouillée pour %s",
+    "reward.minegoals.fire_resistance": "Résistance au feu (5 min)",
+    "reward.minegoals.fire_resistance.desc": "Ignore les boules de feu des blazes dans la forteresse",
+    "reward.minegoals.unlock_redstone": "Nouvelle catégorie : Redstone",
+    "reward.minegoals.unlock_redstone.desc": "Débloque les objectifs de Redstone",
     "key.minegoals.open": "Ouvrir les objectifs",
     "key.minegoals.toggle_hud": "Afficher/masquer le HUD des objectifs",
     "key.minegoals.next_category": "Catégorie suivante dans le HUD",
@@ -545,6 +608,8 @@ for cat in CATEGORIES:
             }
             if road and gid in ROAD_ITEMS:
                 obj["rewards"]["items"] = [{"id": i, "count": c} for i, c in ROAD_ITEMS[gid]]
+            if road and gid in ROAD_COMMANDS:
+                obj["rewards"]["commands"] = ROAD_COMMANDS[gid]
             # Themed categories count progress before a tier unlocks; the road stays step by step.
             if not road:
                 obj["track_before_unlock"] = True
@@ -558,6 +623,7 @@ for cat in CATEGORIES:
         "icon": cat["icon"],
         "order": cat["order"],
         "tier_visibility": cat["visibility"],
+        **({"unlock": cat["unlock"]} if "unlock" in cat else {}),
         "tiers": tiers_json,
     })
 

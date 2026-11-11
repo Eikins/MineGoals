@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:redstone",
+  "tier": 3,
+  "points": 30,
+  "title": {
+    "translate": "goal.minegoals.redstone.comparators"
+  },
+  "description": {
+    "translate": "goal.minegoals.redstone.comparators.desc"
+  },
+  "icon": "minecraft:comparator",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:comparator",
+    "count": 2
+  },
+  "rewards": {
+    "experience": 30
+  },
+  "track_before_unlock": true
+}
