@@ -17,6 +17,7 @@ import net.minecraft.stats.StatType;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.item.Items;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.OptionalInt;
 import java.util.Set;
@@ -142,6 +143,31 @@ public final class GoalTracker {
         return true;
     }
 
+    /**
+     * Completes every given goal that is not completed yet, even if locked; their rewards become claimable.
+     * Goals are completed silently (no per-goal notification) to avoid flooding the player; tier
+     * notifications still fire. Used by {@code /minegoals complete <player> [category]}.
+     *
+     * @return the number of goals newly completed
+     */
+    public static int forceCompleteAll(ServerPlayer player, Collection<Identifier> goalIds) {
+        GoalDefinitions defs = GoalDefinitions.server();
+        GoalProgressData data = GoalProgressData.get(player.level().getServer());
+        PlayerGoalProgress progress = data.get(player.getUUID());
+        int completed = 0;
+        for (Identifier goalId : goalIds) {
+            Goal goal = defs.goals().get(goalId);
+            if (goal == null || progress.isCompleted(goalId)) {
+                continue;
+            }
+            progress.setCount(goalId, goal.count(), goal.count());
+            progress.markCompleted(goalId);
+            completed++;
+        }
+        evaluate(player, data, progress, defs, true);
+        return completed;
+    }
+
     /** Re-sends progress after an external change, such as a reset command. */
     public static void refresh(ServerPlayer player) {
         GoalProgressData data = GoalProgressData.get(player.level().getServer());
@@ -186,6 +212,10 @@ public final class GoalTracker {
             for (Map.Entry<Identifier, Goal> entry : defs.goals().entrySet()) {
                 Identifier id = entry.getKey();
                 Goal goal = entry.getValue();
+                OptionalInt derived = goal.criterion().fromProgress(progress, defs);
+                if (derived.isPresent() && progress.isTracking(defs, id)) {
+                    progress.setCount(id, derived.getAsInt(), goal.count());
+                }
                 if (progress.isActive(defs, id) && progress.count(id) >= goal.count()) {
                     complete(player, progress, id, goal);
                     progressed = true;

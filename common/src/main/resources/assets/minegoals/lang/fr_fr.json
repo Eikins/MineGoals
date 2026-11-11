@@ -39,6 +39,7 @@
   "minegoals.command.already_completed": "L'objectif %s est déjà terminé",
   "minegoals.command.reset": "%s remis à zéro pour %s",
   "minegoals.command.complete": "%s terminé pour %s",
+  "minegoals.command.complete_all": "%s objectifs terminés (%s) pour %s",
   "minegoals.command.unlock": "Catégorie %s débloquée pour %s",
   "minegoals.command.lock": "Catégorie %s verrouillée pour %s",
   "reward.minegoals.fire_resistance": "Résistance au feu (5 min)",

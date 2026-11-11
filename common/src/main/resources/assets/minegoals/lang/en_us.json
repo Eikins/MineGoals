@@ -39,6 +39,7 @@
   "minegoals.command.already_completed": "Goal %s is already completed",
   "minegoals.command.reset": "Reset %s for %s",
   "minegoals.command.complete": "Completed %s for %s",
+  "minegoals.command.complete_all": "Completed %s goals (%s) for %s",
   "minegoals.command.unlock": "Unlocked category %s for %s",
   "minegoals.command.lock": "Locked category %s for %s",
   "reward.minegoals.fire_resistance": "Fire Resistance (5 min)",

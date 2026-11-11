@@ -1,6 +1,7 @@
 package com.eikins.minegoals.data;
 
 import com.eikins.minegoals.Constants;
+import com.eikins.minegoals.data.criterion.CategoryTierCriterion;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.Identifier;
@@ -61,6 +62,11 @@ public final class GoalDefinitions {
             } else if (goal.tier() > category.tiers().size()) {
                 Constants.LOG.warn("Goal {} ignored: tier {} but category {} only has {} tiers",
                         id, goal.tier(), goal.category(), category.tiers().size());
+            } else if (goal.criterion() instanceof CategoryTierCriterion target
+                    && (!categories.containsKey(target.category())
+                        || target.tier() > categories.get(target.category()).tiers().size())) {
+                Constants.LOG.warn("Goal {} ignored: criterion targets tier {} of {}, which does not exist",
+                        id, target.tier(), target.category());
             } else {
                 valid.put(id, goal);
             }

@@ -34,6 +34,7 @@ def VB(biome): return {"type": "minegoals:visit_biome", "biome": biome}
 def VD(dim): return {"type": "minegoals:visit_dimension", "dimension": dim}
 def ADV(path): return {"type": "minegoals:advancement", "advancement": "minecraft:" + path}
 def ST(stat, n=1): return {"type": "minegoals:custom_stat", "stat": "minecraft:" + stat, "count": n}
+def TIER(category, tier): return {"type": "minegoals:category_tier", "category": "minegoals:" + category, "tier": tier}
 def items(*pairs): return {"items": [{"id": i, "count": c} for i, c in pairs]}
 def stack(item, count=1, **components):
     """An item reward with data components, as in /give: stack("minecraft:bow", enchantments={"minecraft:power": 3})."""
@@ -495,6 +496,7 @@ en = {
     "minegoals.command.already_completed": "Goal %s is already completed",
     "minegoals.command.reset": "Reset %s for %s",
     "minegoals.command.complete": "Completed %s for %s",
+    "minegoals.command.complete_all": "Completed %s goals (%s) for %s",
     "minegoals.command.unlock": "Unlocked category %s for %s",
     "minegoals.command.lock": "Locked category %s for %s",
     "reward.minegoals.fire_resistance": "Fire Resistance (5 min)",
@@ -548,6 +550,7 @@ fr = {
     "minegoals.command.already_completed": "L'objectif %s est déjà terminé",
     "minegoals.command.reset": "%s remis à zéro pour %s",
     "minegoals.command.complete": "%s terminé pour %s",
+    "minegoals.command.complete_all": "%s objectifs terminés (%s) pour %s",
     "minegoals.command.unlock": "Catégorie %s débloquée pour %s",
     "minegoals.command.lock": "Catégorie %s verrouillée pour %s",
     "reward.minegoals.fire_resistance": "Résistance au feu (5 min)",

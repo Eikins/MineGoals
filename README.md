@@ -131,6 +131,7 @@ The `block`, `entity`, `item` and `biome` fields accept an id (`minecraft:stone`
 | `minegoals:visit_dimension` | `dimension` | the player is in the dimension |
 | `minegoals:custom_stat` | `stat`, `count` | a vanilla "custom" statistic grows, e.g. `minecraft:fish_caught`, `minecraft:traded_with_villager`, `minecraft:animals_bred`, `minecraft:enchant_item` (see `Stats.java`) |
 | `minegoals:advancement` | `advancement` | the player has the advancement, e.g. `minecraft:story/follow_ender_eye` (earned before the goal unlocked counts too) |
+| `minegoals:category_tier` | `category`, `tier` | the given tier of a category (often another one) is complete, i.e. its claimed goals reach the points it needs; claiming the tier's reward is not required |
 
 By default a goal only counts progress once it is unlocked. Set `track_before_unlock` to count it while its tier
 is still locked, so players do not have to do the work again after reaching the tier.

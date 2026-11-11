@@ -22,7 +22,10 @@ import net.minecraft.server.level.ServerPlayer;
 
 import java.util.stream.Stream;
 
-/** {@code /minegoals list|reset|unlock|lock|complete} for operators. */
+/**
+ * {@code /minegoals list|reset|unlock|lock|complete} for operators. {@code complete <player>} completes every goal,
+ * {@code complete <player> <category>} every goal of that category.
+ */
 public final class MineGoalsCommand {
 
     private static final SuggestionProvider<CommandSourceStack> GOALS = (ctx, builder) ->
@@ -62,8 +65,9 @@ public final class MineGoalsCommand {
                                         .executes(ctx -> setLocked(ctx, false)))))
                 .then(Commands.literal("complete")
                         .then(Commands.argument("player", EntityArgument.player())
+                                .executes(ctx -> completeAll(ctx, null))
                                 .then(Commands.argument("goal", IdentifierArgument.id())
-                                        .suggests(GOALS)
+                                        .suggests(GOALS_AND_CATEGORIES)
                                         .executes(MineGoalsCommand::complete)))));
     }
 
@@ -138,6 +142,9 @@ public final class MineGoalsCommand {
     private static int complete(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerPlayer player = EntityArgument.getPlayer(ctx, "player");
         Identifier goal = IdentifierArgument.getId(ctx, "goal");
+        if (GoalDefinitions.server().categories().containsKey(goal)) {
+            return completeAll(ctx, goal);
+        }
         if (!GoalDefinitions.server().goals().containsKey(goal)) {
             ctx.getSource().sendFailure(Component.translatable("minegoals.command.unknown", goal.toString()));
             return 0;
@@ -148,5 +155,17 @@ public final class MineGoalsCommand {
         }
         ctx.getSource().sendSuccess(() -> Component.translatable("minegoals.command.complete", goal.toString(), player.getDisplayName()), true);
         return 1;
+    }
+
+    /** Completes every goal, or every goal of {@code category} when not null. */
+    private static int completeAll(CommandContext<CommandSourceStack> ctx, Identifier category) throws CommandSyntaxException {
+        ServerPlayer player = EntityArgument.getPlayer(ctx, "player");
+        GoalDefinitions defs = GoalDefinitions.server();
+        int completed = GoalTracker.forceCompleteAll(player,
+                category == null ? defs.goals().keySet() : defs.goalsIn(category));
+        String what = category == null ? "*" : category.toString();
+        ctx.getSource().sendSuccess(() -> Component.translatable("minegoals.command.complete_all",
+                completed, what, player.getDisplayName()), true);
+        return completed;
     }
 }
