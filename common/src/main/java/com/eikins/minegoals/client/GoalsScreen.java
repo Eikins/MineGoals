@@ -15,6 +15,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 
 import java.util.ArrayList;
@@ -22,19 +23,22 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Goals screen: global level on top, one tab per category, a battle-pass style tier track showing each tier's
- * reward, and below it the selected tier's reward row followed by its goals. Rewards are claimed by clicking their
+ * Goals screen: global level on top, one tab per category, a battle-pass style tier track, and below it the
+ * selected tier's reward row followed by its goals. Each row shows its rewards in three fixed slots on the right. Rewards are claimed by clicking their
  * "Claim" button; a tier's reward is earned by completing the tier, and claiming it unlocks the next tier.
  * Tiers the player has not reached may be hidden, depending on the category's {@link TierVisibility}.
  */
 public class GoalsScreen extends Screen {
 
     private static final int TAB_HEIGHT = 20;
-    private static final int TRACK_HEIGHT = 42;
+    private static final int TRACK_HEIGHT = 30;
     private static final int ROW_HEIGHT = 32;
     private static final int CLAIM_WIDTH = 52;
     private static final int CLAIM_HEIGHT = 12;
     private static final int MIN_TAB_WIDTH_WITH_TITLE = 60;
+    private static final int REWARD_SLOTS = 3;
+    private static final int SLOT_SIZE = 18;
+    private static final int SLOTS_WIDTH = REWARD_SLOTS * SLOT_SIZE;
 
     private final List<Identifier> categoryIds = new ArrayList<>();
     /** Claim buttons drawn this frame, used to resolve clicks. */
@@ -146,7 +150,7 @@ public class GoalsScreen extends Screen {
         }
         List<Row> rows = new ArrayList<>();
         Category category = defs.categories().get(categoryId);
-        if (this.selectedTier <= category.tiers().size() && !category.tiers().get(this.selectedTier - 1).rewards().isEmpty()) {
+        if (this.selectedTier <= category.tiers().size()) {
             rows.add(new Row(null));
         }
         for (Identifier goal : defs.goalsIn(categoryId)) {
@@ -250,7 +254,6 @@ public class GoalsScreen extends Screen {
                              Identifier categoryId, Category category, int mouseX, int mouseY) {
         int tiers = this.shownTiers(defs, progress, categoryId);
         int unlocked = progress.tier(defs, categoryId);
-        int points = progress.categoryPoints(defs, categoryId);
         TierVisibility visibility = category.tierVisibility();
         int box = this.tierBoxWidth(tiers);
         int y = this.trackY();
@@ -258,7 +261,6 @@ public class GoalsScreen extends Screen {
         for (int i = 0; i < tiers; i++) {
             int tier = i + 1;
             int x = this.tierBoxX(tiers, i);
-            Rewards rewards = category.tiers().get(i).rewards();
             TierState state = tierState(defs, progress, categoryId, tier, unlocked);
             boolean revealed = visibility.revealsContent(tier, unlocked);
             if (i > 0) {
@@ -276,13 +278,7 @@ public class GoalsScreen extends Screen {
             Component name = !revealed
                     ? Component.literal("???")
                     : wide ? Component.translatable("minegoals.screen.tier_short", tier) : Component.literal(String.valueOf(tier));
-            g.centeredText(this.font, name, x + box / 2, y + 3, tier <= unlocked ? GoalRender.WHITE : GoalRender.GRAY);
-            if (revealed) {
-                this.renderRewardIcons(g, rewards, x, y + 13, box);
-            }
-            String threshold = category.tiers().get(i).points() + (wide ? " pts" : "");
-            g.centeredText(this.font, threshold, x + box / 2, y + TRACK_HEIGHT - 10,
-                    tier <= unlocked ? GoalRender.GREEN : GoalRender.GRAY);
+            g.centeredText(this.font, name, x + box / 2, y + (TRACK_HEIGHT - 8) / 2, tier <= unlocked ? GoalRender.WHITE : GoalRender.GRAY);
             if (state == TierState.CLAIMABLE) {
                 g.fill(x + box - 5, y + 1, x + box - 1, y + 5, GoalRender.GREEN);
             }
@@ -290,10 +286,7 @@ public class GoalsScreen extends Screen {
             if (inside(mouseX, mouseY, x, y, box, TRACK_HEIGHT)) {
                 List<Component> lines = new ArrayList<>();
                 lines.add(Component.translatable("minegoals.screen.tier", tier).withStyle(ChatFormatting.GOLD));
-                lines.add(Component.translatable("minegoals.screen.tier_threshold", category.tiers().get(i).points())
-                        .withStyle(ChatFormatting.GRAY));
                 if (revealed) {
-                    lines.addAll(describeRewards(rewards));
                     lines.add(state.label(tier).copy().withStyle(ChatFormatting.DARK_GRAY));
                 } else {
                     lines.add(Component.translatable("minegoals.screen.tier_hidden").withStyle(ChatFormatting.DARK_GRAY));
@@ -302,40 +295,82 @@ public class GoalsScreen extends Screen {
             }
         }
 
-        int next = category.pointsForTier(unlocked + 1);
-        Component summary;
+        Component line = Component.empty().append(category.title().copy().withStyle(ChatFormatting.WHITE));
         if (progress.canClaimTier(defs, categoryId, unlocked)) {
-            summary = Component.translatable("minegoals.screen.category_claim", unlocked);
-        } else if (next < 0) {
-            summary = Component.translatable("minegoals.screen.category_max", points);
-        } else if (visibility.revealsNextThreshold()) {
-            summary = Component.translatable("minegoals.screen.category_progress", points, next);
-        } else {
-            summary = Component.translatable("minegoals.screen.category_points", points);
+            line = line.copy().append(Component.literal(" · "))
+                    .append(Component.translatable("minegoals.screen.category_claim", unlocked).withStyle(ChatFormatting.GREEN));
         }
-        Component line = Component.empty().append(category.title().copy().withStyle(ChatFormatting.WHITE))
-                .append(Component.literal(" · ")).append(summary);
         g.centeredText(this.font, line, this.left + this.panelWidth / 2, y + TRACK_HEIGHT + 3, GoalRender.GRAY);
     }
 
-    /** Draws the reward's items (or an XP bottle) centred in a tier box, as many as fit. */
-    private void renderRewardIcons(GuiGraphicsExtractor g, Rewards rewards, int x, int y, int width) {
-        List<ItemStack> icons = new ArrayList<>();
-        for (Rewards.ItemReward item : rewards.items()) {
-            icons.add(new ItemStack(item.item(), item.count()));
+    /**
+     * Draws {@value #REWARD_SLOTS} fixed reward slots starting at ({@code x}, {@code y}): experience first as an XP
+     * bottle, then items with their count, then commands as a nether star. Rewards that do not fit are summarised by
+     * a "+N" label on the left and listed in the row tooltip. Claimed rewards get a green slot and a check mark
+     * instead of their count.
+     *
+     * @return the tooltip of the hovered slot (or "+N" label), or null
+     */
+    private List<Component> renderRewardSlots(GuiGraphicsExtractor g, Rewards rewards, boolean claimed, int x, int y,
+                                              int mouseX, int mouseY, boolean mouseInList) {
+        List<RewardIcon> icons = rewardIcons(rewards);
+        List<Component> tooltip = null;
+        for (int i = 0; i < REWARD_SLOTS; i++) {
+            int slotX = x + i * SLOT_SIZE;
+            boolean filled = i < icons.size();
+            boolean done = claimed && filled;
+            g.fill(slotX, y, slotX + SLOT_SIZE - 1, y + SLOT_SIZE - 1, done ? 0x8020602A : 0x60000000);
+            g.outline(slotX, y, SLOT_SIZE - 1, SLOT_SIZE - 1, done ? 0xC03FD24F : 0x30FFFFFF);
+            if (!filled) {
+                continue;
+            }
+            RewardIcon icon = icons.get(i);
+            g.item(icon.stack(), slotX + 1, y + 1);
+            if (done) {
+                // Text is drawn above items, so the check mark sits on top of the icon.
+                g.text(this.font, "✔", slotX + SLOT_SIZE - 1 - this.font.width("✔"), y + SLOT_SIZE - 9, GoalRender.GREEN, true);
+            } else {
+                g.itemDecorations(this.font, icon.stack(), slotX + 1, y + 1, icon.countText());
+            }
+            if (mouseInList && inside(mouseX, mouseY, slotX, y, SLOT_SIZE - 1, SLOT_SIZE - 1)) {
+                tooltip = done
+                        ? List.of(icon.label(), Component.translatable("minegoals.screen.claimed").withStyle(ChatFormatting.GREEN))
+                        : List.of(icon.label());
+            }
         }
-        if (icons.isEmpty() && rewards.experience() > 0) {
-            icons.add(new ItemStack(Items.EXPERIENCE_BOTTLE));
+        if (icons.size() > REWARD_SLOTS) {
+            String more = "+" + (icons.size() - REWARD_SLOTS);
+            int moreX = x - 2 - this.font.width(more);
+            g.text(this.font, more, moreX, y + 5, GoalRender.GOLD, false);
+            if (mouseInList && inside(mouseX, mouseY, moreX, y, this.font.width(more), SLOT_SIZE)) {
+                tooltip = icons.subList(REWARD_SLOTS, icons.size()).stream().map(RewardIcon::label).toList();
+            }
         }
-        if (icons.isEmpty()) {
-            return;
+        return tooltip;
+    }
+
+    private static List<RewardIcon> rewardIcons(Rewards rewards) {
+        List<RewardIcon> icons = new ArrayList<>();
+        // Experience always comes first.
+        if (rewards.experience() > 0) {
+            icons.add(new RewardIcon(new ItemStack(Items.EXPERIENCE_BOTTLE), String.valueOf(rewards.experience()),
+                    Component.translatable("minegoals.screen.reward_xp", rewards.experience())));
         }
-        int fit = Math.min(icons.size(), Math.max(1, (width - 2) / 17));
-        int start = x + (width - fit * 17 + 1) / 2;
-        for (int i = 0; i < fit; i++) {
-            g.item(icons.get(i), start + i * 17, y);
-            g.itemDecorations(this.font, icons.get(i), start + i * 17, y);
+        for (ItemStackTemplate item : rewards.items()) {
+            // A count of 1 keeps the slot clean; the real count is drawn as text so it is not tied to stack sizes.
+            ItemStack stack = item.withCount(1).create();
+            icons.add(new RewardIcon(stack, item.count() > 1 ? String.valueOf(item.count()) : null,
+                    Component.literal(item.count() + "× ").append(stack.getHoverName())));
         }
+        if (!rewards.commands().isEmpty()) {
+            icons.add(new RewardIcon(new ItemStack(Items.NETHER_STAR), null,
+                    Component.translatable("minegoals.screen.reward_special")));
+        }
+        return icons;
+    }
+
+    /** One reward shown in a slot: the item drawn, the count text over it, and its tooltip line. */
+    private record RewardIcon(ItemStack stack, String countText, Component label) {
     }
 
     private static TierState tierState(GoalDefinitions defs, PlayerGoalProgress progress, Identifier categoryId,
@@ -412,26 +447,80 @@ public class GoalsScreen extends Screen {
     private List<Component> renderTierRewardRow(GuiGraphicsExtractor g, GoalDefinitions defs, PlayerGoalProgress progress,
                                                 Identifier categoryId, Category category, int x, int y, int width,
                                                 int mouseX, int mouseY, boolean mouseInList) {
-        Rewards rewards = category.tiers().get(this.selectedTier - 1).rewards();
+        int tier = this.selectedTier;
+        Rewards rewards = category.tiers().get(tier - 1).rewards();
         int unlocked = progress.tier(defs, categoryId);
-        TierState state = tierState(defs, progress, categoryId, this.selectedTier, unlocked);
-        boolean claimed = progress.isTierClaimed(categoryId, this.selectedTier);
+        TierState state = tierState(defs, progress, categoryId, tier, unlocked);
+        boolean claimed = progress.isTierClaimed(categoryId, tier);
+        boolean showClaim = !rewards.isEmpty() && (state == TierState.CLAIMABLE || claimed);
 
+        int slotsX = x + width - 4 - SLOTS_WIDTH;
+        int right = slotsX - 6;
         g.fill(x, y, x + width, y + ROW_HEIGHT - 2, 0xE0302818);
         g.item(new ItemStack(Items.CHEST), x + 4, y + 7);
-        g.text(this.font, Component.translatable("minegoals.screen.tier_reward", this.selectedTier), x + 24, y + 3, GoalRender.GOLD, false);
-        GoalRender.clippedText(g, this.font, summarizeRewards(rewards), x + 24, y + 13, width - 32 - CLAIM_WIDTH, GoalRender.GRAY);
-        if (state != TierState.CLAIMABLE && !claimed) {
-            GoalRender.clippedText(g, this.font, state.label(this.selectedTier), x + 24, y + 22, width - 28, GoalRender.DARK_GRAY);
+        Component title = rewards.isEmpty()
+                ? Component.translatable("minegoals.screen.tier", tier)
+                : Component.translatable("minegoals.screen.tier_reward", tier);
+        GoalRender.clippedText(g, this.font, title, x + 24, y + 3, right - (x + 24), GoalRender.GOLD);
+        GoalRender.clippedText(g, this.font, state.label(tier), x + 24, y + 13,
+                right - (x + 24) - 4 - (showClaim ? CLAIM_WIDTH : 0), GoalRender.GRAY);
+
+        if (showClaim) {
+            this.renderClaimArea(g, right - CLAIM_WIDTH, y + 15, state == TierState.CLAIMABLE, claimed, null,
+                    MineGoalsNetwork.ClaimReward.tier(categoryId, tier), mouseX, mouseY, mouseInList);
+        } else {
+            TierProgress tierProgress = tierProgress(defs, progress, categoryId, category, tier, unlocked);
+            int counterWidth = this.font.width(tierProgress.text());
+            if (tierProgress.fraction() >= 0) {
+                GoalRender.bar(g, x + 24, y + 24, right - (x + 24) - 4 - counterWidth, 3, tierProgress.fraction(),
+                        state == TierState.LOCKED ? GoalRender.DARK_GRAY : GoalRender.GOLD);
+            }
+            g.text(this.font, tierProgress.text(), right - counterWidth, y + 22, GoalRender.GRAY, false);
         }
-        this.renderClaimArea(g, x + width - 4 - CLAIM_WIDTH, y + 9, state == TierState.CLAIMABLE, claimed, null,
-                MineGoalsNetwork.ClaimReward.tier(categoryId, this.selectedTier), mouseX, mouseY, mouseInList);
+        List<Component> slotTooltip = this.renderRewardSlots(g, rewards, claimed, slotsX, y + 6, mouseX, mouseY, mouseInList);
+        if (slotTooltip != null) {
+            return slotTooltip;
+        }
 
         List<Component> lines = new ArrayList<>();
-        lines.add(Component.translatable("minegoals.screen.tier_reward", this.selectedTier).withStyle(ChatFormatting.GOLD));
+        lines.add(title.copy().withStyle(ChatFormatting.GOLD));
         lines.addAll(describeRewards(rewards));
         lines.add(Component.translatable("minegoals.screen.tier_reward_hint").withStyle(ChatFormatting.DARK_GRAY));
         return lines;
+    }
+
+    /**
+     * Progress towards completing {@code tier}: category points against the next tier's threshold, or, for the last
+     * tier, completed goals. When the category hides the next threshold, only the points are shown (no bar).
+     */
+    private static TierProgress tierProgress(GoalDefinitions defs, PlayerGoalProgress progress, Identifier categoryId,
+                                             Category category, int tier, int unlocked) {
+        int points = progress.categoryPoints(defs, categoryId);
+        if (tier < category.tiers().size()) {
+            if (tier + 1 > unlocked + 1 || (tier == unlocked && !category.tierVisibility().revealsNextThreshold())) {
+                return new TierProgress(points + " pts", -1F);
+            }
+            int start = category.pointsForTier(tier);
+            int end = category.pointsForTier(tier + 1);
+            return new TierProgress(Math.min(points, end) + " / " + end + " pts",
+                    GoalRender.fraction(Math.max(0, points - start), end - start));
+        }
+        int total = 0;
+        int done = 0;
+        for (Identifier goal : defs.goalsIn(categoryId)) {
+            if (defs.goals().get(goal).tier() == tier) {
+                total++;
+                if (progress.isCompleted(goal)) {
+                    done++;
+                }
+            }
+        }
+        return new TierProgress(Component.translatable("minegoals.screen.tier_goals", done, total).getString(),
+                GoalRender.fraction(done, total));
+    }
+
+    /** Text and bar fill (negative for no bar) of a tier's progress. */
+    private record TierProgress(String text, float fraction) {
     }
 
     private List<Component> renderGoalRow(GuiGraphicsExtractor g, GoalDefinitions defs, PlayerGoalProgress progress,
@@ -442,6 +531,9 @@ public class GoalsScreen extends Screen {
         boolean hasRewards = !goal.rewards().isEmpty();
         int count = progress.count(id);
 
+        // Reward slots on the right; everything else fits between the icon and the slots.
+        int slotsX = x + width - 4 - SLOTS_WIDTH;
+        int right = slotsX - 6;
         g.fill(x, y, x + width, y + ROW_HEIGHT - 2, GoalRender.PANEL_LIGHT);
         g.item(new ItemStack(goal.icon()), x + 4, y + 7);
 
@@ -449,8 +541,8 @@ public class GoalsScreen extends Screen {
         int titleColor = completed ? GoalRender.GREEN : unlocked ? GoalRender.WHITE : GoalRender.DARK_GRAY;
         String pointsText = "+" + goal.points() + " pts";
         int pointsWidth = this.font.width(pointsText);
-        GoalRender.clippedText(g, this.font, goal.title(), x + 24, y + 3, width - 32 - pointsWidth, titleColor);
-        g.text(this.font, pointsText, x + width - 4 - pointsWidth, y + 3, GoalRender.GOLD, false);
+        GoalRender.clippedText(g, this.font, goal.title(), x + 24, y + 3, right - (x + 24) - 4 - pointsWidth, titleColor);
+        g.text(this.font, pointsText, right - pointsWidth, y + 3, GoalRender.GOLD, false);
 
         Component subtitle;
         if (completed) {
@@ -460,18 +552,24 @@ public class GoalsScreen extends Screen {
         } else {
             subtitle = goal.description().orElse(Component.empty());
         }
-        GoalRender.clippedText(g, this.font, subtitle, x + 24, y + 13, width - 32 - rightWidth, GoalRender.GRAY);
+        GoalRender.clippedText(g, this.font, subtitle, x + 24, y + 13, right - (x + 24) - 4 - rightWidth, GoalRender.GRAY);
 
         if (completed && hasRewards) {
             boolean claimed = progress.isGoalClaimed(id);
-            this.renderClaimArea(g, x + width - 4 - CLAIM_WIDTH, y + 15, !claimed, claimed, null,
+            this.renderClaimArea(g, right - CLAIM_WIDTH, y + 15, !claimed, claimed, null,
                     MineGoalsNetwork.ClaimReward.goal(id), mouseX, mouseY, mouseInList);
         } else {
             String counter = count + "/" + goal.count();
             int counterWidth = this.font.width(counter);
-            GoalRender.bar(g, x + 24, y + 24, width - 32 - counterWidth, 3,
+            GoalRender.bar(g, x + 24, y + 24, right - (x + 24) - 4 - counterWidth, 3,
                     GoalRender.fraction(count, goal.count()), completed ? GoalRender.GREEN : unlocked ? GoalRender.GOLD : GoalRender.DARK_GRAY);
-            g.text(this.font, counter, x + width - 4 - counterWidth, y + 22, GoalRender.GRAY, false);
+            g.text(this.font, counter, right - counterWidth, y + 22, GoalRender.GRAY, false);
+        }
+
+        List<Component> slotTooltip = this.renderRewardSlots(g, goal.rewards(), progress.isGoalClaimed(id), slotsX, y + 6,
+                mouseX, mouseY, mouseInList);
+        if (slotTooltip != null) {
+            return slotTooltip;
         }
 
         List<Component> lines = new ArrayList<>();
@@ -522,32 +620,18 @@ public class GoalsScreen extends Screen {
         return Component.translatable("minegoals.screen.locked_requires", list);
     }
 
-    private static Component summarizeRewards(Rewards rewards) {
-        List<String> parts = new ArrayList<>();
-        for (Rewards.ItemReward item : rewards.items()) {
-            parts.add(item.count() + "× " + new ItemStack(item.item()).getHoverName().getString());
-        }
-        if (rewards.experience() > 0) {
-            parts.add(Component.translatable("minegoals.screen.reward_xp", rewards.experience()).getString());
-        }
-        if (!rewards.commands().isEmpty()) {
-            parts.add(Component.translatable("minegoals.screen.reward_special").getString());
-        }
-        return Component.literal(String.join(", ", parts));
-    }
-
     private static List<Component> describeRewards(Rewards rewards) {
         List<Component> lines = new ArrayList<>();
         if (rewards.isEmpty()) {
             return lines;
         }
         lines.add(Component.translatable("minegoals.screen.rewards").withStyle(ChatFormatting.GOLD));
-        for (Rewards.ItemReward item : rewards.items()) {
-            lines.add(Component.literal(" • " + item.count() + "× ")
-                    .append(new ItemStack(item.item()).getHoverName()));
-        }
         if (rewards.experience() > 0) {
             lines.add(Component.literal(" • ").append(Component.translatable("minegoals.screen.reward_xp", rewards.experience())));
+        }
+        for (ItemStackTemplate item : rewards.items()) {
+            lines.add(Component.literal(" • " + item.count() + "× ")
+                    .append(item.create().getHoverName()));
         }
         if (!rewards.commands().isEmpty()) {
             lines.add(Component.literal(" • ").append(Component.translatable("minegoals.screen.reward_special")));

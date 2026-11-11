@@ -24,7 +24,7 @@ public class MineGoalsFabric implements ModInitializer {
         ServerPlayNetworking.registerGlobalReceiver(MineGoalsNetwork.ClaimReward.TYPE,
                 (payload, ctx) -> GoalTracker.claim(ctx.player(), payload.id(), payload.tier()));
 
-        DataResourceLoader.get().registerReloadListener(GoalDataLoader.ID, registries -> new GoalDataLoader());
+        DataResourceLoader.get().registerReloadListener(GoalDataLoader.ID, GoalDataLoader::new);
         // Fires for a joining player and for everyone after /reload.
         ServerLifecycleEvents.SYNC_DATA_PACK_CONTENTS.register((player, joined) -> GoalTracker.syncPlayer(player));
         CommandRegistrationCallback.EVENT.register((dispatcher, context, selection) -> MineGoalsCommand.register(dispatcher));

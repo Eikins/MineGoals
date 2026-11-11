@@ -91,7 +91,7 @@ Visibility is cosmetic: clients still receive every definition.
 | `requires` | `[]` | Goals to complete first (in addition to the tier) |
 | `criterion` | required | See below |
 | `track_before_unlock` | `false` | Count progress while the goal's tier is not reached yet; the goal completes as soon as the tier unlocks. `requires` still blocks counting |
-| `rewards` | none | `items`, `experience`, `commands` (run as the player, permission level 2), claimed from the goals screen |
+| `rewards` | none | `items` (with optional data components), `experience`, `commands`; claimed from the goals screen (see Rewards) |
 
 A goal whose category, tier or `requires` entry does not exist is skipped, with a warning in the logs.
 
@@ -114,10 +114,38 @@ By default a goal only counts progress once it is unlocked. Set `track_before_un
 is still locked, so players do not have to do the work again after reaching the tier.
 
 ### Rewards
+`rewards` is shared by goals and tiers:
+```json
+"rewards": {
+  "experience": 50,
+  "items": [
+    "minecraft:diamond",
+    {"id": "minecraft:arrow", "count": 32},
+    {"id": "minecraft:diamond_sword", "components": {
+      "minecraft:enchantments": {"minecraft:sharpness": 5, "minecraft:unbreaking": 3},
+      "minecraft:custom_name": {"text": "Excalibur", "color": "gold", "italic": false},
+      "minecraft:lore": [{"text": "Forged for a true goal hunter", "color": "gray"}]
+    }}
+  ],
+  "commands": ["effect give @s minecraft:speed 60"]
+}
+```
+- `items` uses the vanilla item format: an item id, or `{"id", "count" (1-99, default 1), "components"}`.
+  `components` are the same data components as `/give minecraft:diamond_sword[enchantments={...}]`, written in JSON
+  with their full id (`minecraft:enchantments`, `minecraft:custom_name`, `minecraft:lore`, `minecraft:rarity`...).
+  Enchantments and other registry entries are checked when the datapack loads; an invalid reward makes the goal or
+  category fail to load, with the error in the logs.
+- `experience` is given as experience points.
+- `commands` run as the player (`@s`) with permission level 2.
+
 Nothing is granted automatically. When a goal or a tier is completed, a green dot appears on the journal icon and the
 screen shows how many rewards are waiting (plus a toast and a chat message when `NOTIFICATIONS` is on). In the
-screen, each tier box on the track shows its reward items and its state (in progress, ready to claim, done, locked);
-the selected tier's reward row above its goals and every completed goal have a **Claim** button. The server checks
+screen, each tier box on the track only shows its number and state colour (in progress, ready to claim, done, locked).
+The first row of the list is the selected tier: its reward, its state and its progress (category points against the
+next tier's threshold, or completed goals for the last tier). Every row shows its rewards as icons in three fixed slots on the
+right: experience first as an XP bottle, then items, then commands as a nether star. Extra rewards are listed in the
+row's tooltip, and claimed rewards turn green with a check mark. The
+tier reward row and every completed goal have a **Claim** button. The server checks
 every claim, so a reward can only be claimed once.
 
 Goal files can be grouped in sub-folders: `goal/road_to_end/first_table.json` has the id

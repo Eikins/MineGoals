@@ -111,6 +111,16 @@
       "rewards": {
         "items": [
           {
+            "id": "minecraft:bow",
+            "count": 1,
+            "components": {
+              "minecraft:enchantments": {
+                "minecraft:power": 3,
+                "minecraft:unbreaking": 2
+              }
+            }
+          },
+          {
             "id": "minecraft:arrow",
             "count": 64
           },
@@ -152,7 +162,15 @@
         "items": [
           {
             "id": "minecraft:elytra",
-            "count": 1
+            "count": 1,
+            "components": {
+              "minecraft:custom_name": {
+                "translate": "item.minegoals.dragon_wings",
+                "color": "light_purple",
+                "italic": false
+              },
+              "minecraft:rarity": "epic"
+            }
           }
         ],
         "experience": 300

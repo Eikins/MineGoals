@@ -4,6 +4,7 @@ import com.eikins.minegoals.data.Category;
 import com.eikins.minegoals.data.Goal;
 import com.eikins.minegoals.data.GoalDefinitions;
 import com.eikins.minegoals.data.RegistryMatcher;
+import com.eikins.minegoals.data.Rewards;
 import com.eikins.minegoals.data.TierVisibility;
 import com.eikins.minegoals.data.criterion.AdvancementCriterion;
 import com.eikins.minegoals.data.criterion.StatCriterion;
@@ -14,11 +15,16 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.SharedConstants;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.data.registries.VanillaRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.Bootstrap;
+import net.minecraft.world.item.Items;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -41,11 +47,15 @@ class GoalDataTest {
     private static final int GOAL_COUNT = 137;
 
     private static GoalDefinitions examples;
+    /** JSON ops with vanilla registries, as the real loader uses, so item components can resolve enchantments. */
+    private static DynamicOps<JsonElement> ops;
 
     @BeforeAll
     static void bootstrap() throws IOException {
         SharedConstants.tryDetectVersion();
         Bootstrap.bootStrap();
+        HolderLookup.Provider registries = VanillaRegistries.createWorldLookup();
+        ops = registries.createSerializationContext(JsonOps.INSTANCE);
         Path data = Path.of(System.getProperty("minegoals.resources"), "data", "minegoals", "minegoals");
         examples = GoalDefinitions.validated(
                 parseFolder(data.resolve("category"), Category.CODEC),
@@ -58,7 +68,7 @@ class GoalDataTest {
         try (Stream<Path> files = Files.walk(folder)) {
             for (Path file : files.filter(f -> f.toString().endsWith(".json")).toList()) {
                 String name = folder.relativize(file).toString().replace('\\', '/').replace(".json", "");
-                DataResult<T> parsed = codec.parse(JsonOps.INSTANCE, JsonParser.parseString(Files.readString(file)));
+                DataResult<T> parsed = codec.parse(ops, JsonParser.parseString(Files.readString(file)));
                 result.put(Constants.id(name), parsed.getOrThrow(error -> new AssertionError(file + ": " + error)));
             }
         }
@@ -212,6 +222,39 @@ class GoalDataTest {
     }
 
     @Test
+    void rewardItemsAcceptGiveStyleComponents() {
+        Rewards rewards = Rewards.CODEC.parse(ops, json("""
+                {"items": [
+                  "minecraft:diamond",
+                  {"id": "minecraft:diamond_sword", "count": 1, "components": {
+                    "minecraft:enchantments": {"minecraft:sharpness": 5},
+                    "minecraft:custom_name": "Excalibur"}}
+                ]}""")).getOrThrow();
+        assertEquals(2, rewards.items().size());
+        assertEquals(1, rewards.items().getFirst().count(), "a plain id is a single item");
+
+        // Real ItemStacks need a loaded world (item components are bound then), so check the parsed data instead.
+        var sword = rewards.items().get(1).components().split().added();
+        assertTrue(sword.has(DataComponents.ENCHANTMENTS), "enchantments parsed");
+        assertEquals("Excalibur", sword.get(DataComponents.CUSTOM_NAME).getString());
+
+        assertTrue(Rewards.CODEC.parse(ops, json("""
+                {"items": [{"id": "minecraft:diamond_sword", "components": {"minecraft:enchantments": {"minecraft:nope": 1}}}]}"""))
+                .isError(), "unknown enchantments are rejected");
+    }
+
+    @Test
+    void exampleRewardsUseComponents() {
+        Category road = examples.categories().get(id("road_to_end"));
+        var bow = road.tiers().get(8).rewards().items().getFirst();
+        assertEquals(Items.BOW, bow.item().value());
+        assertTrue(bow.components().split().added().has(DataComponents.ENCHANTMENTS), "tier 9 gives an enchanted bow");
+        var wings = road.tiers().get(11).rewards().items().getFirst();
+        assertEquals(Items.ELYTRA, wings.item().value());
+        assertTrue(wings.components().split().added().has(DataComponents.CUSTOM_NAME), "tier 12 gives named elytra");
+    }
+
+    @Test
     void categoryTiersMustStartAtZeroAndIncrease() {
         assertTrue(Category.CODEC.parse(JsonOps.INSTANCE, json("""
                 {"title": "x", "icon": "minecraft:stone", "tiers": [{"points": 5}]}""")).isError());
@@ -240,8 +283,8 @@ class GoalDataTest {
 
     @Test
     void definitionsRoundTripThroughTheirCodec() {
-        JsonElement encoded = GoalDefinitions.CODEC.encodeStart(JsonOps.INSTANCE, examples).getOrThrow();
-        GoalDefinitions decoded = GoalDefinitions.CODEC.parse(JsonOps.INSTANCE, encoded).getOrThrow();
+        JsonElement encoded = GoalDefinitions.CODEC.encodeStart(ops, examples).getOrThrow();
+        GoalDefinitions decoded = GoalDefinitions.CODEC.parse(ops, encoded).getOrThrow();
         assertEquals(examples.goals().keySet(), decoded.goals().keySet());
         assertEquals(examples.categories().keySet(), decoded.categories().keySet());
     }

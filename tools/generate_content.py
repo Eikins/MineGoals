@@ -35,6 +35,12 @@ def VD(dim): return {"type": "minegoals:visit_dimension", "dimension": dim}
 def ADV(path): return {"type": "minegoals:advancement", "advancement": "minecraft:" + path}
 def ST(stat, n=1): return {"type": "minegoals:custom_stat", "stat": "minecraft:" + stat, "count": n}
 def items(*pairs): return {"items": [{"id": i, "count": c} for i, c in pairs]}
+def stack(item, count=1, **components):
+    """An item reward with data components, as in /give: stack("minecraft:bow", enchantments={"minecraft:power": 3})."""
+    entry = {"id": item, "count": count}
+    if components:
+        entry["components"] = {"minecraft:" + k: v for k, v in components.items()}
+    return entry
 
 
 # A goal: (id, icon, criterion, en title, en description, fr title, fr description[, extra])
@@ -340,10 +346,12 @@ ROAD_TIER_REWARDS = [
     items(("minecraft:arrow", 32)),                                     # 6 fortress -> blazes
     items(("minecraft:ender_pearl", 2)),                                # 7 blazes -> endermen
     items(("minecraft:golden_apple", 2)),                               # 8 eyes of ender -> stronghold
-    items(("minecraft:arrow", 64), ("minecraft:cooked_beef", 32)),      # 9 stronghold -> preparation
+    {"items": [stack("minecraft:bow", enchantments={"minecraft:power": 3, "minecraft:unbreaking": 2}),
+               {"id": "minecraft:arrow", "count": 64}, {"id": "minecraft:cooked_beef", "count": 32}]},  # 9 stronghold -> preparation
     items(("minecraft:golden_apple", 3)),                               # 10 preparation -> the End
     items(("minecraft:spectral_arrow", 32)),                            # 11 the End -> the dragon
-    items(("minecraft:elytra", 1)),                                     # 12 the dragon
+    {"items": [stack("minecraft:elytra", custom_name={"translate": "item.minegoals.dragon_wings", "color": "light_purple", "italic": False},
+                     rarity="epic")]},                                  # 12 the dragon
 ]
 
 # Item rewards for Road to the End goals, on top of their XP: each one helps with the next steps.
@@ -394,10 +402,7 @@ en = {
     "minegoals.screen.no_goals": "No goals in this tier",
     "minegoals.screen.tier": "Tier %s",
     "minegoals.screen.tier_short": "Tier %s",
-    "minegoals.screen.tier_threshold": "Requires %s points",
-    "minegoals.screen.category_progress": "%s / %s points to the next tier",
-    "minegoals.screen.category_points": "%s points",
-    "minegoals.screen.category_max": "%s points · all tiers reached",
+    "minegoals.screen.tier_goals": "%s / %s goals",
     "minegoals.screen.completed": "Completed",
     "minegoals.screen.locked_tier": "Locked · reach tier %s",
     "minegoals.screen.locked_tier_tracked": "Locked · reach tier %s · progress already counts",
@@ -436,6 +441,7 @@ en = {
     "key.minegoals.toggle_hud": "Toggle goals HUD",
     "key.minegoals.next_category": "Next category in goals HUD",
     "key.category.minegoals.main": "MineGoals",
+    "item.minegoals.dragon_wings": "Dragon Wings",
 }
 fr = {
     "minegoals.screen.title": "MineGoals",
@@ -444,10 +450,7 @@ fr = {
     "minegoals.screen.no_goals": "Aucun objectif dans ce palier",
     "minegoals.screen.tier": "Palier %s",
     "minegoals.screen.tier_short": "Palier %s",
-    "minegoals.screen.tier_threshold": "Nécessite %s points",
-    "minegoals.screen.category_progress": "%s / %s points vers le palier suivant",
-    "minegoals.screen.category_points": "%s points",
-    "minegoals.screen.category_max": "%s points · tous les paliers atteints",
+    "minegoals.screen.tier_goals": "%s / %s objectifs",
     "minegoals.screen.completed": "Terminé",
     "minegoals.screen.locked_tier": "Verrouillé · atteins le palier %s",
     "minegoals.screen.locked_tier_tracked": "Verrouillé · atteins le palier %s · la progression compte déjà",
@@ -486,6 +489,7 @@ fr = {
     "key.minegoals.toggle_hud": "Afficher/masquer le HUD des objectifs",
     "key.minegoals.next_category": "Catégorie suivante dans le HUD",
     "key.category.minegoals.main": "MineGoals",
+    "item.minegoals.dragon_wings": "Ailes du dragon",
 }
 
 # Start from a clean slate so removed goals do not linger.

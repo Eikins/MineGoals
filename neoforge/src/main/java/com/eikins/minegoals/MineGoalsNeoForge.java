@@ -22,7 +22,7 @@ public class MineGoalsNeoForge {
 
         modBus.addListener(MineGoalsNeoForge::registerPayloads);
         NeoForge.EVENT_BUS.addListener((AddServerReloadListenersEvent event) ->
-                event.addListener(GoalDataLoader.ID, new GoalDataLoader()));
+                event.addListener(GoalDataLoader.ID, new GoalDataLoader(event.getRegistryAccess())));
         // Fires for a joining player and for everyone after /reload.
         NeoForge.EVENT_BUS.addListener((OnDatapackSyncEvent event) ->
                 event.getRelevantPlayers().forEach(GoalTracker::syncPlayer));
