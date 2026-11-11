@@ -4,6 +4,7 @@
   },
   "icon": "minecraft:compass",
   "order": 2,
+  "tier_visibility": "next",
   "tiers": [
     {
       "points": 0

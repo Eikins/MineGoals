@@ -13,5 +13,8 @@
     "type": "minegoals:break_block",
     "block": "minecraft:deepslate",
     "count": 64
+  },
+  "rewards": {
+    "experience": 15
   }
 }

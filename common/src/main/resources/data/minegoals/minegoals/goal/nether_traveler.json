@@ -12,5 +12,8 @@
   "criterion": {
     "type": "minegoals:visit_dimension",
     "dimension": "minecraft:the_nether"
+  },
+  "rewards": {
+    "experience": 15
   }
 }

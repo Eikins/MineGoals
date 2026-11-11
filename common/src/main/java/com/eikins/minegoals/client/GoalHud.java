@@ -16,7 +16,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-/** Top-right overlay: global level, focused category tier, and up to three active goals. */
+/**
+ * Top-right overlay: global level and rewards waiting to be claimed, the focused category's tier (cycled with J),
+ * and up to three active goals.
+ */
 public final class GoalHud {
 
     public static final Identifier ID = Constants.id("goals_hud");
@@ -57,6 +60,11 @@ public final class GoalHud {
         // Global level
         int total = progress.totalPoints(defs);
         g.text(font, Component.translatable("minegoals.hud.level", progress.level(defs)), x + 4, y + 4, GoalRender.GOLD, false);
+        int claimable = progress.claimableCount(defs);
+        if (claimable > 0) {
+            Component claim = Component.translatable("minegoals.hud.claimable", claimable);
+            g.text(font, claim, x + WIDTH - 4 - font.width(claim), y + 4, GoalRender.GREEN, false);
+        }
         GoalRender.bar(g, x + 4, y + 14, WIDTH - 8, 2,
                 GoalRender.fraction(total % Constants.POINTS_PER_LEVEL, Constants.POINTS_PER_LEVEL), GoalRender.GOLD);
 
@@ -65,13 +73,23 @@ public final class GoalHud {
         int tier = progress.tier(defs, categoryId);
         int next = category.pointsForTier(tier + 1);
         int current = category.pointsForTier(tier);
-        GoalRender.clippedText(g, font, category.title(), x + 4, y + 20, WIDTH - 8, GoalRender.WHITE);
+        int categoryCount = defs.categories().size();
+        String position = categoryCount > 1
+                ? (List.copyOf(defs.categories().keySet()).indexOf(categoryId) + 1) + "/" + categoryCount
+                : "";
+        GoalRender.clippedText(g, font, category.title(), x + 4, y + 20, WIDTH - 12 - font.width(position), GoalRender.WHITE);
+        g.text(font, position, x + WIDTH - 4 - font.width(position), y + 20, GoalRender.DARK_GRAY, false);
+        boolean showNext = next >= 0 && category.tierVisibility().revealsNextThreshold();
         Component tierText = next < 0
                 ? Component.translatable("minegoals.hud.tier_max", tier, points)
-                : Component.translatable("minegoals.hud.tier", tier, points, next);
+                : showNext
+                        ? Component.translatable("minegoals.hud.tier", tier, points, next)
+                        : Component.translatable("minegoals.hud.tier_hidden", tier, points);
         g.text(font, tierText, x + 4, y + 30, GoalRender.GRAY, false);
-        GoalRender.bar(g, x + 4, y + 40, WIDTH - 8, 2,
-                next < 0 ? 1F : GoalRender.fraction(points - current, next - current), GoalRender.GREEN);
+        if (next < 0 || showNext) {
+            GoalRender.bar(g, x + 4, y + 40, WIDTH - 8, 2,
+                    next < 0 ? 1F : GoalRender.fraction(points - current, next - current), GoalRender.GREEN);
+        }
 
         // Active goals
         int rowY = y + 46;

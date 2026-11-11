@@ -5,8 +5,10 @@ A multi-loader Minecraft **26.3** mod (**Fabric** and **NeoForge**): personal go
 
 - Each completed goal earns **points** for its category.
 - Reaching a points threshold unlocks the next **tier**, with its reward and new goals.
+- Goal and tier **rewards are claimed** by the player with a "Claim" button in the goals screen.
+- Each category chooses whether players can see tiers they have not reached yet.
 - Total points give a **global level**: one level every 100 points.
-- In-game **HUD** (press **H** to hide it) and a dedicated **screen** (press **G**).
+- In-game **HUD** (press **H** to hide it, **J** to show the next category) and a dedicated **screen** (press **G**).
 - Works in singleplayer and on dedicated servers. Progress is stored server-side, per player.
 
 ## Project structure
@@ -37,6 +39,7 @@ Key packages in `common/src/main/java/com/eikins/minegoals/`:
   "title": {"translate": "category.mypack.fishing"},
   "icon": "minecraft:fishing_rod",
   "order": 10,
+  "tier_visibility": "next",
   "tiers": [
     { "points": 0 },
     { "points": 30, "rewards": { "items": [{"id": "minecraft:cod", "count": 16}] } },
@@ -45,7 +48,16 @@ Key packages in `common/src/main/java/com/eikins/minegoals/`:
 }
 ```
 - `tiers`: the first tier is at 0 points, and thresholds must strictly increase.
-- A tier's reward is granted once, when the tier is reached.
+- A tier's reward can be claimed once, after the tier is reached.
+- `tier_visibility` (default `visible`) controls what players see of tiers they have not reached:
+
+| Value | Track shows | Goals and rewards of unreached tiers |
+|---|---|---|
+| `visible` | every tier | shown |
+| `next` | reached tiers, then the next one as "???" with its points threshold | hidden |
+| `hidden` | reached tiers only (the HUD also hides the next threshold) | hidden |
+
+Visibility is cosmetic: clients still receive every definition.
 
 ### Goal: `data/<namespace>/minegoals/goal/<name>.json`
 ```json
@@ -71,7 +83,7 @@ Key packages in `common/src/main/java/com/eikins/minegoals/`:
 | `icon` | required | Item id |
 | `requires` | `[]` | Goals to complete first (in addition to the tier) |
 | `criterion` | required | See below |
-| `rewards` | none | `items`, `experience`, `commands` (run as the player, permission level 2) |
+| `rewards` | none | `items`, `experience`, `commands` (run as the player, permission level 2), claimed from the goals screen |
 
 A goal whose category, tier or `requires` entry does not exist is skipped, with a warning in the logs.
 
@@ -89,14 +101,20 @@ The `block`, `entity`, `item` and `biome` fields accept an id (`minecraft:stone`
 | `minegoals:visit_dimension` | `dimension` | the player is in the dimension |
 
 A goal only counts progress once it is unlocked.
+
+### Rewards
+Nothing is granted automatically. When a goal is completed or a tier is reached, the player gets a toast and a
+chat message; the HUD and the screen show how many rewards are waiting. In the screen, the selected tier's reward
+appears above its goals, and completed goals show a **Claim** button. The server checks every claim, so a reward
+can only be claimed once.
 The mod ships example content (Mining, Combat, Exploration, Crafting; 32 goals) in
 `common/src/main/resources/data/minegoals/`. A datapack can override these files.
 
 ## Commands (operators)
 
 - `/minegoals list [player]`: level, tiers and the state of every goal.
-- `/minegoals reset <player> [goal|category]`: resets progress (everything if nothing is given).
-- `/minegoals complete <player> <goal>`: completes a goal, even a locked one, and grants its rewards.
+- `/minegoals reset <player> [goal|category]`: resets progress and claims (everything if nothing is given).
+- `/minegoals complete <player> <goal>`: completes a goal, even a locked one; its rewards become claimable.
 
 ## Development
 

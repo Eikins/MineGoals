@@ -4,6 +4,7 @@
   },
   "icon": "minecraft:iron_sword",
   "order": 1,
+  "tier_visibility": "visible",
   "tiers": [
     {
       "points": 0

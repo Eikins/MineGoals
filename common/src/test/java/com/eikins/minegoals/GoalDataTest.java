@@ -3,6 +3,7 @@ package com.eikins.minegoals;
 import com.eikins.minegoals.data.Category;
 import com.eikins.minegoals.data.Goal;
 import com.eikins.minegoals.data.GoalDefinitions;
+import com.eikins.minegoals.data.TierVisibility;
 import com.eikins.minegoals.progress.PlayerGoalProgress;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -201,13 +202,18 @@ class GoalDataTest {
         PlayerGoalProgress progress = new PlayerGoalProgress();
         progress.setCount(id("lumberjack"), 7, 16);
         complete(progress, "coal_miner");
-        progress.setRewardedTier(id("mining"), 2);
+        progress.setAnnouncedTier(id("mining"), 2);
+        progress.markGoalClaimed(id("coal_miner"));
+        progress.markTierClaimed(id("mining"), 1);
 
         JsonElement encoded = PlayerGoalProgress.CODEC.encodeStart(JsonOps.INSTANCE, progress).getOrThrow();
         PlayerGoalProgress decoded = PlayerGoalProgress.CODEC.parse(JsonOps.INSTANCE, encoded).getOrThrow();
         assertEquals(7, decoded.count(id("lumberjack")));
         assertTrue(decoded.isCompleted(id("coal_miner")));
-        assertEquals(2, decoded.rewardedTier(id("mining")));
+        assertEquals(2, decoded.announcedTier(id("mining")));
+        assertTrue(decoded.isGoalClaimed(id("coal_miner")));
+        assertTrue(decoded.isTierClaimed(id("mining"), 1));
+        assertFalse(decoded.isTierClaimed(id("mining"), 2));
     }
 
     @Test
@@ -215,11 +221,77 @@ class GoalDataTest {
         PlayerGoalProgress progress = new PlayerGoalProgress();
         complete(progress, "lumberjack");
         complete(progress, "zombie_slayer");
-        progress.setRewardedTier(id("mining"), 2);
+        progress.setAnnouncedTier(id("mining"), 2);
+        progress.markTierClaimed(id("mining"), 2);
+        progress.markGoalClaimed(id("lumberjack"));
 
         progress.resetCategory(examples, id("mining"));
         assertFalse(progress.isCompleted(id("lumberjack")));
         assertTrue(progress.isCompleted(id("zombie_slayer")), "other categories untouched");
-        assertEquals(0, progress.rewardedTier(id("mining")));
+        assertEquals(0, progress.announcedTier(id("mining")));
+        assertFalse(progress.isTierClaimed(id("mining"), 2));
+        assertFalse(progress.isGoalClaimed(id("lumberjack")));
+    }
+
+    // ---- claims ----------------------------------------------------------------------------------
+
+    @Test
+    void goalRewardsAreClaimableOnceCompleted() {
+        PlayerGoalProgress progress = new PlayerGoalProgress();
+        assertFalse(progress.canClaimGoal(examples, id("lumberjack")), "not completed yet");
+
+        complete(progress, "lumberjack");
+        assertTrue(progress.canClaimGoal(examples, id("lumberjack")));
+        assertEquals(1, progress.claimableCount(examples));
+
+        progress.markGoalClaimed(id("lumberjack"));
+        assertFalse(progress.canClaimGoal(examples, id("lumberjack")), "claimed only once");
+        assertEquals(0, progress.claimableCount(examples));
+    }
+
+    @Test
+    void tierRewardsAreClaimableOnceReached() {
+        PlayerGoalProgress progress = new PlayerGoalProgress();
+        Identifier mining = id("mining");
+        assertFalse(progress.canClaimTier(examples, mining, 1), "tier 1 has no reward");
+        assertFalse(progress.canClaimTier(examples, mining, 2), "tier 2 not reached");
+
+        for (String goal : new String[]{"lumberjack", "stone_breaker", "coal_miner"}) {
+            complete(progress, goal);
+            progress.markGoalClaimed(id(goal));
+        }
+        assertTrue(progress.canClaimTier(examples, mining, 2));
+        assertFalse(progress.canClaimTier(examples, mining, 3));
+        assertFalse(progress.canClaimTier(examples, mining, 99), "out of range");
+        assertEquals(1, progress.claimableCount(examples));
+
+        progress.markTierClaimed(mining, 2);
+        assertFalse(progress.canClaimTier(examples, mining, 2));
+    }
+
+    // ---- tier visibility -------------------------------------------------------------------------
+
+    @Test
+    void tierVisibilityControlsWhatIsShown() {
+        assertEquals(3, TierVisibility.VISIBLE.shownTiers(1, 3));
+        assertEquals(2, TierVisibility.NEXT.shownTiers(1, 3));
+        assertEquals(3, TierVisibility.NEXT.shownTiers(3, 3), "never more than the real tiers");
+        assertEquals(1, TierVisibility.HIDDEN.shownTiers(1, 3));
+
+        assertTrue(TierVisibility.VISIBLE.revealsContent(3, 1));
+        assertFalse(TierVisibility.NEXT.revealsContent(2, 1), "next tier shows as ??? only");
+        assertTrue(TierVisibility.NEXT.revealsContent(1, 1));
+        assertFalse(TierVisibility.HIDDEN.revealsNextThreshold());
+        assertTrue(TierVisibility.NEXT.revealsNextThreshold());
+    }
+
+    @Test
+    void tierVisibilityIsParsedAndDefaultsToVisible() {
+        Category fallback = Category.CODEC.parse(JsonOps.INSTANCE, json("""
+                {"title": "x", "icon": "minecraft:stone", "tiers": [{"points": 0}]}""")).getOrThrow();
+        assertEquals(TierVisibility.VISIBLE, fallback.tierVisibility());
+        assertEquals(TierVisibility.NEXT, examples.categories().get(id("exploration")).tierVisibility());
+        assertTrue(Category.CODEC.parse(JsonOps.INSTANCE, json("""
+                {"title": "x", "icon": "minecraft:stone", "tier_visibility": "sometimes", "tiers": [{"points": 0}]}""")).isError());
     }
 }

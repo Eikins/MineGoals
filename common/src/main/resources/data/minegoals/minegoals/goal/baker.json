@@ -13,5 +13,8 @@
     "type": "minegoals:hold_item",
     "item": "minecraft:bread",
     "count": 16
+  },
+  "rewards": {
+    "experience": 15
   }
 }

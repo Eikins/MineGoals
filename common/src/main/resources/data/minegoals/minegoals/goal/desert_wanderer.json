@@ -12,5 +12,8 @@
   "criterion": {
     "type": "minegoals:visit_biome",
     "biome": "minecraft:desert"
+  },
+  "rewards": {
+    "experience": 10
   }
 }

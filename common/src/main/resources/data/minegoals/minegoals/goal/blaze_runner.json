@@ -14,6 +14,9 @@
     "entity": "minecraft:blaze",
     "count": 10
   },
+  "rewards": {
+    "experience": 25
+  },
   "requires": [
     "minegoals:nether_traveler"
   ]

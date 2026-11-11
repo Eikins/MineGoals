@@ -14,6 +14,7 @@ import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
 import net.neoforged.neoforge.common.NeoForge;
 
@@ -26,6 +27,7 @@ public class MineGoalsNeoForgeClient {
             event.register(MineGoalsNetwork.SyncProgress.TYPE, (payload, ctx) -> ClientPayloadHandlers.onProgress(payload));
             event.register(MineGoalsNetwork.Notify.TYPE, (payload, ctx) -> ClientPayloadHandlers.onNotify(payload));
         });
+        ClientGoalState.setClaimSender(payload -> ClientPacketDistributor.sendToServer(payload));
         modBus.addListener((RegisterGuiLayersEvent event) ->
                 event.registerAboveAll(GoalHud.ID, (graphics, deltaTracker) -> GoalHud.render(graphics)));
         modBus.addListener((RegisterKeyMappingsEvent event) -> {

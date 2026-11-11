@@ -12,12 +12,13 @@ import net.minecraft.world.item.Item;
 import java.util.List;
 
 /** A goal category: a track of tiers unlocked by earning points, like a battle pass. */
-public record Category(Component title, Item icon, int order, List<Tier> tiers) {
+public record Category(Component title, Item icon, int order, TierVisibility tierVisibility, List<Tier> tiers) {
 
     public static final Codec<Category> CODEC = RecordCodecBuilder.<Category>create(i -> i.group(
             ComponentSerialization.CODEC.fieldOf("title").forGetter(Category::title),
             BuiltInRegistries.ITEM.byNameCodec().fieldOf("icon").forGetter(Category::icon),
             Codec.INT.optionalFieldOf("order", 0).forGetter(Category::order),
+            TierVisibility.CODEC.optionalFieldOf("tier_visibility", TierVisibility.VISIBLE).forGetter(Category::tierVisibility),
             Tier.CODEC.listOf().fieldOf("tiers").forGetter(Category::tiers)
     ).apply(i, Category::new)).validate(Category::validate);
 

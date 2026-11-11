@@ -8,6 +8,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.resource.v1.DataResourceLoader;
 
 public class MineGoalsFabric implements ModInitializer {
@@ -19,6 +20,9 @@ public class MineGoalsFabric implements ModInitializer {
         PayloadTypeRegistry.clientboundPlay().register(MineGoalsNetwork.SyncDefinitions.TYPE, MineGoalsNetwork.SyncDefinitions.STREAM_CODEC);
         PayloadTypeRegistry.clientboundPlay().register(MineGoalsNetwork.SyncProgress.TYPE, MineGoalsNetwork.SyncProgress.STREAM_CODEC);
         PayloadTypeRegistry.clientboundPlay().register(MineGoalsNetwork.Notify.TYPE, MineGoalsNetwork.Notify.STREAM_CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(MineGoalsNetwork.ClaimReward.TYPE, MineGoalsNetwork.ClaimReward.STREAM_CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(MineGoalsNetwork.ClaimReward.TYPE,
+                (payload, ctx) -> GoalTracker.claim(ctx.player(), payload.id(), payload.tier()));
 
         DataResourceLoader.get().registerReloadListener(GoalDataLoader.ID, registries -> new GoalDataLoader());
         // Fires for a joining player and for everyone after /reload.

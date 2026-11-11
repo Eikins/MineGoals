@@ -13,5 +13,8 @@
     "type": "minegoals:break_block",
     "block": "#minecraft:logs",
     "count": 16
+  },
+  "rewards": {
+    "experience": 10
   }
 }

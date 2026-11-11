@@ -5,13 +5,17 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 
-/** Key bindings: G opens the goals screen, H toggles the HUD. Created by each loader with its key category. */
+/**
+ * Key bindings: G opens the goals screen, H toggles the HUD, J shows the next category in the HUD.
+ * Created by each loader with its key category.
+ */
 public final class ClientKeys {
 
     public static final net.minecraft.resources.Identifier CATEGORY_ID = Constants.id("main");
 
     private static KeyMapping openScreen;
     private static KeyMapping toggleHud;
+    private static KeyMapping nextCategory;
 
     private ClientKeys() {
     }
@@ -19,7 +23,8 @@ public final class ClientKeys {
     public static KeyMapping[] create(KeyMapping.Category category) {
         openScreen = new KeyMapping("key.minegoals.open", InputConstants.KEY_G, category);
         toggleHud = new KeyMapping("key.minegoals.toggle_hud", InputConstants.KEY_H, category);
-        return new KeyMapping[]{openScreen, toggleHud};
+        nextCategory = new KeyMapping("key.minegoals.next_category", InputConstants.KEY_J, category);
+        return new KeyMapping[]{openScreen, toggleHud, nextCategory};
     }
 
     /** Called at the end of every client tick. */
@@ -32,6 +37,9 @@ public final class ClientKeys {
         }
         while (toggleHud.consumeClick()) {
             ClientGoalState.toggleHud();
+        }
+        while (nextCategory.consumeClick()) {
+            ClientGoalState.cycleCategory();
         }
     }
 }

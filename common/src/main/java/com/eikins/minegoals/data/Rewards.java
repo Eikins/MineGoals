@@ -13,7 +13,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 
-/** Rewards granted when a goal is completed or a tier is reached. */
+/** Rewards of a goal or a tier, granted when the player claims them from the goals screen. */
 public record Rewards(List<ItemReward> items, int experience, List<String> commands) {
 
     public static final Rewards NONE = new Rewards(List.of(), 0, List.of());

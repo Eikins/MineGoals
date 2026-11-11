@@ -4,6 +4,7 @@ import com.eikins.minegoals.command.MineGoalsCommand;
 import com.eikins.minegoals.data.GoalDataLoader;
 import com.eikins.minegoals.network.MineGoalsNetwork;
 import com.eikins.minegoals.progress.GoalTracker;
+import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
@@ -35,5 +36,7 @@ public class MineGoalsNeoForge {
         registrar.playToClient(MineGoalsNetwork.SyncDefinitions.TYPE, MineGoalsNetwork.SyncDefinitions.STREAM_CODEC);
         registrar.playToClient(MineGoalsNetwork.SyncProgress.TYPE, MineGoalsNetwork.SyncProgress.STREAM_CODEC);
         registrar.playToClient(MineGoalsNetwork.Notify.TYPE, MineGoalsNetwork.Notify.STREAM_CODEC);
+        registrar.playToServer(MineGoalsNetwork.ClaimReward.TYPE, MineGoalsNetwork.ClaimReward.STREAM_CODEC,
+                (payload, ctx) -> GoalTracker.claim((ServerPlayer) ctx.player(), payload.id(), payload.tier()));
     }
 }

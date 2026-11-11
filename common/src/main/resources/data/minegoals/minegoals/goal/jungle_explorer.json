@@ -12,5 +12,8 @@
   "criterion": {
     "type": "minegoals:visit_biome",
     "biome": "#minecraft:is_jungle"
+  },
+  "rewards": {
+    "experience": 15
   }
 }

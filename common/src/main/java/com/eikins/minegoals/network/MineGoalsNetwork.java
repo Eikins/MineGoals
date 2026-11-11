@@ -9,8 +9,12 @@ import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
 
-/** Server-to-client payloads. Each loader registers them; handlers live in {@code client.ClientPayloadHandlers}. */
+/**
+ * Payloads. Each loader registers them. Server-to-client handlers live in {@code client.ClientPayloadHandlers};
+ * the only client-to-server payload, {@link ClaimReward}, is handled by {@code GoalTracker.claim}.
+ */
 public final class MineGoalsNetwork {
 
     private MineGoalsNetwork() {
@@ -36,6 +40,31 @@ public final class MineGoalsNetwork {
 
         @Override
         public Type<SyncProgress> type() {
+            return TYPE;
+        }
+    }
+
+    /**
+     * Client to server: claim the rewards of a completed goal ({@code tier == 0}) or of a reached tier
+     * ({@code id} is then the category). The server validates everything.
+     */
+    public record ClaimReward(Identifier id, int tier) implements CustomPacketPayload {
+        public static final Type<ClaimReward> TYPE = new Type<>(Constants.id("claim_reward"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, ClaimReward> STREAM_CODEC = StreamCodec.composite(
+                Identifier.STREAM_CODEC, ClaimReward::id,
+                ByteBufCodecs.VAR_INT, ClaimReward::tier,
+                ClaimReward::new);
+
+        public static ClaimReward goal(Identifier goal) {
+            return new ClaimReward(goal, 0);
+        }
+
+        public static ClaimReward tier(Identifier category, int tier) {
+            return new ClaimReward(category, tier);
+        }
+
+        @Override
+        public Type<ClaimReward> type() {
             return TYPE;
         }
     }

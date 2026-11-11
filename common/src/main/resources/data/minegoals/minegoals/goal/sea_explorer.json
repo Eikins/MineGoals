@@ -12,5 +12,8 @@
   "criterion": {
     "type": "minegoals:visit_biome",
     "biome": "#minecraft:is_ocean"
+  },
+  "rewards": {
+    "experience": 10
   }
 }

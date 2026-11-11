@@ -7,6 +7,7 @@ import com.eikins.minegoals.network.MineGoalsNetwork;
 import com.eikins.minegoals.platform.Services;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stat;
@@ -17,7 +18,7 @@ import java.util.Map;
 import java.util.OptionalInt;
 import java.util.Set;
 
-/** Server-side goal logic: counts progress, completes goals, grants rewards and syncs clients. */
+/** Server-side goal logic: counts progress, completes goals, hands out claimed rewards and syncs clients. */
 public final class GoalTracker {
 
     private static final Set<StatType<?>> TRACKED_STATS =
@@ -67,7 +68,7 @@ public final class GoalTracker {
         }
     }
 
-    /** Sends definitions and progress to a player (on join and after reload), then catches up on rewards. */
+    /** Sends definitions and progress to a player (on join and after reload), then catches up on completions. */
     public static void syncPlayer(ServerPlayer player) {
         GoalDefinitions defs = GoalDefinitions.server();
         GoalProgressData data = GoalProgressData.get(player.level().getServer());
@@ -75,7 +76,7 @@ public final class GoalTracker {
         evaluate(player, data, data.get(player.getUUID()), defs, true);
     }
 
-    /** Completes a goal immediately, even if locked. Used by {@code /minegoals complete}. */
+    /** Completes a goal immediately, even if locked; its rewards become claimable. Used by {@code /minegoals complete}. */
     public static boolean forceComplete(ServerPlayer player, Identifier goalId) {
         GoalDefinitions defs = GoalDefinitions.server();
         Goal goal = defs.goals().get(goalId);
@@ -97,8 +98,34 @@ public final class GoalTracker {
     }
 
     /**
-     * Completes every goal that reached its count, grants tier rewards for newly reached tiers, and repeats
-     * until nothing changes (a new tier can unlock goals). Then saves and syncs.
+     * Grants the rewards of a completed goal ({@code tier == 0}) or of a reached tier, if the player can claim
+     * them. Called from the {@code ClaimReward} payload; every condition is checked here, never trusted from the client.
+     */
+    public static void claim(ServerPlayer player, Identifier id, int tier) {
+        GoalDefinitions defs = GoalDefinitions.server();
+        GoalProgressData data = GoalProgressData.get(player.level().getServer());
+        PlayerGoalProgress progress = data.get(player.getUUID());
+        if (tier == 0) {
+            if (!progress.canClaimGoal(defs, id)) {
+                return;
+            }
+            progress.markGoalClaimed(id);
+            defs.goals().get(id).rewards().grant(player);
+        } else {
+            if (!progress.canClaimTier(defs, id, tier)) {
+                return;
+            }
+            progress.markTierClaimed(id, tier);
+            defs.categories().get(id).tiers().get(tier - 1).rewards().grant(player);
+        }
+        data.setDirty();
+        Services.NETWORK.sendToPlayer(player, new MineGoalsNetwork.SyncProgress(progress.copy()));
+    }
+
+    /**
+     * Completes every goal that reached its count and announces newly reached tiers, repeating until nothing
+     * changes (a new tier can unlock goals). Rewards are not granted here: the player claims them from the
+     * goals screen. Then saves and syncs.
      */
     private static void evaluate(ServerPlayer player, GoalProgressData data, PlayerGoalProgress progress,
                                  GoalDefinitions defs, boolean sync) {
@@ -117,17 +144,13 @@ public final class GoalTracker {
                 Identifier categoryId = entry.getKey();
                 Category category = entry.getValue();
                 int reached = progress.tier(defs, categoryId);
-                int rewarded = progress.rewardedTier(categoryId);
-                for (int tier = rewarded + 1; tier <= reached; tier++) {
-                    category.tiers().get(tier - 1).rewards().grant(player);
-                    if (tier > 1) {
-                        notify(player,
-                                Component.translatable("minegoals.notify.tier_reached", tier),
-                                category.title());
-                    }
+                int announced = progress.announcedTier(categoryId);
+                for (int tier = Math.max(2, announced + 1); tier <= reached; tier++) {
+                    notify(player, Component.translatable("minegoals.notify.tier_reached", tier), category.title(),
+                            !category.tiers().get(tier - 1).rewards().isEmpty());
                 }
-                if (reached > rewarded) {
-                    progress.setRewardedTier(categoryId, reached);
+                if (reached > announced) {
+                    progress.setAnnouncedTier(categoryId, reached);
                     progressed = true;
                 }
             }
@@ -140,16 +163,20 @@ public final class GoalTracker {
 
     private static void complete(ServerPlayer player, PlayerGoalProgress progress, Identifier id, Goal goal) {
         progress.markCompleted(id);
-        goal.rewards().grant(player);
-        notify(player, Component.translatable("minegoals.notify.goal_completed"), goal.title());
+        notify(player, Component.translatable("minegoals.notify.goal_completed"), goal.title(), !goal.rewards().isEmpty());
     }
 
-    private static void notify(ServerPlayer player, Component title, Component message) {
-        player.sendSystemMessage(Component.empty()
+    private static void notify(ServerPlayer player, Component title, Component message, boolean hasReward) {
+        MutableComponent chat = Component.empty()
                 .append(Component.literal("[MineGoals] ").withStyle(ChatFormatting.GOLD))
                 .append(title.copy().withStyle(ChatFormatting.YELLOW))
                 .append(Component.literal(" — "))
-                .append(message));
+                .append(message);
+        if (hasReward) {
+            chat.append(Component.literal(" "))
+                    .append(Component.translatable("minegoals.notify.claim_hint").withStyle(ChatFormatting.GREEN));
+        }
+        player.sendSystemMessage(chat);
         Services.NETWORK.sendToPlayer(player, new MineGoalsNetwork.Notify(title, message));
     }
 }
