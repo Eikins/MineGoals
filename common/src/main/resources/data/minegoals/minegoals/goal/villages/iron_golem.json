@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:villages",
+  "tier": 2,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.villages.iron_golem"
+  },
+  "description": {
+    "translate": "goal.minegoals.villages.iron_golem.desc"
+  },
+  "icon": "minecraft:carved_pumpkin",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:adventure/summon_iron_golem"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

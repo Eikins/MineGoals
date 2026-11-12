@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:redstone",
+  "tier": 3,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.redstone.hoppers_2"
+  },
+  "description": {
+    "translate": "goal.minegoals.redstone.hoppers_2.desc"
+  },
+  "icon": "minecraft:hopper",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:hopper",
+    "count": 32
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

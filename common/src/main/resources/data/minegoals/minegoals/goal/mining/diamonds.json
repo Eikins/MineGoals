@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:mining",
+  "tier": 3,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.mining.diamonds"
+  },
+  "description": {
+    "translate": "goal.minegoals.mining.diamonds.desc"
+  },
+  "icon": "minecraft:diamond_ore",
+  "criterion": {
+    "type": "minegoals:break_block",
+    "block": "#minecraft:diamond_ores",
+    "count": 8
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

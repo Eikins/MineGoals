@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:exploration",
+  "tier": 4,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.exploration.lodestone"
+  },
+  "description": {
+    "translate": "goal.minegoals.exploration.lodestone.desc"
+  },
+  "icon": "minecraft:lodestone",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:adventure/use_lodestone"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

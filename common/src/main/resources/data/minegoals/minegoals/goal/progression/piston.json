@@ -1,0 +1,33 @@
+{
+  "category": "minegoals:progression",
+  "tier": 4,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.progression.piston"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.piston.desc"
+  },
+  "icon": "minecraft:piston",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:piston",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 10,
+    "commands": [
+      {
+        "run": "minegoals unlock @s minegoals:redstone",
+        "icon": "minecraft:redstone",
+        "name": {
+          "translate": "reward.minegoals.unlock_redstone"
+        },
+        "description": {
+          "translate": "reward.minegoals.unlock_redstone.desc"
+        }
+      }
+    ]
+  },
+  "track_before_unlock": true
+}

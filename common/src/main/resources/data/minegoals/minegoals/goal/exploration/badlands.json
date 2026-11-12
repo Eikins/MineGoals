@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:exploration",
+  "tier": 2,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.exploration.badlands"
+  },
+  "description": {
+    "translate": "goal.minegoals.exploration.badlands.desc"
+  },
+  "icon": "minecraft:terracotta",
+  "criterion": {
+    "type": "minegoals:visit_biome",
+    "biome": "#minecraft:is_badlands"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

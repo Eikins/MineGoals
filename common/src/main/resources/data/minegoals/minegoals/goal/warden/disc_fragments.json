@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:warden",
+  "tier": 3,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.warden.disc_fragments"
+  },
+  "description": {
+    "translate": "goal.minegoals.warden.disc_fragments.desc"
+  },
+  "icon": "minecraft:disc_fragment_5",
+  "criterion": {
+    "type": "minegoals:collect_item",
+    "item": "minecraft:disc_fragment_5",
+    "count": 9
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

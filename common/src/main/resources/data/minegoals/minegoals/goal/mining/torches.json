@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:mining",
+  "tier": 1,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.mining.torches"
+  },
+  "description": {
+    "translate": "goal.minegoals.mining.torches.desc"
+  },
+  "icon": "minecraft:torch",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:torch",
+    "count": 16
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

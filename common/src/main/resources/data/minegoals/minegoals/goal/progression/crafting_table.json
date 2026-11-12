@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:progression",
+  "tier": 1,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.progression.crafting_table"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.crafting_table.desc"
+  },
+  "icon": "minecraft:crafting_table",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:crafting_table",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

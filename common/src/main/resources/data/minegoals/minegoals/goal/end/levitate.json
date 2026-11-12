@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:end",
+  "tier": 2,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.end.levitate"
+  },
+  "description": {
+    "translate": "goal.minegoals.end.levitate.desc"
+  },
+  "icon": "minecraft:shulker_shell",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:end/levitate"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

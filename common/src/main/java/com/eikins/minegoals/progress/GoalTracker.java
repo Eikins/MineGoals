@@ -18,18 +18,21 @@ import net.minecraft.stats.StatType;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionContents;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
 import java.util.Set;
+import java.util.function.ToIntFunction;
 
 /** Server-side goal logic: counts progress, completes goals, hands out claimed rewards and syncs clients. */
 public final class GoalTracker {
 
     private static final Set<StatType<?>> TRACKED_STATS =
-            Set.of(Stats.BLOCK_MINED, Stats.ENTITY_KILLED, Stats.ITEM_PICKED_UP, Stats.ITEM_CRAFTED, Stats.CUSTOM);
+            Set.of(Stats.BLOCK_MINED, Stats.ENTITY_KILLED, Stats.ITEM_PICKED_UP, Stats.ITEM_CRAFTED, Stats.ITEM_USED,
+                    Stats.CUSTOM);
 
     private GoalTracker() {
     }
@@ -39,6 +42,16 @@ public final class GoalTracker {
         if (delta <= 0 || !TRACKED_STATS.contains(stat.getType())) {
             return;
         }
+        addProgress(player, criterion -> criterion.onStat(stat, delta));
+    }
+
+    /** Called when a player takes a brewed potion out of a brewing stand. */
+    public static void onBrew(ServerPlayer player, PotionContents contents) {
+        addProgress(player, criterion -> criterion.onBrew(contents));
+    }
+
+    /** Adds the progress each goal's criterion reports for an event to the goals being tracked. */
+    private static void addProgress(ServerPlayer player, ToIntFunction<com.eikins.minegoals.data.criterion.GoalCriterion> gainOf) {
         GoalDefinitions defs = GoalDefinitions.server();
         GoalProgressData data = GoalProgressData.get(player.level().getServer());
         PlayerGoalProgress progress = data.get(player.getUUID());
@@ -46,7 +59,7 @@ public final class GoalTracker {
         boolean changed = false;
         for (Map.Entry<Identifier, Goal> entry : defs.goals().entrySet()) {
             Goal goal = entry.getValue();
-            int gain = goal.criterion().onStat(stat, delta);
+            int gain = gainOf.applyAsInt(goal.criterion());
             if (gain > 0 && progress.isTracking(defs, entry.getKey())) {
                 changed |= progress.setCount(entry.getKey(), progress.count(entry.getKey()) + gain, goal.count());
             }
@@ -250,6 +263,25 @@ public final class GoalTracker {
             return;
         }
         if (progress.setTracked(goalId, tracked)) {
+            data.setDirty();
+        }
+        // Always sync, so a client that toggled optimistically gets the real state back.
+        Services.NETWORK.sendToPlayer(player, new MineGoalsNetwork.SyncProgress(progress.copy()));
+    }
+
+    /**
+     * Starts or stops tracking every goal of a tier that is not completed yet. Called from the {@code TrackTier}
+     * payload; unknown categories and tiers are ignored.
+     */
+    public static void setTierTracked(ServerPlayer player, Identifier categoryId, int tier, boolean tracked) {
+        GoalDefinitions defs = GoalDefinitions.server();
+        Category category = defs.categories().get(categoryId);
+        if (category == null || tier < 1 || tier > category.tiers().size()) {
+            return;
+        }
+        GoalProgressData data = GoalProgressData.get(player.level().getServer());
+        PlayerGoalProgress progress = data.get(player.getUUID());
+        if (progress.setTierTracked(defs, categoryId, tier, tracked)) {
             data.setDirty();
         }
         // Always sync, so a client that toggled optimistically gets the real state back.

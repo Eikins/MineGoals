@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:progression",
+  "tier": 7,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.progression.stronghold"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.stronghold.desc"
+  },
+  "icon": "minecraft:end_portal_frame",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:story/follow_ender_eye"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

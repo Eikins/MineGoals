@@ -1,0 +1,32 @@
+{
+  "category": "minegoals:progression",
+  "tier": 8,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.progression.deep_dark"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.deep_dark.desc"
+  },
+  "icon": "minecraft:sculk",
+  "criterion": {
+    "type": "minegoals:visit_biome",
+    "biome": "minecraft:deep_dark"
+  },
+  "rewards": {
+    "experience": 10,
+    "commands": [
+      {
+        "run": "minegoals unlock @s minegoals:warden",
+        "icon": "minecraft:sculk_shrieker",
+        "name": {
+          "translate": "reward.minegoals.unlock_warden"
+        },
+        "description": {
+          "translate": "reward.minegoals.unlock_warden.desc"
+        }
+      }
+    ]
+  },
+  "track_before_unlock": true
+}

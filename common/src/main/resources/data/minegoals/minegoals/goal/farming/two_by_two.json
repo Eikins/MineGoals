@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:farming",
+  "tier": 4,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.farming.two_by_two"
+  },
+  "description": {
+    "translate": "goal.minegoals.farming.two_by_two.desc"
+  },
+  "icon": "minecraft:golden_apple",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:husbandry/bred_all_animals"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:farming",
+  "tier": 2,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.farming.potatoes"
+  },
+  "description": {
+    "translate": "goal.minegoals.farming.potatoes.desc"
+  },
+  "icon": "minecraft:potato",
+  "criterion": {
+    "type": "minegoals:collect_item",
+    "item": "minecraft:potato",
+    "count": 32
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:villages",
+  "tier": 4,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.villages.star_trader"
+  },
+  "description": {
+    "translate": "goal.minegoals.villages.star_trader.desc"
+  },
+  "icon": "minecraft:emerald_block",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:adventure/trade_at_world_height"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

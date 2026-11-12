@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:exploration",
+  "tier": 2,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.exploration.trial_chambers"
+  },
+  "description": {
+    "translate": "goal.minegoals.exploration.trial_chambers.desc"
+  },
+  "icon": "minecraft:trial_key",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:adventure/minecraft_trials_edition"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:villages",
+  "tier": 1,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.villages.trade"
+  },
+  "description": {
+    "translate": "goal.minegoals.villages.trade.desc"
+  },
+  "icon": "minecraft:emerald",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:adventure/trade"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

@@ -1,0 +1,25 @@
+{
+  "category": "minegoals:magic",
+  "tier": 3,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.magic.swiftness"
+  },
+  "description": {
+    "translate": "goal.minegoals.magic.swiftness.desc"
+  },
+  "icon": "minecraft:sugar",
+  "criterion": {
+    "type": "minegoals:brew_potion",
+    "count": 3,
+    "potions": [
+      "minecraft:swiftness",
+      "minecraft:long_swiftness",
+      "minecraft:strong_swiftness"
+    ]
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

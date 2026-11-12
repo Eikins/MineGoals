@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:farming",
+  "tier": 3,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.farming.tame"
+  },
+  "description": {
+    "translate": "goal.minegoals.farming.tame.desc"
+  },
+  "icon": "minecraft:bone",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:husbandry/tame_an_animal"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

@@ -40,6 +40,9 @@ public class MineGoalsNeoForge {
                 (payload, ctx) -> GoalTracker.claim((ServerPlayer) ctx.player(), payload.id(), payload.tier()));
         registrar.playToServer(MineGoalsNetwork.TrackGoal.TYPE, MineGoalsNetwork.TrackGoal.STREAM_CODEC,
                 (payload, ctx) -> GoalTracker.setTracked((ServerPlayer) ctx.player(), payload.goal(), payload.tracked()));
+        registrar.playToServer(MineGoalsNetwork.TrackTier.TYPE, MineGoalsNetwork.TrackTier.STREAM_CODEC,
+                (payload, ctx) -> GoalTracker.setTierTracked((ServerPlayer) ctx.player(), payload.category(), payload.tier(),
+                        payload.tracked()));
         registrar.playToServer(MineGoalsNetwork.CollectPendingItems.TYPE, MineGoalsNetwork.CollectPendingItems.STREAM_CODEC,
                 (payload, ctx) -> GoalTracker.collectPendingItems((ServerPlayer) ctx.player()));
     }

@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:exploration",
+  "tier": 2,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.exploration.cherry_grove"
+  },
+  "description": {
+    "translate": "goal.minegoals.exploration.cherry_grove.desc"
+  },
+  "icon": "minecraft:cherry_sapling",
+  "criterion": {
+    "type": "minegoals:visit_biome",
+    "biome": "minecraft:cherry_grove"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

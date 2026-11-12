@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:combat",
+  "tier": 2,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.combat.endermen"
+  },
+  "description": {
+    "translate": "goal.minegoals.combat.endermen.desc"
+  },
+  "icon": "minecraft:ender_pearl",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:enderman",
+    "count": 5
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

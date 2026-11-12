@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:progression",
+  "tier": 5,
+  "points": 2,
+  "title": {
+    "translate": "goal.minegoals.progression.combat_2"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.combat_2.desc"
+  },
+  "icon": "minecraft:iron_sword",
+  "criterion": {
+    "type": "minegoals:category_tier",
+    "category": "minegoals:combat",
+    "tier": 2
+  },
+  "rewards": {
+    "experience": 20
+  },
+  "track_before_unlock": true
+}

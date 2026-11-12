@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:farming",
+  "tier": 4,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.farming.breeder_3"
+  },
+  "description": {
+    "translate": "goal.minegoals.farming.breeder_3.desc"
+  },
+  "icon": "minecraft:wheat",
+  "criterion": {
+    "type": "minegoals:custom_stat",
+    "stat": "minecraft:animals_bred",
+    "count": 75
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

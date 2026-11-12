@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:exploration",
+  "tier": 1,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.exploration.desert"
+  },
+  "description": {
+    "translate": "goal.minegoals.exploration.desert.desc"
+  },
+  "icon": "minecraft:sand",
+  "criterion": {
+    "type": "minegoals:visit_biome",
+    "biome": "minecraft:desert"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

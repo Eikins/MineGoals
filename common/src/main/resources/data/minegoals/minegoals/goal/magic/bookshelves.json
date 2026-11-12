@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:magic",
+  "tier": 2,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.magic.bookshelves"
+  },
+  "description": {
+    "translate": "goal.minegoals.magic.bookshelves.desc"
+  },
+  "icon": "minecraft:bookshelf",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:bookshelf",
+    "count": 15
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

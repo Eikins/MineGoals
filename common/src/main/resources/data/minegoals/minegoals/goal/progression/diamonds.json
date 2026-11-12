@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:progression",
+  "tier": 4,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.progression.diamonds"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.diamonds.desc"
+  },
+  "icon": "minecraft:diamond",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:story/mine_diamond"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

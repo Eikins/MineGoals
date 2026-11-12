@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:combat",
+  "tier": 1,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.combat.shield"
+  },
+  "description": {
+    "translate": "goal.minegoals.combat.shield.desc"
+  },
+  "icon": "minecraft:shield",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:shield",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

@@ -1,0 +1,74 @@
+{
+  "title": {
+    "translate": "category.minegoals.warden"
+  },
+  "icon": "minecraft:sculk_shrieker",
+  "order": 10,
+  "tier_visibility": "next",
+  "unlock": {
+    "default": false
+  },
+  "background": "minecraft:textures/gui/advancements/backgrounds/stone.png",
+  "tiers": [
+    {
+      "points": 3,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:leather_leggings",
+            "count": 1,
+            "components": {
+              "minecraft:enchantments": {
+                "minecraft:swift_sneak": 2
+              }
+            }
+          },
+          {
+            "id": "minecraft:white_wool",
+            "count": 32
+          }
+        ],
+        "experience": 50
+      }
+    },
+    {
+      "points": 3,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:golden_apple",
+            "count": 4
+          },
+          {
+            "id": "minecraft:potion",
+            "count": 2,
+            "components": {
+              "minecraft:potion_contents": {
+                "potion": "minecraft:long_night_vision"
+              }
+            }
+          }
+        ],
+        "experience": 100
+      }
+    },
+    {
+      "points": 3,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:netherite_chestplate",
+            "count": 1,
+            "components": {
+              "minecraft:enchantments": {
+                "minecraft:protection": 4,
+                "minecraft:unbreaking": 3
+              }
+            }
+          }
+        ],
+        "experience": 150
+      }
+    }
+  ]
+}

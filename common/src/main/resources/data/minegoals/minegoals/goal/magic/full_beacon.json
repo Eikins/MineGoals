@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:magic",
+  "tier": 4,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.magic.full_beacon"
+  },
+  "description": {
+    "translate": "goal.minegoals.magic.full_beacon.desc"
+  },
+  "icon": "minecraft:beacon",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:nether/create_full_beacon"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

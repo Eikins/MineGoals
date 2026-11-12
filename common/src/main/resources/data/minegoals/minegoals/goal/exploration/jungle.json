@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:exploration",
+  "tier": 1,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.exploration.jungle"
+  },
+  "description": {
+    "translate": "goal.minegoals.exploration.jungle.desc"
+  },
+  "icon": "minecraft:jungle_sapling",
+  "criterion": {
+    "type": "minegoals:visit_biome",
+    "biome": "#minecraft:is_jungle"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

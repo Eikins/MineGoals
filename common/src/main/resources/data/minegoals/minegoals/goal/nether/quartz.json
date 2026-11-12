@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:nether",
+  "tier": 1,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.nether.quartz"
+  },
+  "description": {
+    "translate": "goal.minegoals.nether.quartz.desc"
+  },
+  "icon": "minecraft:nether_quartz_ore",
+  "criterion": {
+    "type": "minegoals:break_block",
+    "block": "minecraft:nether_quartz_ore",
+    "count": 32
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

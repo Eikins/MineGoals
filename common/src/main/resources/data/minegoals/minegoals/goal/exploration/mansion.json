@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:exploration",
+  "tier": 4,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.exploration.mansion"
+  },
+  "description": {
+    "translate": "goal.minegoals.exploration.mansion.desc"
+  },
+  "icon": "minecraft:totem_of_undying",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:evoker",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

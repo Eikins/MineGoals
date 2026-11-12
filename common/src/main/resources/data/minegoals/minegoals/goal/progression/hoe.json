@@ -1,0 +1,33 @@
+{
+  "category": "minegoals:progression",
+  "tier": 2,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.progression.hoe"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.hoe.desc"
+  },
+  "icon": "minecraft:stone_hoe",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "#minecraft:hoes",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 10,
+    "commands": [
+      {
+        "run": "minegoals unlock @s minegoals:farming",
+        "icon": "minecraft:wheat",
+        "name": {
+          "translate": "reward.minegoals.unlock_farming"
+        },
+        "description": {
+          "translate": "reward.minegoals.unlock_farming.desc"
+        }
+      }
+    ]
+  },
+  "track_before_unlock": true
+}

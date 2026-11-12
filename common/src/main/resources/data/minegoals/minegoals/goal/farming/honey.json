@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:farming",
+  "tier": 3,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.farming.honey"
+  },
+  "description": {
+    "translate": "goal.minegoals.farming.honey.desc"
+  },
+  "icon": "minecraft:honey_bottle",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:husbandry/safely_harvest_honey"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

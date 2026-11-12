@@ -8,6 +8,7 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stat;
+import net.minecraft.world.item.alchemy.PotionContents;
 
 import java.util.Map;
 import java.util.OptionalInt;
@@ -15,14 +16,16 @@ import java.util.OptionalInt;
 /** What a player has to do to complete a goal. */
 public sealed interface GoalCriterion
         permits StatCriterion, HoldItemCriterion, VisitBiomeCriterion, VisitDimensionCriterion, AdvancementCriterion,
-                CategoryTierCriterion {
+                CategoryTierCriterion, BrewPotionCriterion {
 
     Map<Identifier, MapCodec<? extends GoalCriterion>> TYPES = Map.ofEntries(
             Map.entry(Constants.id("break_block"), StatCriterion.BREAK_BLOCK),
             Map.entry(Constants.id("kill_entity"), StatCriterion.KILL_ENTITY),
             Map.entry(Constants.id("collect_item"), StatCriterion.COLLECT_ITEM),
             Map.entry(Constants.id("craft_item"), StatCriterion.CRAFT_ITEM),
+            Map.entry(Constants.id("use_item"), StatCriterion.USE_ITEM),
             Map.entry(Constants.id("custom_stat"), StatCriterion.CUSTOM_STAT),
+            Map.entry(Constants.id("brew_potion"), BrewPotionCriterion.CODEC),
             Map.entry(Constants.id("advancement"), AdvancementCriterion.CODEC),
             Map.entry(Constants.id("hold_item"), HoldItemCriterion.CODEC),
             Map.entry(Constants.id("visit_biome"), VisitBiomeCriterion.CODEC),
@@ -45,6 +48,11 @@ public sealed interface GoalCriterion
 
     /** Progress gained from a vanilla stat increment, or 0 if this criterion does not care. */
     default int onStat(Stat<?> stat, int delta) {
+        return 0;
+    }
+
+    /** Progress gained from a potion taken out of a brewing stand, or 0 if this criterion does not care. */
+    default int onBrew(PotionContents contents) {
         return 0;
     }
 

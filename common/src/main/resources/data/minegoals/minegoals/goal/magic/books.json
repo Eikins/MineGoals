@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:magic",
+  "tier": 1,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.magic.books"
+  },
+  "description": {
+    "translate": "goal.minegoals.magic.books.desc"
+  },
+  "icon": "minecraft:book",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:book",
+    "count": 8
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

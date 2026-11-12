@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:progression",
+  "tier": 4,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.progression.obsidian"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.obsidian.desc"
+  },
+  "icon": "minecraft:obsidian",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:story/form_obsidian"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

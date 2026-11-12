@@ -1,7 +1,7 @@
 {
   "category": "minegoals:combat",
-  "tier": 2,
-  "points": 20,
+  "tier": 4,
+  "points": 1,
   "title": {
     "translate": "goal.minegoals.combat.phantoms"
   },
@@ -12,10 +12,10 @@
   "criterion": {
     "type": "minegoals:kill_entity",
     "entity": "minecraft:phantom",
-    "count": 5
+    "count": 20
   },
   "rewards": {
-    "experience": 20
+    "experience": 10
   },
   "track_before_unlock": true
 }

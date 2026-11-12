@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:farming",
+  "tier": 4,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.farming.golden_carrots"
+  },
+  "description": {
+    "translate": "goal.minegoals.farming.golden_carrots.desc"
+  },
+  "icon": "minecraft:golden_carrot",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:golden_carrot",
+    "count": 32
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

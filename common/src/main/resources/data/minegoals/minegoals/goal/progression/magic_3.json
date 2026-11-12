@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:progression",
+  "tier": 9,
+  "points": 2,
+  "title": {
+    "translate": "goal.minegoals.progression.magic_3"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.magic_3.desc"
+  },
+  "icon": "minecraft:enchanting_table",
+  "criterion": {
+    "type": "minegoals:category_tier",
+    "category": "minegoals:magic",
+    "tier": 3
+  },
+  "rewards": {
+    "experience": 20
+  },
+  "track_before_unlock": true
+}

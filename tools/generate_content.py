@@ -2,10 +2,9 @@
 
 Usage (from the project root): python tools/generate_content.py .
 The script deletes and rewrites data/minegoals/minegoals/{category,goal} and the two lang files.
-Goals live in a sub-folder per category, so their ids look like minegoals:road_to_end/first_table.
+Goals live in a sub-folder per category, so their ids look like minegoals:progression/crafting_table.
 """
 import json
-import math
 import os
 import shutil
 import sys
@@ -29,6 +28,15 @@ def B(block, n=1): return {"type": "minegoals:break_block", "block": block, "cou
 def K(entity, n=1): return {"type": "minegoals:kill_entity", "entity": entity, "count": n}
 def P(item, n=1): return {"type": "minegoals:collect_item", "item": item, "count": n}
 def CR(item, n=1): return {"type": "minegoals:craft_item", "item": item, "count": n}
+def U(item, n=1): return {"type": "minegoals:use_item", "item": item, "count": n}
+POTION_VARIANTS = {"swiftness": ["long", "strong"], "healing": ["strong"], "fire_resistance": ["long"],
+                   "strength": ["long", "strong"], "invisibility": ["long"]}
+def BREW(n=1, potion=None):
+    """Brew n potions; a potion name also accepts its long and strong variants."""
+    crit = {"type": "minegoals:brew_potion", "count": n}
+    if potion:
+        crit["potions"] = ["minecraft:" + potion] + ["minecraft:%s_%s" % (v, potion) for v in POTION_VARIANTS[potion]]
+    return crit
 def H(item, n=1): return {"type": "minegoals:hold_item", "item": item, "count": n}
 def VB(biome): return {"type": "minegoals:visit_biome", "biome": biome}
 def VD(dim): return {"type": "minegoals:visit_dimension", "dimension": dim}
@@ -43,417 +51,409 @@ def stack(item, count=1, **components):
         entry["components"] = {"minecraft:" + k: v for k, v in components.items()}
     return entry
 
+# ---- content -------------------------------------------------------------------------------------
+#
+# One main category, Progression, is unlocked from the start. Some of its goals unlock a secondary category when
+# claimed (a command reward), and some of its tiers ask for a tier of a secondary category (TIER_GOAL).
+#
+# A category: dict with "tiers" = list of {"reward": tier reward, "goals": [...], optional "background"}.
+# A goal: (id, icon, criterion, points, en title, en description, fr title, fr description[, extra])
+# extra may hold "unlocks": "<category id>" (claiming the goal unlocks that category) or any goal JSON field.
+# Progression tiers need all of their goals. A secondary tier can set "skip": that many points are not needed, so
+# players can leave out a frustrating goal (a rare biome, a hard advancement...). Goal rewards are 10 XP per point.
 
-# A goal: (id, icon, criterion, en title, en description, fr title, fr description[, extra])
-# A category: dict with tiers = list of (tier reward, [goals]).
+def bg(name): return "minecraft:textures/gui/advancements/backgrounds/%s.png" % name
 
-ROAD = {
-    "id": "road_to_end", "icon": "minecraft:ender_eye", "order": 0, "visibility": "next", "ratio": 1.0,
-    "en": "Road to the End", "fr": "En route vers l'End",
-    # Tier rewards for the road are in ROAD_TIER_REWARDS below.
+
+def potion(potion_id, count=1):
+    return {"id": "minecraft:potion", "count": count,
+            "components": {"minecraft:potion_contents": {"potion": potion_id}}}
+
+
+def TIER_GOAL(category, tier, points=2):
+    """A Progression goal asking for a tier of a secondary category; titles come from that category's names."""
+    cat = SECONDARY_BY_ID[category]
+    numeral = "I II III IV V VI".split()[tier - 1]
+    return (f"{category}_{tier}", cat["icon"], TIER(category, tier), points,
+            f"{cat['en']} {numeral}", f"Complete tier {tier} of {cat['en']}",
+            f"{cat['fr']} {numeral}", f"Termine le palier {tier} de la catégorie {cat['fr']}")
+
+
+# ---- secondary categories ------------------------------------------------------------------------
+
+MINING = {
+    "id": "mining", "icon": "minecraft:iron_pickaxe", "background": "stone",
+    "en": "Mining", "fr": "Minage",
     "tiers": [
-        (None, [
-            ("lumberjack", "minecraft:oak_log", B("#minecraft:logs", 16), "Lumberjack", "Chop 16 logs", "Bûcheron", "Coupe 16 bûches"),
-            ("first_table", "minecraft:crafting_table", CR("minecraft:crafting_table"), "First Table", "Craft a crafting table", "Premier établi", "Fabrique un établi"),
-            ("wooden_pickaxe", "minecraft:wooden_pickaxe", CR("minecraft:wooden_pickaxe"), "Getting Started", "Craft a wooden pickaxe", "Premiers pas", "Fabrique une pioche en bois"),
-        ]),
-        (None, [
-            ("stone_age", "minecraft:cobblestone", ADV("story/mine_stone"), "Stone Age", "Mine stone with your new pickaxe", "L'âge de pierre", "Mine de la pierre avec ta nouvelle pioche"),
-            ("better_tools", "minecraft:stone_pickaxe", ADV("story/upgrade_tools"), "Getting an Upgrade", "Craft a stone pickaxe", "Amélioration", "Fabrique une pioche en pierre"),
-            ("furnace", "minecraft:furnace", CR("minecraft:furnace"), "Smelter", "Craft a furnace", "Fondeur", "Fabrique un four"),
-            ("torches", "minecraft:torch", CR("minecraft:torch", 16), "Light Bringer", "Craft 16 torches", "Porteur de lumière", "Fabrique 16 torches"),
-        ]),
-        (None, [
-            ("first_night", "minecraft:red_bed", ADV("adventure/sleep_in_bed"), "Sweet Dreams", "Sleep in a bed", "Fais de beaux rêves", "Dors dans un lit"),
-            ("night_guard", "minecraft:rotten_flesh", K("minecraft:zombie", 5), "Night Guard", "Kill 5 zombies", "Garde de nuit", "Tue 5 zombies"),
-            ("coal_miner", "minecraft:coal", B("#minecraft:coal_ores", 16), "Coal Miner", "Mine 16 coal ores", "Mineur de charbon", "Mine 16 minerais de charbon"),
-        ]),
-        (None, [
-            ("acquire_hardware", "minecraft:iron_ingot", ADV("story/smelt_iron"), "Acquire Hardware", "Smelt an iron ingot", "Quincaillerie", "Fais fondre un lingot de fer"),
-            ("iron_pickaxe", "minecraft:iron_pickaxe", ADV("story/iron_tools"), "Isn't It Iron Pick", "Craft an iron pickaxe", "Pioche en fer", "Fabrique une pioche en fer"),
-            ("suit_up", "minecraft:iron_chestplate", ADV("story/obtain_armor"), "Suit Up", "Wear a piece of iron armor", "Équipe-toi", "Porte une pièce d'armure en fer"),
-            ("shield", "minecraft:shield", CR("minecraft:shield"), "Shield Up", "Craft a shield", "Bouclier levé", "Fabrique un bouclier"),
-        ]),
-        (None, [
-            ("diamonds", "minecraft:diamond", ADV("story/mine_diamond"), "Diamonds!", "Find a diamond", "Des diamants !", "Trouve un diamant"),
-            ("hot_stuff", "minecraft:lava_bucket", ADV("story/lava_bucket"), "Hot Stuff", "Fill a bucket with lava", "Ça chauffe", "Remplis un seau de lave"),
-            ("ice_bucket", "minecraft:obsidian", ADV("story/form_obsidian"), "Ice Bucket Challenge", "Obtain a block of obsidian", "Défi du seau d'eau", "Obtiens un bloc d'obsidienne"),
-        ]),
-        (None, [
-            ("we_need_to_go_deeper", "minecraft:netherrack", ADV("story/enter_the_nether"), "We Need to Go Deeper", "Build a portal and enter the Nether", "Il faut creuser plus profond", "Construis un portail et entre dans le Nether"),
-            ("fortress", "minecraft:nether_bricks", ADV("nether/find_fortress"), "A Terrible Fortress", "Find a Nether fortress", "Une terrible forteresse", "Trouve une forteresse du Nether"),
-        ]),
-        (None, [
-            ("into_fire", "minecraft:blaze_rod", ADV("nether/obtain_blaze_rod"), "Into Fire", "Get a blaze rod", "Dans le feu", "Obtiens un bâton de blaze"),
-            ("blaze_hunter", "minecraft:blaze_powder", K("minecraft:blaze", 8), "Blaze Hunter", "Kill 8 blazes", "Chasseur de blazes", "Tue 8 blazes"),
-            ("blaze_powder", "minecraft:blaze_powder", CR("minecraft:blaze_powder", 12), "Fuel for the Eyes", "Craft 12 blaze powder", "Carburant pour les yeux", "Fabrique 12 poudres de blaze"),
-        ]),
-        (None, [
-            ("ender_hunter", "minecraft:ender_pearl", K("minecraft:enderman", 12), "Ender Hunter", "Kill 12 endermen", "Chasseur d'Endermen", "Tue 12 endermen"),
-            ("pearl_collector", "minecraft:ender_pearl", P("minecraft:ender_pearl", 12), "Pearl Collector", "Pick up 12 ender pearls", "Collecteur de perles", "Ramasse 12 perles de l'Ender"),
-            ("eyes_of_ender", "minecraft:ender_eye", CR("minecraft:ender_eye", 12), "Eyes of Ender", "Craft 12 eyes of ender", "Yeux de l'Ender", "Fabrique 12 yeux de l'Ender"),
-        ]),
-        (None, [
-            ("eye_spy", "minecraft:ender_eye", ADV("story/follow_ender_eye"), "Eye Spy", "Follow an eye of ender into a stronghold", "Œil pour œil", "Suis un œil de l'Ender jusqu'à un fort"),
-            ("silverfish", "minecraft:stone_bricks", K("minecraft:silverfish", 5), "Pest Control", "Kill 5 silverfish (they hide in stronghold walls)", "Dératisation", "Tue 5 poissons d'argent (ils se cachent dans les murs du fort)"),
-        ]),
-        (None, [
-            ("bow", "minecraft:bow", CR("minecraft:bow"), "Archer", "Craft a bow", "Archer", "Fabrique un arc"),
-            ("quiver", "minecraft:arrow", H("minecraft:arrow", 64), "Full Quiver", "Carry 64 arrows", "Carquois plein", "Porte 64 flèches sur toi"),
-            ("blocks", "minecraft:cobblestone", H("minecraft:cobblestone", 128), "Pillar Supplies", "Carry 128 cobblestone", "Provisions de blocs", "Porte 128 pierres taillées sur toi"),
-            ("water_bucket", "minecraft:water_bucket", H("minecraft:water_bucket", 1), "Safety Bucket", "Carry a water bucket", "Seau de secours", "Porte un seau d'eau sur toi"),
-        ]),
-        (None, [
-            ("the_end", "minecraft:end_stone", ADV("story/enter_the_end"), "The End?", "Enter the End portal", "La fin ?", "Entre dans le portail de l'End"),
-            ("end_stone", "minecraft:end_stone", B("minecraft:end_stone", 16), "Island Souvenir", "Mine 16 end stone", "Souvenir de l'île", "Mine 16 blocs de pierre de l'End"),
-        ]),
-        (None, [
-            ("free_the_end", "minecraft:dragon_head", ADV("end/kill_dragon"), "Free the End", "Slay the Ender Dragon", "Libère l'End", "Tue le dragon de l'Ender"),
-            ("next_generation", "minecraft:dragon_egg", ADV("end/dragon_egg"), "The Next Generation", "Hold the dragon egg", "La génération suivante", "Tiens l'œuf de dragon"),
-        ]),
-    ],
-}
-
-OCEANS = {
-    "id": "oceans", "icon": "minecraft:heart_of_the_sea", "order": 1, "visibility": "visible", "ratio": 0.75,
-    "en": "Oceans", "fr": "Océans", "tier_items": ["minecraft:cod", "minecraft:prismarine_shard", "minecraft:nautilus_shell", "minecraft:heart_of_the_sea"],
-    "tiers": [
-        (None, [
-            ("angler", "minecraft:fishing_rod", ST("fish_caught", 10), "Angler", "Catch 10 fish", "Pêcheur", "Pêche 10 poissons"),
-            ("open_sea", "minecraft:oak_boat", VB("#minecraft:is_ocean"), "Open Sea", "Reach an ocean", "Le grand large", "Atteins un océan"),
-            ("kelp_farmer", "minecraft:kelp", P("minecraft:kelp", 32), "Kelp Farmer", "Pick up 32 kelp", "Cultivateur d'algues", "Ramasse 32 algues"),
-        ]),
-        (None, [
-            ("tactical_fishing", "minecraft:cod_bucket", ADV("husbandry/tactical_fishing"), "Tactical Fishing", "Catch a fish with a bucket", "Pêche tactique", "Attrape un poisson avec un seau"),
-            ("drowned_hunter", "minecraft:trident", K("minecraft:drowned", 10), "Drowned Hunter", "Kill 10 drowned", "Chasseur de noyés", "Tue 10 noyés"),
-            ("coral_reef", "minecraft:tube_coral", VB("minecraft:warm_ocean"), "Coral Reef", "Swim in a warm ocean", "Récif de corail", "Nage dans un océan chaud"),
-            ("cutest_predator", "minecraft:axolotl_bucket", ADV("husbandry/axolotl_in_a_bucket"), "The Cutest Predator", "Catch an axolotl in a bucket", "Le plus mignon des prédateurs", "Attrape un axolotl dans un seau"),
-        ]),
-        (None, [
-            ("monument_guardians", "minecraft:prismarine_shard", K("minecraft:guardian", 10), "Monument Raider", "Kill 10 guardians", "Pilleur de monument", "Tue 10 gardiens"),
-            ("elder_guardian", "minecraft:prismarine_crystals", K("minecraft:elder_guardian", 1), "Elder Slayer", "Kill an elder guardian", "Tueur d'ancien", "Tue un gardien ancien"),
-            ("sponges", "minecraft:wet_sponge", B("minecraft:wet_sponge", 5), "Sponge Collector", "Mine 5 wet sponges", "Collecteur d'éponges", "Mine 5 éponges mouillées"),
-        ]),
-        (None, [
-            ("trident", "minecraft:trident", ADV("adventure/throw_trident"), "A Throwaway Joke", "Throw a trident at something", "Une blague jetable", "Lance un trident sur quelque chose"),
-            ("conduit", "minecraft:conduit", CR("minecraft:conduit"), "Power of the Sea", "Craft a conduit", "Puissance de la mer", "Fabrique un conduit"),
-        ]),
-    ],
-}
-
-FARMS = {
-    "id": "farms", "icon": "minecraft:wheat", "order": 2, "visibility": "visible", "ratio": 0.75,
-    "en": "Farms & Animals", "fr": "Fermes et animaux", "tier_items": ["minecraft:bone_meal", "minecraft:lead", "minecraft:golden_carrot", "minecraft:enchanted_golden_apple"],
-    "tiers": [
-        (None, [
-            ("seedy_place", "minecraft:wheat_seeds", ADV("husbandry/plant_seed"), "A Seedy Place", "Plant a seed", "Un endroit fertile", "Plante une graine"),
-            ("harvest", "minecraft:wheat", P("minecraft:wheat", 32), "Harvest", "Pick up 32 wheat", "Moisson", "Ramasse 32 blés"),
-            ("parrots_and_bats", "minecraft:egg", ADV("husbandry/breed_an_animal"), "The Parrots and the Bats", "Breed two animals together", "Les perroquets et les chauves-souris", "Fais se reproduire deux animaux"),
-        ]),
-        (None, [
-            ("rancher", "minecraft:hay_block", ST("animals_bred", 20), "Rancher", "Breed 20 animals", "Éleveur", "Fais naître 20 animaux"),
-            ("best_friends", "minecraft:bone", ADV("husbandry/tame_an_animal"), "Best Friends Forever", "Tame an animal", "Meilleurs amis pour la vie", "Apprivoise un animal"),
-            ("baker", "minecraft:cake", CR("minecraft:cake"), "Baker", "Bake a cake", "Pâtissier", "Prépare un gâteau"),
-            ("bee_our_guest", "minecraft:honey_bottle", ADV("husbandry/safely_harvest_honey"), "Bee Our Guest", "Harvest honey without angering bees", "Une abeille dans l'assiette", "Récolte du miel sans énerver les abeilles"),
-        ]),
-        (None, [
-            ("golden_carrots", "minecraft:golden_carrot", CR("minecraft:golden_carrot", 16), "Gourmet", "Craft 16 golden carrots", "Gourmet", "Fabrique 16 carottes dorées"),
-            ("total_beelocation", "minecraft:bee_nest", ADV("husbandry/silk_touch_nest"), "Total Beelocation", "Move a bee nest with Silk Touch", "Délocalisation", "Déplace un nid d'abeilles avec Toucher de soie"),
-            ("sniffer_egg", "minecraft:sniffer_egg", ADV("husbandry/obtain_sniffer_egg"), "Smells Interesting", "Obtain a sniffer egg", "Ça sent bon", "Obtiens un œuf de renifleur"),
-        ]),
-        (None, [
-            ("two_by_two", "minecraft:golden_apple", ADV("husbandry/bred_all_animals"), "Two by Two", "Breed every animal", "Deux par deux", "Fais se reproduire tous les animaux"),
-            ("balanced_diet", "minecraft:apple", ADV("husbandry/balanced_diet"), "A Balanced Diet", "Eat everything edible", "Une alimentation équilibrée", "Mange tout ce qui se mange"),
-        ]),
-    ],
-}
-
-VILLAGES = {
-    "id": "villages", "icon": "minecraft:emerald", "order": 3, "visibility": "visible", "ratio": 0.75,
-    "en": "Villages & Trading", "fr": "Villages et commerce", "tier_items": ["minecraft:emerald", "minecraft:bell", "minecraft:totem_of_undying", "minecraft:emerald_block"],
-    "tiers": [
-        (None, [
-            ("small_talk", "minecraft:emerald", ST("talked_to_villager", 1), "Small Talk", "Talk to a villager", "Papotage", "Parle à un villageois"),
-            ("whats_the_deal", "minecraft:emerald", ADV("adventure/trade"), "What a Deal!", "Trade with a villager", "Quelle affaire !", "Fais un échange avec un villageois"),
-            ("ring_the_bell", "minecraft:bell", ST("bell_ring", 1), "Ring the Bell", "Ring a village bell", "Sonne la cloche", "Fais sonner la cloche d'un village"),
-        ]),
-        (None, [
-            ("merchant", "minecraft:emerald", ST("traded_with_villager", 20), "Merchant", "Trade 20 times with villagers", "Marchand", "Fais 20 échanges avec des villageois"),
-            ("hired_help", "minecraft:carved_pumpkin", ADV("adventure/summon_iron_golem"), "Hired Help", "Build an iron golem", "Main-d'œuvre", "Construis un golem de fer"),
-            ("doctor", "minecraft:golden_apple", ADV("story/cure_zombie_villager"), "Zombie Doctor", "Cure a zombie villager", "Docteur zombie", "Guéris un zombie villageois"),
-        ]),
-        (None, [
-            ("voluntary_exile", "minecraft:white_banner", ADV("adventure/voluntary_exile"), "Voluntary Exile", "Kill a raid captain", "Exil volontaire", "Tue un capitaine de raid"),
-            ("pillager_hunter", "minecraft:crossbow", K("minecraft:pillager", 15), "Pillager Hunter", "Kill 15 pillagers", "Chasseur de pillards", "Tue 15 pillards"),
-            ("hero", "minecraft:totem_of_undying", ADV("adventure/hero_of_the_village"), "Hero of the Village", "Defend a village from a raid", "Héros du village", "Défends un village contre un raid"),
-        ]),
-        (None, [
-            ("tycoon", "minecraft:emerald_block", ST("traded_with_villager", 100), "Tycoon", "Trade 100 times with villagers", "Magnat", "Fais 100 échanges avec des villageois"),
-            ("evoker", "minecraft:totem_of_undying", K("minecraft:evoker", 1), "Evoker Slayer", "Kill an evoker", "Tueur d'évocateur", "Tue un évocateur"),
-        ]),
-    ],
-}
-
-MAGIC = {
-    "id": "magic", "icon": "minecraft:enchanting_table", "order": 4, "visibility": "visible", "ratio": 0.75,
-    "en": "Magic", "fr": "Magie", "tier_items": ["minecraft:lapis_lazuli", "minecraft:experience_bottle", "minecraft:blaze_rod", "minecraft:nether_star"],
-    "tiers": [
-        (None, [
-            ("library", "minecraft:bookshelf", CR("minecraft:bookshelf", 15), "Librarian", "Craft 15 bookshelves", "Bibliothécaire", "Fabrique 15 bibliothèques"),
-            ("enchanting_table", "minecraft:enchanting_table", CR("minecraft:enchanting_table"), "Spell Book", "Craft an enchanting table", "Grimoire", "Fabrique une table d'enchantement"),
-            ("enchanter", "minecraft:enchanted_book", ADV("story/enchant_item"), "Enchanter", "Enchant an item", "Enchanteur", "Enchante un objet"),
-        ]),
-        (None, [
-            ("arcanist", "minecraft:enchanted_book", ST("enchant_item", 10), "Arcanist", "Enchant 10 items", "Arcaniste", "Enchante 10 objets"),
-            ("anvil", "minecraft:anvil", ST("interact_with_anvil", 5), "Blacksmith", "Use an anvil 5 times", "Forgeron", "Utilise une enclume 5 fois"),
-            ("brewing_stand", "minecraft:brewing_stand", CR("minecraft:brewing_stand"), "Alchemist's Lab", "Craft a brewing stand", "Laboratoire d'alchimiste", "Fabrique un alambic"),
-        ]),
-        (None, [
-            ("local_brewery", "minecraft:potion", ADV("nether/brew_potion"), "Local Brewery", "Brew a potion", "Brasserie locale", "Prépare une potion"),
-            ("potion_master", "minecraft:splash_potion", ST("interact_with_brewingstand", 20), "Potion Master", "Use a brewing stand 20 times", "Maître des potions", "Utilise un alambic 20 fois"),
-            ("chiseled_bookshelf", "minecraft:chiseled_bookshelf", ADV("adventure/read_power_of_chiseled_bookshelf"), "The Power of Books", "Read a chiseled bookshelf's signal with a comparator", "Le pouvoir des livres", "Lis le signal d'une bibliothèque sculptée avec un comparateur"),
-        ]),
-        (None, [
-            ("bring_home_the_beacon", "minecraft:beacon", ADV("nether/create_beacon"), "Bring Home the Beacon", "Build and place a beacon", "Ramène la balise", "Construis et pose une balise"),
-            ("beaconator", "minecraft:beacon", ADV("nether/create_full_beacon"), "Beaconator", "Power a beacon to full strength", "Balisateur", "Alimente une balise à pleine puissance"),
-        ]),
-    ],
-}
-
-CAVES = {
-    "id": "caves", "icon": "minecraft:sculk_catalyst", "order": 5, "visibility": "next", "ratio": 0.75,
-    "en": "Caves & Depths", "fr": "Grottes et profondeurs", "tier_items": ["minecraft:torch", "minecraft:amethyst_shard", "minecraft:echo_shard", "minecraft:trial_key"],
-    "tiers": [
-        (None, [
-            ("deepslate", "minecraft:deepslate", B("minecraft:deepslate", 128), "Deep Digger", "Mine 128 deepslate", "Creuseur des profondeurs", "Mine 128 blocs d'ardoise des abîmes"),
-            ("dripstone_caves", "minecraft:pointed_dripstone", VB("minecraft:dripstone_caves"), "Stalactites", "Explore dripstone caves", "Stalactites", "Explore des grottes de spéléothèmes"),
-            ("lush_caves", "minecraft:glow_berries", VB("minecraft:lush_caves"), "Hidden Garden", "Explore lush caves", "Jardin caché", "Explore des grottes luxuriantes"),
-        ]),
-        (None, [
-            ("geode", "minecraft:amethyst_shard", P("minecraft:amethyst_shard", 16), "Geode Hunter", "Pick up 16 amethyst shards", "Chasseur de géodes", "Ramasse 16 éclats d'améthyste"),
-            ("deep_diamonds", "minecraft:diamond_ore", B("#minecraft:diamond_ores", 8), "Deep Diamonds", "Mine 8 diamond ores", "Diamants des profondeurs", "Mine 8 minerais de diamant"),
-            ("deep_dark", "minecraft:sculk", VB("minecraft:deep_dark"), "The Deep Dark", "Enter the deep dark", "Les abysses", "Entre dans les abysses"),
-        ]),
-        (None, [
-            ("sneak_100", "minecraft:sculk_sensor", ADV("adventure/avoid_vibration"), "Sneak 100", "Sneak past a sculk sensor or warden", "Discrétion 100", "Passe en douce près d'un capteur sculk ou d'un Warden"),
-            ("it_spreads", "minecraft:sculk_catalyst", ADV("adventure/kill_mob_near_sculk_catalyst"), "It Spreads", "Kill a mob near a sculk catalyst", "Ça se propage", "Tue un monstre près d'un catalyseur sculk"),
-            ("recovery_compass", "minecraft:recovery_compass", CR("minecraft:recovery_compass"), "Lost and Found", "Craft a recovery compass", "Objets trouvés", "Fabrique une boussole de rappel"),
-        ]),
-        (None, [
-            ("trial_chambers", "minecraft:trial_spawner", ADV("adventure/minecraft_trials_edition"), "Minecraft: Trial(s) Edition", "Step into a trial chamber", "Minecraft : édition épreuves", "Entre dans une chambre des épreuves"),
-            ("under_lock_and_key", "minecraft:vault", ADV("adventure/under_lock_and_key"), "Under Lock and Key", "Unlock a vault with a trial key", "Sous clé", "Ouvre un coffre-fort avec une clé des épreuves"),
-            ("warden", "minecraft:echo_shard", K("minecraft:warden", 1), "Silence", "Defeat a warden", "Silence", "Vaincs un Warden"),
-        ]),
-    ],
-}
-
-NETHER = {
-    "id": "nether", "icon": "minecraft:netherite_ingot", "order": 6, "visibility": "visible", "ratio": 0.75,
-    "unlock": {"default": False, "advancements": ["minecraft:story/enter_the_nether"]},
-    "en": "Advanced Nether", "fr": "Nether avancé", "tier_items": ["minecraft:gold_ingot", "minecraft:crying_obsidian", "minecraft:netherite_scrap", "minecraft:netherite_upgrade_smithing_template"],
-    "tiers": [
-        (None, [
-            ("crimson_forest", "minecraft:crimson_fungus", VB("minecraft:crimson_forest"), "Crimson Forest", "Visit a crimson forest", "Forêt écarlate", "Visite une forêt écarlate"),
-            ("warped_forest", "minecraft:warped_fungus", VB("minecraft:warped_forest"), "Warped Forest", "Visit a warped forest", "Forêt biscornue", "Visite une forêt biscornue"),
-            ("oh_shiny", "minecraft:gold_ingot", ADV("nether/distract_piglin"), "Oh Shiny", "Distract a piglin with gold", "Oh, ça brille", "Distrais un piglin avec de l'or"),
-            ("crying_obsidian", "minecraft:crying_obsidian", ADV("nether/obtain_crying_obsidian"), "Who Is Cutting Onions?", "Obtain crying obsidian", "Qui coupe des oignons ?", "Obtiens de l'obsidienne pleureuse"),
-        ]),
-        (None, [
-            ("bastion", "minecraft:polished_blackstone_bricks", ADV("nether/find_bastion"), "Those Were the Days", "Enter a bastion remnant", "C'était le bon temps", "Entre dans les vestiges d'un bastion"),
-            ("war_pigs", "minecraft:chest", ADV("nether/loot_bastion"), "War Pigs", "Loot a bastion chest", "Cochons de guerre", "Pille un coffre de bastion"),
-            ("strider", "minecraft:warped_fungus_on_a_stick", ADV("nether/ride_strider"), "This Boat Has Legs", "Ride a strider", "Ce bateau a des jambes", "Chevauche un arpenteur"),
-            ("respawn_anchor", "minecraft:respawn_anchor", ADV("nether/charge_respawn_anchor"), "Not Quite \"Nine\" Lives", "Charge a respawn anchor", "Pas tout à fait neuf vies", "Charge une ancre de réapparition"),
-        ]),
-        (None, [
-            ("hidden_depths", "minecraft:ancient_debris", ADV("nether/obtain_ancient_debris"), "Hidden in the Depths", "Obtain ancient debris", "Caché dans les profondeurs", "Obtiens des débris antiques"),
-            ("netherite_ingot", "minecraft:netherite_ingot", CR("minecraft:netherite_ingot"), "Netherite", "Craft a netherite ingot", "Netherite", "Fabrique un lingot de netherite"),
-            ("return_to_sender", "minecraft:fire_charge", ADV("nether/return_to_sender"), "Return to Sender", "Kill a ghast with its own fireball", "Retour à l'envoyeur", "Tue un ghast avec sa propre boule de feu"),
-        ]),
-        (None, [
-            ("cover_me_in_debris", "minecraft:netherite_chestplate", ADV("nether/netherite_armor"), "Cover Me in Debris", "Wear a full set of netherite armor", "Couvert de débris", "Porte une armure complète en netherite"),
-            ("spooky_scary_skeleton", "minecraft:wither_skeleton_skull", ADV("nether/get_wither_skull"), "Spooky Scary Skeleton", "Obtain a wither skeleton skull", "Squelette effrayant", "Obtiens un crâne de wither squelette"),
-            ("wither", "minecraft:nether_star", K("minecraft:wither", 1), "Withering Heights", "Defeat the Wither", "Les Hauts du Wither", "Vaincs le Wither"),
-        ]),
-    ],
-}
-
-WORLD = {
-    "id": "world", "icon": "minecraft:filled_map", "order": 7, "visibility": "visible", "ratio": 0.75,
-    "en": "World Exploration", "fr": "Exploration du monde", "tier_items": ["minecraft:map", "minecraft:spyglass", "minecraft:lodestone", "minecraft:elytra"],
-    "tiers": [
-        (None, [
-            ("forest", "minecraft:oak_sapling", VB("#minecraft:is_forest"), "Into the Woods", "Visit a forest", "Dans les bois", "Visite une forêt"),
-            ("desert", "minecraft:sand", VB("minecraft:desert"), "Dune Walker", "Visit a desert", "Marcheur des dunes", "Visite un désert"),
-            ("mountain", "minecraft:snowball", VB("#minecraft:is_mountain"), "Mountaineer", "Climb a mountain", "Alpiniste", "Escalade une montagne"),
-            ("cartographer", "minecraft:map", CR("minecraft:map"), "Cartographer", "Craft a map", "Cartographe", "Fabrique une carte"),
-        ]),
-        (None, [
-            ("jungle", "minecraft:jungle_sapling", VB("#minecraft:is_jungle"), "Jungle Explorer", "Visit a jungle", "Explorateur de jungle", "Visite une jungle"),
-            ("mushroom_fields", "minecraft:red_mushroom", VB("minecraft:mushroom_fields"), "Mushroom Island", "Find a mushroom island", "Île aux champignons", "Trouve une île aux champignons"),
-            ("cherry_grove", "minecraft:cherry_sapling", VB("minecraft:cherry_grove"), "Cherry Blossom", "Visit a cherry grove", "Fleurs de cerisier", "Visite un bosquet de cerisiers"),
-            ("badlands", "minecraft:terracotta", VB("#minecraft:is_badlands"), "Badlands", "Visit the badlands", "Badlands", "Visite des badlands"),
-        ]),
-        (None, [
-            ("respecting_remnants", "minecraft:brush", ADV("adventure/salvage_sherd"), "Respecting the Remnants", "Brush a suspicious block to get a pottery sherd", "Respect des vestiges", "Brosse un bloc suspect pour obtenir un tesson"),
-            ("country_lode", "minecraft:lodestone", ADV("adventure/use_lodestone"), "Country Lode, Take Me Home", "Use a compass on a lodestone", "Magnétite, ramène-moi", "Utilise une boussole sur une magnétite"),
-            ("ice_spikes", "minecraft:packed_ice", VB("minecraft:ice_spikes"), "Frozen Spikes", "Visit an ice spikes biome", "Pics gelés", "Visite un biome de pics de glace"),
-            ("sound_of_music", "minecraft:jukebox", ADV("adventure/play_jukebox_in_meadows"), "Sound of Music", "Play music in a meadow", "La mélodie du bonheur", "Joue de la musique dans une prairie"),
-        ]),
-        (None, [
-            ("end_city", "minecraft:purpur_block", ADV("end/find_end_city"), "The City at the End of the Game", "Find an End city", "La cité au bout du jeu", "Trouve une cité de l'End"),
-            ("sky_is_the_limit", "minecraft:elytra", ADV("end/elytra"), "Sky's the Limit", "Find an elytra", "Le ciel pour limite", "Trouve des élytres"),
-            ("adventuring_time", "minecraft:diamond_boots", ADV("adventure/adventuring_time"), "Adventuring Time", "Discover every biome", "L'heure de l'aventure", "Découvre tous les biomes"),
-        ]),
+        {"reward": {"items": [{"id": "minecraft:torch", "count": 32}, {"id": "minecraft:cooked_beef", "count": 8}]}, "goals": [
+            ("torches", "minecraft:torch", CR("minecraft:torch", 16), 1, "Light the Way", "Craft 16 torches", "Éclaire le chemin", "Fabrique 16 torches"),
+            ("coal", "minecraft:coal_ore", B("#minecraft:coal_ores", 32), 1, "Coal Miner", "Mine 32 coal ores", "Mineur de charbon", "Mine 32 minerais de charbon"),
+            ("copper", "minecraft:copper_ore", B("#minecraft:copper_ores", 32), 1, "Copper Vein", "Mine 32 copper ores", "Filon de cuivre", "Mine 32 minerais de cuivre"),
+        ]},
+        {"reward": {"items": [stack("minecraft:iron_pickaxe", enchantments={"minecraft:efficiency": 2, "minecraft:unbreaking": 2})]}, "goals": [
+            ("coal_2", "minecraft:coal_ore", B("#minecraft:coal_ores", 96), 1, "Coal Miner II", "Mine 96 coal ores", "Mineur de charbon II", "Mine 96 minerais de charbon"),
+            ("iron", "minecraft:iron_ore", B("#minecraft:iron_ores", 32), 1, "Iron Vein", "Mine 32 iron ores", "Filon de fer", "Mine 32 minerais de fer"),
+            ("deepslate", "minecraft:deepslate", B("minecraft:deepslate", 128), 1, "Into the Deep", "Mine 128 deepslate", "Dans les profondeurs", "Mine 128 blocs d'ardoise des abîmes"),
+            ("lapis", "minecraft:lapis_ore", B("#minecraft:lapis_ores", 16), 1, "Blue Gold", "Mine 16 lapis lazuli ores", "L'or bleu", "Mine 16 minerais de lapis-lazuli"),
+        ]},
+        {"skip": 1, "reward": {"items": [{"id": "minecraft:diamond", "count": 3}, {"id": "minecraft:golden_apple", "count": 1}]}, "goals": [
+            ("iron_2", "minecraft:iron_ore", B("#minecraft:iron_ores", 128), 1, "Iron Vein II", "Mine 128 iron ores", "Filon de fer II", "Mine 128 minerais de fer"),
+            ("gold", "minecraft:gold_ore", B("#minecraft:gold_ores", 32), 1, "Gold Rush", "Mine 32 gold ores", "Ruée vers l'or", "Mine 32 minerais d'or"),
+            ("redstone", "minecraft:redstone_ore", B("#minecraft:redstone_ores", 32), 1, "Red Dust", "Mine 32 redstone ores", "Poussière rouge", "Mine 32 minerais de redstone"),
+            ("diamonds", "minecraft:diamond_ore", B("#minecraft:diamond_ores", 8), 1, "Diamond Hunter", "Mine 8 diamond ores", "Chasseur de diamants", "Mine 8 minerais de diamant"),
+        ]},
+        {"skip": 1, "reward": {"items": [stack("minecraft:diamond_pickaxe", enchantments={"minecraft:efficiency": 4, "minecraft:fortune": 3, "minecraft:unbreaking": 3})]}, "goals": [
+            ("iron_3", "minecraft:iron_ore", B("#minecraft:iron_ores", 256), 1, "Iron Vein III", "Mine 256 iron ores", "Filon de fer III", "Mine 256 minerais de fer"),
+            ("gold_2", "minecraft:gold_ore", B("#minecraft:gold_ores", 96), 1, "Gold Rush II", "Mine 96 gold ores", "Ruée vers l'or II", "Mine 96 minerais d'or"),
+            ("diamonds_2", "minecraft:diamond_ore", B("#minecraft:diamond_ores", 32), 1, "Diamond Hunter II", "Mine 32 diamond ores", "Chasseur de diamants II", "Mine 32 minerais de diamant"),
+            ("deepslate_2", "minecraft:deepslate", B("minecraft:deepslate", 1024), 1, "Into the Deep II", "Mine 1024 deepslate", "Dans les profondeurs II", "Mine 1024 blocs d'ardoise des abîmes"),
+        ]},
     ],
 }
 
 COMBAT = {
-    "id": "combat", "icon": "minecraft:iron_sword", "order": 8, "visibility": "visible", "ratio": 0.75,
-    "en": "Combat", "fr": "Combat", "tier_items": ["minecraft:arrow", "minecraft:shield", "minecraft:crossbow", "minecraft:totem_of_undying"],
+    "id": "combat", "icon": "minecraft:iron_sword", "background": "adventure",
+    "en": "Combat", "fr": "Combat",
     "tiers": [
-        (None, [
-            ("zombies", "minecraft:rotten_flesh", K("minecraft:zombie", 20), "Zombie Slayer", "Kill 20 zombies", "Tueur de zombies", "Tue 20 zombies"),
-            ("skeletons", "minecraft:bone", K("minecraft:skeleton", 20), "Bone Collector", "Kill 20 skeletons", "Collecteur d'os", "Tue 20 squelettes"),
-            ("spiders", "minecraft:string", K("minecraft:spider", 10), "Spider Squasher", "Kill 10 spiders", "Écraseur d'araignées", "Tue 10 araignées"),
-            ("creepers", "minecraft:gunpowder", K("minecraft:creeper", 10), "Bomb Squad", "Kill 10 creepers", "Démineur", "Tue 10 creepers"),
-        ]),
-        (None, [
-            ("sniper_duel", "minecraft:bow", ADV("adventure/sniper_duel"), "Sniper Duel", "Kill a skeleton from 50 blocks away", "Duel de snipers", "Tue un squelette à plus de 50 blocs"),
-            ("not_today", "minecraft:shield", ADV("story/deflect_arrow"), "Not Today, Thank You", "Block a projectile with a shield", "Pas aujourd'hui, merci", "Bloque un projectile avec un bouclier"),
-            ("witches", "minecraft:glass_bottle", K("minecraft:witch", 3), "Witch Hunter", "Kill 3 witches", "Chasseur de sorcières", "Tue 3 sorcières"),
-            ("phantoms", "minecraft:phantom_membrane", K("minecraft:phantom", 5), "Insomnia Cure", "Kill 5 phantoms", "Remède contre l'insomnie", "Tue 5 fantômes"),
-        ]),
-        (None, [
-            ("ol_betsy", "minecraft:crossbow", ADV("adventure/ol_betsy"), "Ol' Betsy", "Shoot a crossbow", "La vieille Betsy", "Tire à l'arbalète"),
-            ("bullseye", "minecraft:target", ADV("adventure/bullseye"), "Bullseye", "Hit the bullseye of a target from 30 blocks", "Dans le mille", "Touche le centre d'une cible à plus de 30 blocs"),
-            ("ravager", "minecraft:saddle", K("minecraft:ravager", 1), "Beast Tamer", "Kill a ravager", "Dompteur de bêtes", "Tue un ravageur"),
-            ("breezes", "minecraft:breeze_rod", K("minecraft:breeze", 5), "Breeze Breaker", "Kill 5 breezes", "Briseur de brises", "Tue 5 brises"),
-        ]),
-        (None, [
-            ("monsters_hunted", "minecraft:diamond_sword", ADV("adventure/kill_all_mobs"), "Monsters Hunted", "Kill one of every hostile monster", "Monstres chassés", "Tue un exemplaire de chaque monstre hostile"),
-            ("over_overkill", "minecraft:mace", ADV("adventure/overoverkill"), "Over-Overkill", "Deal 50 hearts of damage with a mace", "Sur-surpuissance", "Inflige 50 cœurs de dégâts avec une masse"),
-            ("postmortal", "minecraft:totem_of_undying", ADV("adventure/totem_of_undying"), "Postmortal", "Use a totem of undying to cheat death", "Post-mortem", "Utilise un totem d'immortalité pour tromper la mort"),
-        ]),
+        {"skip": 1, "reward": {"items": [{"id": "minecraft:arrow", "count": 32}, {"id": "minecraft:cooked_porkchop", "count": 8}]}, "goals": [
+            ("zombies", "minecraft:rotten_flesh", K("minecraft:zombie", 10), 1, "Zombie Hunter", "Kill 10 zombies", "Chasseur de zombies", "Tue 10 zombies"),
+            ("skeletons", "minecraft:bone", K("minecraft:skeleton", 10), 1, "Skeleton Hunter", "Kill 10 skeletons", "Chasseur de squelettes", "Tue 10 squelettes"),
+            ("spiders", "minecraft:string", K("minecraft:spider", 10), 1, "Spider Hunter", "Kill 10 spiders", "Chasseur d'araignées", "Tue 10 araignées"),
+            ("shield", "minecraft:shield", CR("minecraft:shield"), 1, "Shield Up", "Craft a shield", "Bouclier levé", "Fabrique un bouclier"),
+        ]},
+        {"reward": {"items": [stack("minecraft:iron_sword", enchantments={"minecraft:sharpness": 2, "minecraft:unbreaking": 2})]}, "goals": [
+            ("zombies_2", "minecraft:rotten_flesh", K("minecraft:zombie", 30), 1, "Zombie Hunter II", "Kill 30 zombies", "Chasseur de zombies II", "Tue 30 zombies"),
+            ("skeletons_2", "minecraft:bone", K("minecraft:skeleton", 30), 1, "Skeleton Hunter II", "Kill 30 skeletons", "Chasseur de squelettes II", "Tue 30 squelettes"),
+            ("creepers", "minecraft:gunpowder", K("minecraft:creeper", 15), 1, "Defuser", "Kill 15 creepers", "Démineur", "Tue 15 creepers"),
+            ("endermen", "minecraft:ender_pearl", K("minecraft:enderman", 5), 1, "Don't Look", "Kill 5 endermen", "Ne le regarde pas", "Tue 5 endermen"),
+        ]},
+        {"skip": 1, "reward": {"items": [{"id": "minecraft:golden_apple", "count": 3}, {"id": "minecraft:spectral_arrow", "count": 32}]}, "goals": [
+            ("zombies_3", "minecraft:rotten_flesh", K("minecraft:zombie", 100), 1, "Zombie Hunter III", "Kill 100 zombies", "Chasseur de zombies III", "Tue 100 zombies"),
+            ("skeletons_3", "minecraft:bone", K("minecraft:skeleton", 100), 1, "Skeleton Hunter III", "Kill 100 skeletons", "Chasseur de squelettes III", "Tue 100 squelettes"),
+            ("creepers_2", "minecraft:gunpowder", K("minecraft:creeper", 50), 1, "Defuser II", "Kill 50 creepers", "Démineur II", "Tue 50 creepers"),
+            ("sniper_duel", "minecraft:arrow", ADV("adventure/sniper_duel"), 1, "Sniper Duel", "Kill a skeleton from at least 50 blocks away", "Duel de snipers", "Tue un squelette à au moins 50 blocs"),
+        ]},
+        {"skip": 1, "reward": {"items": [stack("minecraft:diamond_sword", enchantments={"minecraft:sharpness": 4, "minecraft:looting": 2, "minecraft:unbreaking": 3})]}, "goals": [
+            ("endermen_2", "minecraft:ender_pearl", K("minecraft:enderman", 50), 1, "Don't Look II", "Kill 50 endermen", "Ne le regarde pas II", "Tue 50 endermen"),
+            ("breezes", "minecraft:breeze_rod", K("minecraft:breeze", 10), 1, "Calm the Storm", "Kill 10 breezes", "Calme la tempête", "Tue 10 breezes"),
+            ("creepers_3", "minecraft:gunpowder", K("minecraft:creeper", 100), 1, "Defuser III", "Kill 100 creepers", "Démineur III", "Tue 100 creepers"),
+            ("phantoms", "minecraft:phantom_membrane", K("minecraft:phantom", 20), 1, "Sleepless Nights", "Kill 20 phantoms", "Nuits blanches", "Tue 20 phantoms"),
+        ]},
     ],
 }
 
-# Reward for completing each Road to the End tier; claiming it unlocks the next tier, so each one prepares the
-# next step (e.g. completing the diamond tier gives flint and steel for the Nether portal).
-ROAD_TIER_REWARDS = [
-    items(("minecraft:bread", 8)),                                      # 1 first steps -> food for the stone age
-    items(("minecraft:white_bed", 1)),                                  # 2 stone age -> survive the night
-    items(("minecraft:iron_ingot", 8)),                                 # 3 first night -> iron age
-    items(("minecraft:golden_apple", 1)),                               # 4 iron age -> diamonds
-    items(("minecraft:flint_and_steel", 1), ("minecraft:cooked_beef", 16)),  # 5 diamonds -> the Nether
-    {**items(("minecraft:arrow", 32)),                                  # 6 fortress -> blazes
-     "commands": [{
-         "run": "effect give @s minecraft:fire_resistance 300",
-         "icon": {"id": "minecraft:potion", "components": {"minecraft:potion_contents": {"potion": "minecraft:fire_resistance"}}},
-         "name": {"translate": "reward.minegoals.fire_resistance"},
-         "description": {"translate": "reward.minegoals.fire_resistance.desc"},
-     }]},
-    items(("minecraft:ender_pearl", 2)),                                # 7 blazes -> endermen
-    items(("minecraft:golden_apple", 2)),                               # 8 eyes of ender -> stronghold
-    {"items": [stack("minecraft:bow", enchantments={"minecraft:power": 3, "minecraft:unbreaking": 2}),
-               {"id": "minecraft:arrow", "count": 64}, {"id": "minecraft:cooked_beef", "count": 32}]},  # 9 stronghold -> preparation
-    items(("minecraft:golden_apple", 3)),                               # 10 preparation -> the End
-    items(("minecraft:spectral_arrow", 32)),                            # 11 the End -> the dragon
-    {"items": [stack("minecraft:elytra", custom_name={"translate": "item.minegoals.dragon_wings", "color": "light_purple", "italic": False},
-                     rarity="epic")]},                                  # 12 the dragon
-]
-
-# Command rewards on Road to the End goals, shown with their own icon, name and description.
-ROAD_COMMANDS = {
-    "first_table": [{
-        "run": "minegoals unlock @s minegoals:redstone",
-        "icon": "minecraft:redstone",
-        "name": {"translate": "reward.minegoals.unlock_redstone"},
-        "description": {"translate": "reward.minegoals.unlock_redstone.desc"},
-    }],
+FARMING = {
+    "id": "farming", "icon": "minecraft:wheat", "background": "husbandry",
+    "en": "Farming", "fr": "Ferme",
+    "tiers": [
+        {"reward": {"items": [{"id": "minecraft:bone_meal", "count": 16}, {"id": "minecraft:bread", "count": 8}]}, "goals": [
+            ("till", "minecraft:stone_hoe", U("#minecraft:hoes", 16), 1, "Tilling Time", "Till 16 blocks of dirt with a hoe", "Labourage", "Laboure 16 blocs de terre avec une houe"),
+            ("plant_seeds", "minecraft:wheat_seeds", U("minecraft:wheat_seeds", 16), 1, "A Seedy Place", "Plant 16 wheat seeds", "Un endroit fertile", "Plante 16 graines de blé"),
+            ("wheat", "minecraft:wheat", P("minecraft:wheat", 16), 1, "First Harvest", "Harvest 16 wheat", "Première récolte", "Récolte 16 blés"),
+        ]},
+        {"reward": {"items": [{"id": "minecraft:lead", "count": 2}, {"id": "minecraft:name_tag", "count": 2}]}, "goals": [
+            ("carrots", "minecraft:carrot", P("minecraft:carrot", 32), 1, "What's Up, Doc?", "Harvest 32 carrots", "Quoi de neuf, docteur ?", "Récolte 32 carottes"),
+            ("potatoes", "minecraft:potato", P("minecraft:potato", 32), 1, "Couch Potato", "Harvest 32 potatoes", "Patate de canapé", "Récolte 32 pommes de terre"),
+            ("breeder", "minecraft:wheat", ST("animals_bred", 5), 1, "Breeder", "Breed 5 animals", "Éleveur", "Fais naître 5 animaux"),
+            ("bread", "minecraft:bread", CR("minecraft:bread", 16), 1, "Baker", "Bake 16 bread", "Boulanger", "Fais 16 pains"),
+        ]},
+        {"skip": 1, "reward": {"items": [{"id": "minecraft:golden_carrot", "count": 16}, {"id": "minecraft:golden_apple", "count": 2}]}, "goals": [
+            ("breeder_2", "minecraft:wheat", ST("animals_bred", 25), 1, "Breeder II", "Breed 25 animals", "Éleveur II", "Fais naître 25 animaux"),
+            ("tame", "minecraft:bone", ADV("husbandry/tame_an_animal"), 1, "Best Friends Forever", "Tame an animal", "Meilleurs amis pour la vie", "Apprivoise un animal"),
+            ("fishing", "minecraft:fishing_rod", ST("fish_caught", 10), 1, "Angler", "Catch 10 fish", "Pêcheur", "Pêche 10 poissons"),
+            ("honey", "minecraft:honey_bottle", ADV("husbandry/safely_harvest_honey"), 1, "Bee Our Guest", "Harvest honey without angering bees", "Une abeille dans l'assiette", "Récolte du miel sans énerver les abeilles"),
+        ]},
+        {"skip": 2, "reward": {"items": [{"id": "minecraft:enchanted_golden_apple", "count": 1}]}, "goals": [
+            ("breeder_3", "minecraft:wheat", ST("animals_bred", 75), 1, "Breeder III", "Breed 75 animals", "Éleveur III", "Fais naître 75 animaux"),
+            ("golden_carrots", "minecraft:golden_carrot", CR("minecraft:golden_carrot", 32), 1, "Gourmet", "Craft 32 golden carrots", "Gourmet", "Fabrique 32 carottes dorées"),
+            ("fishing_2", "minecraft:fishing_rod", ST("fish_caught", 50), 1, "Angler II", "Catch 50 fish", "Pêcheur II", "Pêche 50 poissons"),
+            ("sniffer_egg", "minecraft:sniffer_egg", ADV("husbandry/obtain_sniffer_egg"), 1, "Smells Interesting", "Obtain a sniffer egg", "Ça sent bon", "Obtiens un œuf de renifleur"),
+            ("two_by_two", "minecraft:golden_apple", ADV("husbandry/bred_all_animals"), 1, "Two by Two", "Breed every animal", "Deux par deux", "Fais se reproduire tous les animaux"),
+        ]},
+    ],
 }
 
-# Item rewards for Road to the End goals, on top of their XP: each one helps with the next steps.
-ROAD_ITEMS = {
-    "lumberjack": [("minecraft:apple", 3)],
-    "first_table": [("minecraft:stick", 8)],
-    "wooden_pickaxe": [("minecraft:torch", 4)],
-    "stone_age": [("minecraft:coal", 8)],
-    "better_tools": [("minecraft:stone_sword", 1)],
-    "furnace": [("minecraft:cooked_porkchop", 4)],
-    "torches": [("minecraft:coal", 8)],
-    "first_night": [("minecraft:bread", 4)],
-    "night_guard": [("minecraft:iron_ingot", 2)],
-    "coal_miner": [("minecraft:torch", 16)],
-    "acquire_hardware": [("minecraft:iron_ingot", 4)],
-    "iron_pickaxe": [("minecraft:bread", 8)],
-    "suit_up": [("minecraft:iron_ingot", 6)],
-    "shield": [("minecraft:arrow", 16)],
-    "diamonds": [("minecraft:diamond", 1)],
-    "hot_stuff": [("minecraft:bucket", 1)],
-    "ice_bucket": [("minecraft:obsidian", 4)],
-    "we_need_to_go_deeper": [("minecraft:gold_ingot", 4)],
-    "fortress": [("minecraft:golden_carrot", 8)],
-    "into_fire": [("minecraft:golden_apple", 1)],
-    "blaze_hunter": [("minecraft:blaze_rod", 2)],
-    "blaze_powder": [("minecraft:ender_pearl", 2)],
-    "ender_hunter": [("minecraft:ender_pearl", 2)],
-    "pearl_collector": [("minecraft:carved_pumpkin", 1)],
-    "eyes_of_ender": [("minecraft:ender_eye", 2)],
-    "eye_spy": [("minecraft:iron_ingot", 8)],
-    "silverfish": [("minecraft:torch", 32)],
-    "bow": [("minecraft:arrow", 32)],
-    "quiver": [("minecraft:spectral_arrow", 16)],
-    "blocks": [("minecraft:cobblestone", 64)],
-    "water_bucket": [("minecraft:golden_apple", 1)],
-    "the_end": [("minecraft:golden_apple", 2)],
-    "end_stone": [("minecraft:arrow", 32)],
-    "free_the_end": [("minecraft:experience_bottle", 16)],
-    "next_generation": [("minecraft:totem_of_undying", 1)],
+VILLAGES = {
+    "id": "villages", "icon": "minecraft:emerald", "background": "adventure",
+    "en": "Villages", "fr": "Villages",
+    "tiers": [
+        {"reward": {"items": [{"id": "minecraft:emerald", "count": 8}, {"id": "minecraft:bread", "count": 8}]}, "goals": [
+            ("trade", "minecraft:emerald", ADV("adventure/trade"), 1, "What a Deal!", "Trade with a villager", "Quelle affaire !", "Fais un échange avec un villageois"),
+            ("trader", "minecraft:emerald", ST("traded_with_villager", 10), 1, "Merchant", "Trade 10 times with villagers", "Marchand", "Fais 10 échanges avec des villageois"),
+            ("bell", "minecraft:bell", ST("bell_ring", 1), 1, "Ring the Bell", "Ring a village bell", "Sonne la cloche", "Fais sonner la cloche d'un village"),
+        ]},
+        {"skip": 1, "reward": {"items": [{"id": "minecraft:emerald", "count": 16}, {"id": "minecraft:iron_block", "count": 2}]}, "goals": [
+            ("trader_2", "minecraft:emerald", ST("traded_with_villager", 50), 1, "Merchant II", "Trade 50 times with villagers", "Marchand II", "Fais 50 échanges avec des villageois"),
+            ("iron_golem", "minecraft:carved_pumpkin", ADV("adventure/summon_iron_golem"), 1, "Hired Help", "Build an iron golem", "Renfort", "Construis un golem de fer"),
+            ("emeralds", "minecraft:emerald", H("minecraft:emerald", 64), 1, "Savings", "Carry 64 emeralds", "Économies", "Porte 64 émeraudes sur toi"),
+            ("cure_zombie", "minecraft:golden_apple", ADV("story/cure_zombie_villager"), 1, "Zombie Doctor", "Cure a zombie villager", "Docteur zombie", "Soigne un villageois zombie"),
+        ]},
+        {"skip": 1, "reward": {"items": [{"id": "minecraft:emerald_block", "count": 4}, {"id": "minecraft:golden_apple", "count": 2}]}, "goals": [
+            ("trader_3", "minecraft:emerald", ST("traded_with_villager", 150), 1, "Merchant III", "Trade 150 times with villagers", "Marchand III", "Fais 150 échanges avec des villageois"),
+            ("pillagers", "minecraft:crossbow", K("minecraft:pillager", 20), 1, "Pillager Hunter", "Kill 20 pillagers", "Chasseur de pillards", "Tue 20 pillards"),
+            ("voluntary_exile", "minecraft:white_banner", ADV("adventure/voluntary_exile"), 1, "Voluntary Exile", "Kill a raid captain", "Exil volontaire", "Tue un capitaine de pillards"),
+            ("hero", "minecraft:white_banner", ADV("adventure/hero_of_the_village"), 1, "Hero of the Village", "Defend a village from a raid", "Héros du village", "Défends un village contre un raid"),
+        ]},
+        {"skip": 1, "reward": {"items": [{"id": "minecraft:totem_of_undying", "count": 1}, {"id": "minecraft:emerald_block", "count": 8}]}, "goals": [
+            ("trader_4", "minecraft:emerald", ST("traded_with_villager", 400), 1, "Merchant IV", "Trade 400 times with villagers", "Marchand IV", "Fais 400 échanges avec des villageois"),
+            ("pillagers_2", "minecraft:crossbow", K("minecraft:pillager", 60), 1, "Pillager Hunter II", "Kill 60 pillagers", "Chasseur de pillards II", "Tue 60 pillards"),
+            ("ravager", "minecraft:saddle", K("minecraft:ravager", 1), 1, "Beast Slayer", "Kill a ravager", "Tueur de bêtes", "Tue un ravageur"),
+            ("star_trader", "minecraft:emerald_block", ADV("adventure/trade_at_world_height"), 1, "Star Trader", "Trade with a villager at the build height limit", "Commerçant des étoiles", "Fais un échange avec un villageois à la hauteur maximale"),
+        ]},
+    ],
 }
 
 REDSTONE = {
-    "id": "redstone", "icon": "minecraft:redstone", "order": 9, "visibility": "visible", "ratio": 0.75,
-    # Hidden until a command unlocks it: the reward of Road to the End's "first_table" goal runs /minegoals unlock.
-    "unlock": {"default": False},
-    "en": "Redstone", "fr": "Redstone", "tier_items": ["minecraft:redstone", "minecraft:slime_ball", "minecraft:quartz", "minecraft:redstone_block"],
+    "id": "redstone", "icon": "minecraft:redstone", "background": "stone",
+    "en": "Redstone", "fr": "Redstone",
     "tiers": [
-        (None, [
-            ("redstone_dust", "minecraft:redstone", P("minecraft:redstone", 32), "Red Dust", "Pick up 32 redstone dust", "Poussière rouge", "Ramasse 32 poudres de redstone"),
-            ("redstone_torches", "minecraft:redstone_torch", CR("minecraft:redstone_torch", 8), "Signal Fire", "Craft 8 redstone torches", "Signal allumé", "Fabrique 8 torches de redstone"),
-            ("lever", "minecraft:lever", CR("minecraft:lever"), "Flip the Switch", "Craft a lever", "Actionne le levier", "Fabrique un levier"),
-            ("repeaters", "minecraft:repeater", CR("minecraft:repeater", 4), "Delay Line", "Craft 4 redstone repeaters", "Ligne à retard", "Fabrique 4 répéteurs de redstone"),
-        ]),
-        (None, [
-            ("pistons", "minecraft:piston", CR("minecraft:piston", 4), "Push It", "Craft 4 pistons", "Poussée", "Fabrique 4 pistons"),
-            ("sticky_pistons", "minecraft:sticky_piston", CR("minecraft:sticky_piston", 2), "Sticky Situation", "Craft 2 sticky pistons", "Situation collante", "Fabrique 2 pistons collants"),
-            ("observers", "minecraft:observer", CR("minecraft:observer", 2), "Watchful Eye", "Craft 2 observers", "Œil attentif", "Fabrique 2 observateurs"),
-            ("hoppers", "minecraft:hopper", CR("minecraft:hopper", 2), "Item Transport", "Craft 2 hoppers", "Transport d'objets", "Fabrique 2 entonnoirs"),
-        ]),
-        (None, [
-            ("comparators", "minecraft:comparator", CR("minecraft:comparator", 2), "Logic Gate", "Craft 2 redstone comparators", "Porte logique", "Fabrique 2 comparateurs de redstone"),
-            ("daylight_detector", "minecraft:daylight_detector", CR("minecraft:daylight_detector"), "Sundial", "Craft a daylight detector", "Cadran solaire", "Fabrique un capteur de lumière du jour"),
-            ("lighten_up", "minecraft:copper_bulb", ADV("adventure/lighten_up"), "Lighten Up", "Turn a copper bulb on after scraping it", "Allume-toi", "Allume une ampoule en cuivre après l'avoir grattée"),
-            ("sticky_situation", "minecraft:honey_block", ADV("adventure/honey_block_slide"), "Sticky Slide", "Slide down a honey block to break your fall", "Glissade collante", "Glisse le long d'un bloc de miel pour amortir ta chute"),
-        ]),
-        (None, [
-            ("crafters", "minecraft:crafter", ADV("adventure/crafters_crafting_crafters"), "Crafters Crafting Crafters", "Be near a crafter when it crafts a crafter", "Des fabricants qui fabriquent des fabricants", "Sois près d'un fabricant quand il fabrique un fabricant"),
-            ("redstone_lamps", "minecraft:redstone_lamp", CR("minecraft:redstone_lamp", 8), "Light Show", "Craft 8 redstone lamps", "Spectacle de lumière", "Fabrique 8 lampes de redstone"),
-            ("redstone_blocks", "minecraft:redstone_block", CR("minecraft:redstone_block", 16), "Power Plant", "Craft 16 blocks of redstone", "Centrale électrique", "Fabrique 16 blocs de redstone"),
-        ]),
+        {"reward": {"items": [{"id": "minecraft:redstone", "count": 32}, {"id": "minecraft:quartz", "count": 8}]}, "goals": [
+            ("redstone_torches", "minecraft:redstone_torch", CR("minecraft:redstone_torch", 8), 1, "Sparks", "Craft 8 redstone torches", "Étincelles", "Fabrique 8 torches de redstone"),
+            ("repeaters", "minecraft:repeater", CR("minecraft:repeater", 4), 1, "Delay Line", "Craft 4 repeaters", "Ligne à retard", "Fabrique 4 répéteurs"),
+            ("pistons", "minecraft:piston", CR("minecraft:piston", 4), 1, "Push It", "Craft 4 pistons", "Pousse-toi", "Fabrique 4 pistons"),
+            ("lamps", "minecraft:redstone_lamp", CR("minecraft:redstone_lamp", 4), 1, "Light Show", "Craft 4 redstone lamps", "Spectacle de lumière", "Fabrique 4 lampes de redstone"),
+        ]},
+        {"reward": {"items": [{"id": "minecraft:slime_ball", "count": 16}, {"id": "minecraft:iron_ingot", "count": 16}]}, "goals": [
+            ("sticky_pistons", "minecraft:sticky_piston", CR("minecraft:sticky_piston", 8), 1, "Sticky Situation", "Craft 8 sticky pistons", "Situation collante", "Fabrique 8 pistons collants"),
+            ("observers", "minecraft:observer", CR("minecraft:observer", 8), 1, "Watchful Eye", "Craft 8 observers", "Œil attentif", "Fabrique 8 observateurs"),
+            ("hoppers", "minecraft:hopper", CR("minecraft:hopper", 8), 1, "Item Logistics", "Craft 8 hoppers", "Logistique", "Fabrique 8 entonnoirs"),
+            ("comparators", "minecraft:comparator", CR("minecraft:comparator", 4), 1, "Signal Strength", "Craft 4 comparators", "Force du signal", "Fabrique 4 comparateurs"),
+        ]},
+        {"skip": 1, "reward": {"items": [{"id": "minecraft:redstone_block", "count": 16}, {"id": "minecraft:slime_block", "count": 8}]}, "goals": [
+            ("observers_2", "minecraft:observer", CR("minecraft:observer", 32), 1, "Watchful Eye II", "Craft 32 observers", "Œil attentif II", "Fabrique 32 observateurs"),
+            ("hoppers_2", "minecraft:hopper", CR("minecraft:hopper", 32), 1, "Item Logistics II", "Craft 32 hoppers", "Logistique II", "Fabrique 32 entonnoirs"),
+            ("crafters", "minecraft:crafter", CR("minecraft:crafter", 4), 1, "Automation", "Craft 4 crafters", "Automatisation", "Fabrique 4 fabricateurs"),
+            ("lighten_up", "minecraft:copper_bulb", ADV("adventure/lighten_up"), 1, "Lighten Up", "Turn a copper bulb on after scraping it", "Allume-toi", "Allume une ampoule en cuivre après l'avoir grattée"),
+        ]},
     ],
 }
 
-# Road to the End changes background with the journey: overworld, Nether, stronghold, then the End.
-ROAD_TIER_BACKGROUNDS = ["adventure", "stone", "adventure", "stone", "stone", "nether", "nether", "adventure",
-                         "stone", "stone", "end", "end"]
-
-# Vanilla advancement background tiled behind each category in the goals screen.
-BACKGROUNDS = {
-    "road_to_end": "end", "oceans": "adventure", "farms": "husbandry", "villages": "adventure", "magic": "stone",
-    "caves": "stone", "nether": "nether", "world": "adventure", "combat": "adventure", "redstone": "stone",
+EXPLORATION = {
+    "id": "exploration", "icon": "minecraft:compass", "background": "adventure",
+    "en": "Exploration", "fr": "Exploration",
+    "tiers": [
+        {"skip": 1, "reward": {"items": [{"id": "minecraft:spyglass", "count": 1}, {"id": "minecraft:cooked_beef", "count": 16}]}, "goals": [
+            ("map", "minecraft:map", CR("minecraft:map"), 1, "Cartographer", "Craft a map", "Cartographe", "Fabrique une carte"),
+            ("desert", "minecraft:sand", VB("minecraft:desert"), 1, "Sea of Sand", "Visit a desert", "Mer de sable", "Visite un désert"),
+            ("jungle", "minecraft:jungle_sapling", VB("#minecraft:is_jungle"), 1, "Into the Wild", "Visit a jungle", "En pleine nature", "Visite une jungle"),
+            ("witches", "minecraft:cauldron", K("minecraft:witch", 3), 1, "Witch Hunt", "Kill 3 witches", "Chasse aux sorcières", "Tue 3 sorcières"),
+        ]},
+        {"skip": 1, "reward": {"items": [{"id": "minecraft:map", "count": 4}, {"id": "minecraft:ender_pearl", "count": 4}]}, "goals": [
+            ("maps", "minecraft:map", CR("minecraft:map", 8), 1, "Cartographer II", "Craft 8 maps", "Cartographe II", "Fabrique 8 cartes"),
+            ("badlands", "minecraft:terracotta", VB("#minecraft:is_badlands"), 1, "Red Canyons", "Visit the badlands", "Canyons rouges", "Visite des badlands"),
+            ("cherry_grove", "minecraft:cherry_sapling", VB("minecraft:cherry_grove"), 1, "Cherry Blossom", "Visit a cherry grove", "Fleurs de cerisier", "Visite une cerisaie"),
+            ("trial_chambers", "minecraft:trial_key", ADV("adventure/minecraft_trials_edition"), 1, "Minecraft: Trial(s) Edition", "Step into a trial chamber", "Minecraft : Édition d'épreuve(s)", "Entre dans une chambre des épreuves"),
+            ("guardians", "minecraft:prismarine_shard", K("minecraft:guardian", 5), 1, "Ocean Monument", "Kill 5 guardians", "Monument sous-marin", "Tue 5 gardiens"),
+        ]},
+        {"skip": 1, "reward": {"items": [{"id": "minecraft:golden_apple", "count": 2}, {"id": "minecraft:sponge", "count": 4}]}, "goals": [
+            ("treasure", "minecraft:heart_of_the_sea", P("minecraft:heart_of_the_sea"), 1, "X Marks the Spot", "Dig up a buried treasure and find a heart of the sea", "La croix marque l'endroit", "Déterre un trésor enfoui et trouve un cœur de la mer"),
+            ("elder_guardian", "minecraft:wet_sponge", K("minecraft:elder_guardian"), 1, "Elder Slayer", "Kill an elder guardian", "Tueur d'ancien", "Tue un gardien ancien"),
+            ("ice_spikes", "minecraft:packed_ice", VB("minecraft:ice_spikes"), 1, "Frozen Spires", "Visit an ice spikes biome", "Flèches de glace", "Visite un biome de pics de glace"),
+            ("mushroom_fields", "minecraft:red_mushroom", VB("minecraft:mushroom_fields"), 1, "Mushroom Island", "Visit a mushroom field", "Île aux champignons", "Visite une île aux champignons"),
+            ("archaeology", "minecraft:brush", ADV("adventure/salvage_sherd"), 1, "Respecting the Remnants", "Brush a suspicious block to obtain a pottery sherd", "Respect des vestiges", "Brosse un bloc suspect pour obtenir un tesson de poterie"),
+        ]},
+        {"skip": 1, "reward": {"items": [{"id": "minecraft:totem_of_undying", "count": 1}, {"id": "minecraft:diamond", "count": 8}]}, "goals": [
+            ("allay", "minecraft:allay_spawn_egg", ADV("husbandry/allay_deliver_item_to_player"), 1, "You've Got a Friend in Me", "Free an allay and have it bring you an item", "Je suis ton ami", "Libère un allay et fais-lui t'apporter un objet"),
+            ("mansion", "minecraft:totem_of_undying", K("minecraft:evoker"), 1, "Mansion Raider", "Kill an evoker, the master of woodland mansions", "Pilleur de manoir", "Tue un évocateur, maître des manoirs"),
+            ("vexes", "minecraft:iron_sword", K("minecraft:vex", 5), 1, "Ghostbuster", "Kill 5 vexes", "Chasseur de fantômes", "Tue 5 vex"),
+            ("lodestone", "minecraft:lodestone", ADV("adventure/use_lodestone"), 1, "Country Lode, Take Me Home", "Use a compass on a lodestone", "Magnétite, ramène-moi", "Utilise une boussole sur une magnétite"),
+            ("adventuring_time", "minecraft:diamond_boots", ADV("adventure/adventuring_time"), 1, "Adventuring Time", "Discover every biome", "L'heure de l'aventure", "Découvre tous les biomes"),
+        ]},
+    ],
 }
 
-CATEGORIES = [ROAD, OCEANS, FARMS, VILLAGES, MAGIC, CAVES, NETHER, WORLD, COMBAT, REDSTONE]
+MAGIC = {
+    "id": "magic", "icon": "minecraft:enchanting_table", "background": "stone",
+    "en": "Magic", "fr": "Magie",
+    "tiers": [
+        {"reward": {"items": [{"id": "minecraft:lapis_lazuli", "count": 32}, {"id": "minecraft:experience_bottle", "count": 8}]}, "goals": [
+            ("books", "minecraft:book", CR("minecraft:book", 8), 1, "Bookbinder", "Craft 8 books", "Relieur", "Fabrique 8 livres"),
+            ("enchanting_table", "minecraft:enchanting_table", CR("minecraft:enchanting_table"), 1, "Enchanter's Desk", "Craft an enchanting table", "Bureau d'enchanteur", "Fabrique une table d'enchantement"),
+            ("enchanter", "minecraft:enchanted_book", ST("enchant_item", 3), 1, "Enchanter", "Enchant 3 items", "Enchanteur", "Enchante 3 objets"),
+        ]},
+        {"reward": {"items": [{"id": "minecraft:experience_bottle", "count": 16}, {"id": "minecraft:blaze_rod", "count": 2}]}, "goals": [
+            ("bookshelves", "minecraft:bookshelf", CR("minecraft:bookshelf", 15), 1, "Library", "Craft 15 bookshelves", "Bibliothèque", "Fabrique 15 bibliothèques"),
+            ("enchanter_2", "minecraft:enchanted_book", ST("enchant_item", 8), 1, "Enchanter II", "Enchant 8 items", "Enchanteur II", "Enchante 8 objets"),
+            ("anvil", "minecraft:anvil", CR("minecraft:anvil"), 1, "Blacksmith", "Craft an anvil", "Forgeron", "Fabrique une enclume"),
+            ("brewing_stand", "minecraft:brewing_stand", CR("minecraft:brewing_stand"), 1, "Alchemist", "Craft a brewing stand", "Alchimiste", "Fabrique un alambic"),
+        ]},
+        {"skip": 1, "reward": {"items": [{"id": "minecraft:experience_bottle", "count": 32}, {"id": "minecraft:nether_wart", "count": 16}]}, "goals": [
+            ("enchanter_3", "minecraft:enchanted_book", ST("enchant_item", 15), 1, "Enchanter III", "Enchant 15 items", "Enchanteur III", "Enchante 15 objets"),
+            ("local_brewery", "minecraft:potion", BREW(3), 1, "Local Brewery", "Brew 3 potions", "Brasserie locale", "Prépare 3 potions"),
+            ("swiftness", "minecraft:sugar", BREW(3, "swiftness"), 1, "Gotta Go Fast", "Brew 3 potions of Swiftness", "À toute vitesse", "Prépare 3 potions de rapidité"),
+            ("healing", "minecraft:glistering_melon_slice", BREW(3, "healing"), 1, "First Aid", "Brew 3 potions of Healing", "Premiers secours", "Prépare 3 potions de soin"),
+            ("anvil_use", "minecraft:anvil", ST("interact_with_anvil", 10), 1, "Blacksmith II", "Use an anvil 10 times", "Forgeron II", "Utilise une enclume 10 fois"),
+        ]},
+        {"skip": 1, "reward": {"items": [stack("minecraft:enchanted_book", stored_enchantments={"minecraft:mending": 1})]}, "goals": [
+            ("enchanter_4", "minecraft:enchanted_book", ST("enchant_item", 30), 1, "Enchanter IV", "Enchant 30 items", "Enchanteur IV", "Enchante 30 objets"),
+            ("fire_resistance", "minecraft:magma_cream", BREW(3, "fire_resistance"), 1, "Fireproof", "Brew 3 potions of Fire Resistance", "Ignifugé", "Prépare 3 potions de résistance au feu"),
+            ("strength", "minecraft:blaze_powder", BREW(3, "strength"), 1, "Liquid Courage", "Brew 3 potions of Strength", "Courage liquide", "Prépare 3 potions de force"),
+            ("invisibility", "minecraft:fermented_spider_eye", BREW(3, "invisibility"), 1, "Now You See Me", "Brew 3 potions of Invisibility", "Insaisissable", "Prépare 3 potions d'invisibilité"),
+            ("full_beacon", "minecraft:beacon", ADV("nether/create_full_beacon"), 1, "Beaconator", "Bring a beacon to full power", "Balisator", "Alimente une balise au maximum"),
+        ]},
+    ],
+}
+
+NETHER = {
+    "id": "nether", "icon": "minecraft:netherrack", "background": "nether",
+    "en": "Nether", "fr": "Nether",
+    "tiers": [
+        {"reward": {"items": [{"id": "minecraft:gold_ingot", "count": 16}, potion("minecraft:long_fire_resistance")]}, "goals": [
+            ("crimson_forest", "minecraft:crimson_fungus", VB("minecraft:crimson_forest"), 1, "Crimson Forest", "Visit a crimson forest", "Forêt écarlate", "Visite une forêt écarlate"),
+            ("warped_forest", "minecraft:warped_fungus", VB("minecraft:warped_forest"), 1, "Warped Forest", "Visit a warped forest", "Forêt biscornue", "Visite une forêt biscornue"),
+            ("quartz", "minecraft:nether_quartz_ore", B("minecraft:nether_quartz_ore", 32), 1, "Quartz Miner", "Mine 32 nether quartz ores", "Mineur de quartz", "Mine 32 minerais de quartz du Nether"),
+            ("crying_obsidian", "minecraft:crying_obsidian", ADV("nether/obtain_crying_obsidian"), 1, "Who is Cutting Onions?", "Obtain crying obsidian", "Qui épluche des oignons ?", "Obtiens de l'obsidienne pleureuse"),
+        ]},
+        {"skip": 1, "reward": {"items": [{"id": "minecraft:golden_apple", "count": 3}, potion("minecraft:long_fire_resistance", 2)]}, "goals": [
+            ("quartz_2", "minecraft:nether_quartz_ore", B("minecraft:nether_quartz_ore", 128), 1, "Quartz Miner II", "Mine 128 nether quartz ores", "Mineur de quartz II", "Mine 128 minerais de quartz du Nether"),
+            ("bastion", "minecraft:gilded_blackstone", ADV("nether/find_bastion"), 1, "Those Were the Days", "Enter a bastion remnant", "C'était le bon temps", "Entre dans les vestiges d'un bastion"),
+            ("strider", "minecraft:warped_fungus_on_a_stick", ADV("nether/ride_strider"), 1, "This Boat Has Legs", "Ride a strider with a warped fungus on a stick", "Ce bateau a des jambes", "Chevauche un arpenteur avec un champignon biscornu sur un bâton"),
+            ("wither_skeletons", "minecraft:wither_skeleton_skull", K("minecraft:wither_skeleton", 10), 1, "Bone Breaker", "Kill 10 wither skeletons", "Briseur d'os", "Tue 10 wither squelettes"),
+        ]},
+        {"skip": 1, "reward": {"items": [{"id": "minecraft:netherite_upgrade_smithing_template", "count": 1}, {"id": "minecraft:netherite_scrap", "count": 4}]}, "goals": [
+            ("ancient_debris", "minecraft:ancient_debris", B("minecraft:ancient_debris", 16), 1, "Hidden in the Depths", "Mine 16 ancient debris", "Caché dans les profondeurs", "Mine 16 débris antiques"),
+            ("netherite", "minecraft:netherite_ingot", CR("minecraft:netherite_ingot", 4), 1, "Netherite Smith", "Craft 4 netherite ingots", "Forgeron de netherite", "Fabrique 4 lingots de netherite"),
+            ("wither_skeletons_2", "minecraft:wither_skeleton_skull", K("minecraft:wither_skeleton", 40), 1, "Bone Breaker II", "Kill 40 wither skeletons", "Briseur d'os II", "Tue 40 wither squelettes"),
+            ("return_to_sender", "minecraft:fire_charge", ADV("nether/return_to_sender"), 1, "Return to Sender", "Kill a ghast with its own fireball", "Retour à l'envoyeur", "Tue un ghast avec sa propre boule de feu"),
+        ]},
+    ],
+}
+
+END = {
+    "id": "end", "icon": "minecraft:purpur_block", "background": "end",
+    "en": "The End", "fr": "L'End",
+    "tiers": [
+        {"reward": {"items": [{"id": "minecraft:shulker_shell", "count": 4}, {"id": "minecraft:golden_apple", "count": 2}]}, "goals": [
+            ("gateway", "minecraft:ender_pearl", ADV("end/enter_end_gateway"), 1, "Remote Getaway", "Escape the island through an End gateway", "Évasion à distance", "Quitte l'île par un portail de l'End"),
+            ("end_city", "minecraft:purpur_block", ADV("end/find_end_city"), 1, "The City at the End of the Game", "Find an End city", "La cité au bout du jeu", "Trouve une cité de l'End"),
+            ("shulkers", "minecraft:shulker_shell", K("minecraft:shulker", 10), 1, "Shell Hunter", "Kill 10 shulkers", "Chasseur de carapaces", "Tue 10 shulkers"),
+        ]},
+        {"skip": 1, "reward": {"items": [{"id": "minecraft:firework_rocket", "count": 64}, {"id": "minecraft:shulker_box", "count": 2}]}, "goals": [
+            ("elytra", "minecraft:elytra", ADV("end/elytra"), 1, "Sky's the Limit", "Find an elytra", "Plus haut que le ciel", "Trouve des élytres"),
+            ("shulkers_2", "minecraft:shulker_shell", K("minecraft:shulker", 40), 1, "Shell Hunter II", "Kill 40 shulkers", "Chasseur de carapaces II", "Tue 40 shulkers"),
+            ("levitate", "minecraft:shulker_shell", ADV("end/levitate"), 1, "Great View From Up Here", "Levitate 50 blocks up from a shulker's attack", "Belle vue d'ici", "Lévite de 50 blocs grâce à un shulker"),
+            ("respawn_dragon", "minecraft:end_crystal", ADV("end/respawn_dragon"), 1, "The End... Again...", "Respawn the Ender Dragon", "La fin... encore...", "Fais réapparaître le dragon de l'Ender"),
+        ]},
+    ],
+}
+
+WARDEN = {
+    "id": "warden", "icon": "minecraft:sculk_shrieker", "background": "stone",
+    "en": "The Warden", "fr": "Le Warden",
+    "tiers": [
+        {"skip": 1, "reward": {"items": [stack("minecraft:leather_leggings", enchantments={"minecraft:swift_sneak": 2}), {"id": "minecraft:white_wool", "count": 32}]}, "goals": [
+            ("sculk", "minecraft:sculk", B("minecraft:sculk", 64), 1, "Silent Miner", "Mine 64 sculk", "Mineur silencieux", "Mine 64 blocs de sculk"),
+            ("sensors", "minecraft:sculk_sensor", B("minecraft:sculk_sensor", 8), 1, "Disarmed", "Mine 8 sculk sensors", "Désamorcé", "Mine 8 capteurs sculk"),
+            ("sneak", "minecraft:sculk_sensor", ADV("adventure/avoid_vibration"), 1, "Sneak 100", "Sneak near a sculk sensor or warden to stay undetected", "Furtif 100", "Avance accroupi près d'un capteur sculk ou du warden sans te faire repérer"),
+            ("it_spreads", "minecraft:sculk_catalyst", ADV("adventure/kill_mob_near_sculk_catalyst"), 1, "It Spreads", "Kill a mob near a sculk catalyst", "Ça se propage", "Tue une créature près d'un catalyseur sculk"),
+        ]},
+        {"skip": 1, "reward": {"items": [{"id": "minecraft:golden_apple", "count": 4}, potion("minecraft:long_night_vision", 2)]}, "goals": [
+            ("shriekers", "minecraft:sculk_shrieker", B("minecraft:sculk_shrieker", 8), 1, "Hush", "Mine 8 sculk shriekers", "Chut", "Mine 8 hurleurs sculk"),
+            ("echo_shards", "minecraft:echo_shard", P("minecraft:echo_shard", 8), 1, "Echoes", "Find 8 echo shards in ancient cities", "Échos", "Trouve 8 éclats d'écho dans les cités antiques"),
+            ("recovery_compass", "minecraft:recovery_compass", CR("minecraft:recovery_compass"), 1, "Lost and Found", "Craft a recovery compass", "Objets trouvés", "Fabrique une boussole de récupération"),
+            ("catalysts", "minecraft:sculk_catalyst", B("minecraft:sculk_catalyst", 4), 1, "Contained", "Mine 4 sculk catalysts", "Confiné", "Mine 4 catalyseurs sculk"),
+        ]},
+        {"skip": 1, "reward": {"items": [stack("minecraft:netherite_chestplate", enchantments={"minecraft:protection": 4, "minecraft:unbreaking": 3})]}, "goals": [
+            ("warden", "minecraft:sculk_shrieker", K("minecraft:warden"), 2, "Guardian of the Deep", "Kill the warden", "Gardien des abîmes", "Tue le warden"),
+            ("echo_shards_2", "minecraft:echo_shard", P("minecraft:echo_shard", 24), 1, "Echoes II", "Find 24 echo shards", "Échos II", "Trouve 24 éclats d'écho"),
+            ("disc_fragments", "minecraft:disc_fragment_5", P("minecraft:disc_fragment_5", 9), 1, "Broken Record", "Find 9 disc fragments", "Disque rayé", "Trouve 9 fragments de disque"),
+        ]},
+    ],
+}
+
+SECONDARY = [MINING, COMBAT, FARMING, VILLAGES, REDSTONE, EXPLORATION, MAGIC, NETHER, END, WARDEN]
+SECONDARY_BY_ID = {c["id"]: c for c in SECONDARY}
+
+# ---- main category -------------------------------------------------------------------------------
+
+FIRE_RESISTANCE = {
+    "run": "effect give @s minecraft:fire_resistance 300",
+    "icon": {"id": "minecraft:potion", "components": {"minecraft:potion_contents": {"potion": "minecraft:fire_resistance"}}},
+    "name": {"translate": "reward.minegoals.fire_resistance"},
+    "description": {"translate": "reward.minegoals.fire_resistance.desc"},
+}
+
+PROGRESSION = {
+    "id": "progression", "icon": "minecraft:crafting_table", "background": "adventure",
+    "en": "Progression", "fr": "Progression",
+    "tiers": [
+        {"background": "adventure", "reward": items(("minecraft:bread", 8), ("minecraft:torch", 16)), "goals": [
+            ("crafting_table", "minecraft:crafting_table", CR("minecraft:crafting_table"), 1, "First Table", "Craft a crafting table", "Premier établi", "Fabrique un établi"),
+            ("wooden_pickaxe", "minecraft:wooden_pickaxe", CR("minecraft:wooden_pickaxe"), 1, "Getting Started", "Craft a wooden pickaxe", "Premiers pas", "Fabrique une pioche en bois", {"unlocks": "mining"}),
+            ("furnace", "minecraft:furnace", CR("minecraft:furnace"), 1, "Hot Topic", "Craft a furnace", "Sujet brûlant", "Fabrique un four"),
+        ]},
+        {"background": "stone", "reward": items(("minecraft:iron_ingot", 6), ("minecraft:cooked_beef", 8)), "goals": [
+            ("mining_1",),
+            ("sword", "minecraft:stone_sword", CR("#minecraft:swords"), 1, "Armed", "Craft a sword", "Armé", "Fabrique une épée", {"unlocks": "combat"}),
+            ("hoe", "minecraft:stone_hoe", CR("#minecraft:hoes"), 1, "Green Thumb", "Craft a hoe", "Main verte", "Fabrique une houe", {"unlocks": "farming"}),
+            ("sleep", "minecraft:red_bed", ADV("adventure/sleep_in_bed"), 1, "Sweet Dreams", "Sleep in a bed", "Fais de beaux rêves", "Dors dans un lit"),
+        ]},
+        {"background": "stone", "reward": items(("minecraft:bucket", 2), ("minecraft:golden_apple", 1)), "goals": [
+            ("smelt_iron", "minecraft:iron_ingot", ADV("story/smelt_iron"), 1, "Acquire Hardware", "Smelt an iron ingot", "Quincaillerie", "Fais fondre un lingot de fer"),
+            ("iron_pickaxe", "minecraft:iron_pickaxe", ADV("story/iron_tools"), 1, "Isn't It Iron Pick", "Craft an iron pickaxe", "Pioche en fer", "Fabrique une pioche en fer"),
+            ("iron_armor", "minecraft:iron_chestplate", ADV("story/obtain_armor"), 1, "Suit Up", "Wear a piece of iron armor", "Équipe-toi", "Porte une pièce d'armure en fer"),
+            ("villager", "minecraft:emerald", ST("talked_to_villager"), 1, "Neighbours", "Talk to a villager", "Voisinage", "Parle à un villageois", {"unlocks": "villages"}),
+            ("combat_1",),
+            ("farming_1",),
+        ]},
+        {"background": "stone", "reward": items(("minecraft:flint_and_steel", 1), ("minecraft:leather", 8)), "goals": [
+            ("diamonds", "minecraft:diamond", ADV("story/mine_diamond"), 1, "Diamonds!", "Find a diamond", "Des diamants !", "Trouve un diamant"),
+            ("obsidian", "minecraft:obsidian", ADV("story/form_obsidian"), 1, "Ice Bucket Challenge", "Obtain a block of obsidian", "Défi du seau d'eau", "Obtiens un bloc d'obsidienne"),
+            ("compass", "minecraft:compass", CR("minecraft:compass"), 1, "Finding North", "Craft a compass", "Cap au nord", "Fabrique une boussole", {"unlocks": "exploration"}),
+            ("piston", "minecraft:piston", CR("minecraft:piston"), 1, "Moving Parts", "Craft a piston", "Pièces mobiles", "Fabrique un piston", {"unlocks": "redstone"}),
+            ("mining_2",),
+        ]},
+        {"background": "adventure", "reward": {**items(("minecraft:arrow", 32)), "commands": [FIRE_RESISTANCE]}, "goals": [
+            ("book", "minecraft:book", CR("minecraft:book"), 1, "Bookworm", "Craft a book", "Rat de bibliothèque", "Fabrique un livre", {"unlocks": "magic"}),
+            ("enter_nether", "minecraft:netherrack", ADV("story/enter_the_nether"), 1, "We Need to Go Deeper", "Build a portal and enter the Nether", "Il faut creuser plus profond", "Construis un portail et entre dans le Nether", {"unlocks": "nether"}),
+            ("combat_2",),
+            ("farming_2",),
+        ]},
+        {"background": "nether", "reward": items(("minecraft:ender_pearl", 4), ("minecraft:golden_apple", 2)), "goals": [
+            ("fortress", "minecraft:nether_bricks", ADV("nether/find_fortress"), 1, "A Terrible Fortress", "Find a Nether fortress", "Une terrible forteresse", "Trouve une forteresse du Nether"),
+            ("blaze_rod", "minecraft:blaze_rod", ADV("nether/obtain_blaze_rod"), 1, "Into Fire", "Get a blaze rod", "Dans le feu", "Obtiens un bâton de blaze"),
+            ("nether_1",),
+            ("magic_1",),
+        ]},
+        {"background": "adventure", "reward": {"items": [stack("minecraft:bow", enchantments={"minecraft:power": 3, "minecraft:unbreaking": 2}),
+                                                          {"id": "minecraft:arrow", "count": 64}]}, "goals": [
+            ("ender_pearls", "minecraft:ender_pearl", P("minecraft:ender_pearl", 12), 1, "Pearl Collector", "Pick up 12 ender pearls", "Collecteur de perles", "Ramasse 12 perles de l'Ender"),
+            ("eyes_of_ender", "minecraft:ender_eye", CR("minecraft:ender_eye", 12), 1, "Eyes of Ender", "Craft 12 eyes of ender", "Yeux de l'Ender", "Fabrique 12 yeux de l'Ender"),
+            ("stronghold", "minecraft:end_portal_frame", ADV("story/follow_ender_eye"), 1, "Eye Spy", "Follow an eye of ender into a stronghold", "Œil pour œil", "Suis un œil de l'Ender jusqu'à un fort"),
+            ("mining_3",),
+            ("combat_3",),
+            ("redstone_1",),
+        ]},
+        {"background": "end", "reward": {"items": [stack("minecraft:elytra", custom_name={"translate": "item.minegoals.dragon_wings", "color": "light_purple", "italic": False},
+                                                         rarity="epic")]}, "goals": [
+            ("enter_end", "minecraft:end_stone", ADV("story/enter_the_end"), 1, "The End?", "Enter the End portal", "La fin ?", "Entre dans le portail de l'End"),
+            ("deep_dark", "minecraft:sculk", VB("minecraft:deep_dark"), 1, "Into the Dark", "Reach the deep dark", "Dans le noir", "Atteins les abîmes", {"unlocks": "warden"}),
+            ("dragon", "minecraft:dragon_head", ADV("end/kill_dragon"), 3, "Free the End", "Slay the Ender Dragon", "Libère l'End", "Tue le dragon de l'Ender", {"unlocks": "end"}),
+            ("nether_2",),
+            ("magic_2",),
+            ("farming_3",),
+        ]},
+        {"background": "end", "reward": {"items": [stack("minecraft:netherite_sword",
+                                                         enchantments={"minecraft:sharpness": 5, "minecraft:unbreaking": 3, "minecraft:mending": 1},
+                                                         custom_name={"translate": "item.minegoals.legend_blade", "color": "gold", "italic": False},
+                                                         rarity="epic")]}, "goals": [
+            ("wither", "minecraft:nether_star", K("minecraft:wither"), 3, "Withering Heights", "Kill the Wither", "Les Hauts de Hurlevent", "Tue le Wither"),
+            ("end_1",),
+            ("nether_3",),
+            ("mining_4",),
+            ("combat_4",),
+            ("magic_3",),
+        ]},
+    ],
+}
+
+# ("mining_1",) is shorthand for TIER_GOAL("mining", 1).
+for _tier in PROGRESSION["tiers"]:
+    _tier["goals"] = [TIER_GOAL(g[0].rsplit("_", 1)[0], int(g[0].rsplit("_", 1)[1])) if len(g) == 1 else g
+                      for g in _tier["goals"]]
+
+CATEGORIES = [PROGRESSION] + SECONDARY
+
 
 en = {
     "minegoals.screen.title": "MineGoals",
@@ -466,10 +466,9 @@ en = {
     "minegoals.screen.locked_tier_tracked": "Locked · reach tier %s · progress already counts",
     "minegoals.screen.locked_claim": "Locked · claim the tier %s reward to unlock",
     "minegoals.screen.category_claim": "Claim the tier %s reward to continue",
-    "minegoals.screen.tier_reward_hint": "Earned by completing this tier. Claiming it unlocks the next tier.",
     "minegoals.screen.tier_state.done": "Completed",
-    "minegoals.screen.tier_state.claimable": "Complete · claim the reward to unlock the next tier",
-    "minegoals.screen.tier_state.in_progress": "In progress · complete tier %s to earn this reward",
+    "minegoals.screen.tier_state.claimable": "Completed",
+    "minegoals.screen.tier_state.in_progress": "In progress",
     "minegoals.screen.tier_state.locked": "Locked",
     "minegoals.screen.locked_requires": "Locked · requires: %s",
     "minegoals.screen.rewards": "Rewards:",
@@ -478,6 +477,13 @@ en = {
     "minegoals.screen.claim": "Claim",
     "minegoals.screen.claimed": "Claimed",
     "minegoals.screen.track": "Track",
+    "minegoals.screen.tracked": "Tracked",
+    "minegoals.screen.track_tier": "Track every goal of this tier",
+    "minegoals.screen.untrack_tier": "Stop tracking the goals of this tier",
+    "minegoals.screen.collect": "Collect",
+    "minegoals.screen.pending": "%s item(s) waiting",
+    "minegoals.screen.pending_title": "Rewards waiting for space",
+    "minegoals.screen.pending_hint": "Collect puts what fits in your inventory",
     "minegoals.screen.claimable": "%s reward(s) to claim",
     "minegoals.screen.tier_reward": "Tier %s reward",
     "minegoals.screen.tier_hidden": "Reach this tier to reveal it",
@@ -490,6 +496,8 @@ en = {
     "minegoals.notify.tier_reached": "Tier %s reached!",
     "minegoals.notify.claim_hint": "Claim your reward in the goals screen (G).",
     "minegoals.notify.category_unlocked": "New category unlocked!",
+    "minegoals.notify.inventory_full": "Inventory full: %s item(s) kept for you. Collect them in the goals screen (G).",
+    "minegoals.toast.tracked_completed": "Goal completed!",
     "minegoals.command.list.header": "%s · %s points",
     "minegoals.command.list.category": " · tier %s/%s · %s pts",
     "minegoals.command.unknown": "Unknown goal or category: %s",
@@ -501,13 +509,12 @@ en = {
     "minegoals.command.lock": "Locked category %s for %s",
     "reward.minegoals.fire_resistance": "Fire Resistance (5 min)",
     "reward.minegoals.fire_resistance.desc": "Shrug off blaze fireballs in the fortress",
-    "reward.minegoals.unlock_redstone": "New category: Redstone",
-    "reward.minegoals.unlock_redstone.desc": "Unlocks the Redstone goals",
     "key.minegoals.open": "Open goals",
     "key.minegoals.toggle_hud": "Toggle goals HUD",
     "key.minegoals.next_category": "Next category in goals HUD",
     "key.category.minegoals.main": "MineGoals",
     "item.minegoals.dragon_wings": "Dragon Wings",
+    "item.minegoals.legend_blade": "Legend's Edge",
 }
 fr = {
     "minegoals.screen.title": "MineGoals",
@@ -520,10 +527,9 @@ fr = {
     "minegoals.screen.locked_tier_tracked": "Verrouillé · atteins le palier %s · la progression compte déjà",
     "minegoals.screen.locked_claim": "Verrouillé · récupère la récompense du palier %s pour débloquer",
     "minegoals.screen.category_claim": "Récupère la récompense du palier %s pour continuer",
-    "minegoals.screen.tier_reward_hint": "Obtenue en terminant ce palier. La récupérer débloque le palier suivant.",
     "minegoals.screen.tier_state.done": "Terminé",
-    "minegoals.screen.tier_state.claimable": "Terminé · récupère la récompense pour débloquer le palier suivant",
-    "minegoals.screen.tier_state.in_progress": "En cours · termine le palier %s pour gagner cette récompense",
+    "minegoals.screen.tier_state.claimable": "Terminé",
+    "minegoals.screen.tier_state.in_progress": "En cours",
     "minegoals.screen.tier_state.locked": "Verrouillé",
     "minegoals.screen.locked_requires": "Verrouillé · nécessite : %s",
     "minegoals.screen.rewards": "Récompenses :",
@@ -531,7 +537,14 @@ fr = {
     "minegoals.screen.reward_special": "Récompense spéciale",
     "minegoals.screen.claim": "Récupérer",
     "minegoals.screen.claimed": "Récupéré",
-    "minegoals.screen.track": "Track",
+    "minegoals.screen.track": "Suivre",
+    "minegoals.screen.tracked": "Suivi",
+    "minegoals.screen.track_tier": "Suivre tous les objectifs de ce palier",
+    "minegoals.screen.untrack_tier": "Ne plus suivre les objectifs de ce palier",
+    "minegoals.screen.collect": "Récupérer",
+    "minegoals.screen.pending": "%s objet(s) en attente",
+    "minegoals.screen.pending_title": "Récompenses en attente de place",
+    "minegoals.screen.pending_hint": "Récupérer met ce qui rentre dans ton inventaire",
     "minegoals.screen.claimable": "%s récompense(s) à récupérer",
     "minegoals.screen.tier_reward": "Récompense du palier %s",
     "minegoals.screen.tier_hidden": "Atteins ce palier pour le révéler",
@@ -544,6 +557,8 @@ fr = {
     "minegoals.notify.tier_reached": "Palier %s atteint !",
     "minegoals.notify.claim_hint": "Récupère ta récompense dans l'écran des objectifs (G).",
     "minegoals.notify.category_unlocked": "Nouvelle catégorie débloquée !",
+    "minegoals.notify.inventory_full": "Inventaire plein : %s objet(s) mis de côté. Récupère-les dans l'écran des objectifs (G).",
+    "minegoals.toast.tracked_completed": "Objectif terminé !",
     "minegoals.command.list.header": "%s · %s points",
     "minegoals.command.list.category": " · palier %s/%s · %s pts",
     "minegoals.command.unknown": "Objectif ou catégorie inconnu : %s",
@@ -555,48 +570,56 @@ fr = {
     "minegoals.command.lock": "Catégorie %s verrouillée pour %s",
     "reward.minegoals.fire_resistance": "Résistance au feu (5 min)",
     "reward.minegoals.fire_resistance.desc": "Ignore les boules de feu des blazes dans la forteresse",
-    "reward.minegoals.unlock_redstone": "Nouvelle catégorie : Redstone",
-    "reward.minegoals.unlock_redstone.desc": "Débloque les objectifs de Redstone",
     "key.minegoals.open": "Ouvrir les objectifs",
     "key.minegoals.toggle_hud": "Afficher/masquer le HUD des objectifs",
     "key.minegoals.next_category": "Catégorie suivante dans le HUD",
     "key.category.minegoals.main": "MineGoals",
     "item.minegoals.dragon_wings": "Ailes du dragon",
+    "item.minegoals.legend_blade": "Lame de légende",
 }
 
 # Start from a clean slate so removed goals do not linger.
 for folder in ("category", "goal"):
     shutil.rmtree(os.path.join(data, folder), ignore_errors=True)
 
+# Command reward that unlocks a secondary category, shown with the category's icon and name.
+for cat in SECONDARY:
+    key = f"reward.minegoals.unlock_{cat['id']}"
+    en[key], en[key + ".desc"] = f"New category: {cat['en']}", f"Unlocks the {cat['en']} goals"
+    fr[key], fr[key + ".desc"] = f"Nouvelle catégorie : {cat['fr']}", f"Débloque les objectifs de la catégorie {cat['fr']}"
+
+
+def unlock_reward(category):
+    return {
+        "run": f"minegoals unlock @s minegoals:{category}",
+        "icon": SECONDARY_BY_ID[category]["icon"],
+        "name": {"translate": f"reward.minegoals.unlock_{category}"},
+        "description": {"translate": f"reward.minegoals.unlock_{category}.desc"},
+    }
+
+
 total_goals = 0
-for cat in CATEGORIES:
+for order, cat in enumerate(CATEGORIES):
     cid = cat["id"]
-    road = cat["ratio"] >= 1.0
+    main = cat is PROGRESSION
     cat_key = f"category.minegoals.{cid}"
     en[cat_key], fr[cat_key] = cat["en"], cat["fr"]
 
     tiers_json = []
-    for t, (tier_reward, goals) in enumerate(cat["tiers"], start=1):
-        points = 10 + 5 * (t - 1) if road else 10 * t
-        # Points this tier needs, from its own goals: all of them on the road, about 75% (rounded down to 5) in themes.
-        tier_total = points * len(goals)
-        needed = tier_total if road else max(points, int(math.floor(tier_total * cat["ratio"] / 5.0)) * 5)
-
-        # A tier's reward is earned by completing it; claiming the reward unlocks the next tier.
-        if road:
-            tier_reward = {**ROAD_TIER_REWARDS[t - 1], "experience": 25 * t}
-        else:
-            tier_reward = {"items": [{"id": cat["tier_items"][t - 1], "count": 4 if t < 4 else 1}], "experience": 50 * t}
-        tier = {"points": needed}
-        if road:
-            tier["background"] = "minecraft:textures/gui/advancements/backgrounds/%s.png" % ROAD_TIER_BACKGROUNDS[t - 1]
-        if tier_reward:
-            tier["rewards"] = tier_reward
+    for t, tier_def in enumerate(cat["tiers"], start=1):
+        goals = tier_def["goals"]
+        # A tier needs all of its goals' points, minus "skip" points on secondary tiers with frustrating goals.
+        assert not (main and "skip" in tier_def)
+        tier = {"points": sum(goal[3] for goal in goals) - tier_def.get("skip", 0)}
+        if "background" in tier_def:
+            tier["background"] = bg(tier_def["background"])
+        tier["rewards"] = {**tier_def["reward"], "experience": (25 if main else 50) * t}
         tiers_json.append(tier)
 
         for goal in goals:
-            gid, icon, crit, en_t, en_d, fr_t, fr_d = goal[:7]
-            extra = goal[7] if len(goal) > 7 else {}
+            gid, icon, crit, points, en_t, en_d, fr_t, fr_d = goal[:8]
+            extra = dict(goal[8]) if len(goal) > 8 else {}
+            unlocks = extra.pop("unlocks", None)
             key = f"goal.minegoals.{cid}.{gid}"
             en[key], en[key + ".desc"] = en_t, en_d
             fr[key], fr[key + ".desc"] = fr_t, fr_d
@@ -608,15 +631,12 @@ for cat in CATEGORIES:
                 "description": {"translate": key + ".desc"},
                 "icon": icon,
                 "criterion": crit,
-                "rewards": {"experience": points},
+                "rewards": {"experience": 10 * points},
+                # Progress counts before the tier (or the category) unlocks, so nothing has to be done twice.
+                "track_before_unlock": True,
             }
-            if road and gid in ROAD_ITEMS:
-                obj["rewards"]["items"] = [{"id": i, "count": c} for i, c in ROAD_ITEMS[gid]]
-            if road and gid in ROAD_COMMANDS:
-                obj["rewards"]["commands"] = ROAD_COMMANDS[gid]
-            # Themed categories count progress before a tier unlocks; the road stays step by step.
-            if not road:
-                obj["track_before_unlock"] = True
+            if unlocks:
+                obj["rewards"]["commands"] = [unlock_reward(unlocks)]
             obj.update(extra)
             write(os.path.join(data, "goal", cid, gid + ".json"), obj)
             total_goals += 1
@@ -624,12 +644,17 @@ for cat in CATEGORIES:
     write(os.path.join(data, "category", cid + ".json"), {
         "title": {"translate": cat_key},
         "icon": cat["icon"],
-        "order": cat["order"],
-        "tier_visibility": cat["visibility"],
-        **({"unlock": cat["unlock"]} if "unlock" in cat else {}),
-        "background": "minecraft:textures/gui/advancements/backgrounds/%s.png" % BACKGROUNDS[cid],
+        "order": order,
+        "tier_visibility": "next",
+        # Secondary categories stay hidden until a Progression goal unlocks them.
+        **({} if main else {"unlock": {"default": False}}),
+        "background": bg(cat["background"]),
         "tiers": tiers_json,
     })
+
+# Every secondary category must be unlocked by exactly one Progression goal.
+unlocked = [g[8]["unlocks"] for t in PROGRESSION["tiers"] for g in t["goals"] if len(g) > 8 and "unlocks" in g[8]]
+assert sorted(unlocked) == sorted(SECONDARY_BY_ID), unlocked
 
 write(os.path.join(lang_dir, "en_us.json"), en)
 write(os.path.join(lang_dir, "fr_fr.json"), fr)

@@ -1,0 +1,24 @@
+{
+  "category": "minegoals:magic",
+  "tier": 4,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.magic.invisibility"
+  },
+  "description": {
+    "translate": "goal.minegoals.magic.invisibility.desc"
+  },
+  "icon": "minecraft:fermented_spider_eye",
+  "criterion": {
+    "type": "minegoals:brew_potion",
+    "count": 3,
+    "potions": [
+      "minecraft:invisibility",
+      "minecraft:long_invisibility"
+    ]
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

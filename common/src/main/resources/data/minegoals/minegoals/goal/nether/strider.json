@@ -1,7 +1,7 @@
 {
   "category": "minegoals:nether",
   "tier": 2,
-  "points": 20,
+  "points": 1,
   "title": {
     "translate": "goal.minegoals.nether.strider"
   },
@@ -14,7 +14,7 @@
     "advancement": "minecraft:nether/ride_strider"
   },
   "rewards": {
-    "experience": 20
+    "experience": 10
   },
   "track_before_unlock": true
 }

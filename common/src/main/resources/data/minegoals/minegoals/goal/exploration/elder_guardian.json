@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:exploration",
+  "tier": 3,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.exploration.elder_guardian"
+  },
+  "description": {
+    "translate": "goal.minegoals.exploration.elder_guardian.desc"
+  },
+  "icon": "minecraft:wet_sponge",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:elder_guardian",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

@@ -2,63 +2,70 @@
   "title": {
     "translate": "category.minegoals.nether"
   },
-  "icon": "minecraft:netherite_ingot",
-  "order": 6,
-  "tier_visibility": "visible",
+  "icon": "minecraft:netherrack",
+  "order": 8,
+  "tier_visibility": "next",
   "unlock": {
-    "default": false,
-    "advancements": [
-      "minecraft:story/enter_the_nether"
-    ]
+    "default": false
   },
   "background": "minecraft:textures/gui/advancements/backgrounds/nether.png",
   "tiers": [
     {
-      "points": 30,
+      "points": 4,
       "rewards": {
         "items": [
           {
             "id": "minecraft:gold_ingot",
-            "count": 4
+            "count": 16
+          },
+          {
+            "id": "minecraft:potion",
+            "count": 1,
+            "components": {
+              "minecraft:potion_contents": {
+                "potion": "minecraft:long_fire_resistance"
+              }
+            }
           }
         ],
         "experience": 50
       }
     },
     {
-      "points": 60,
+      "points": 3,
       "rewards": {
         "items": [
           {
-            "id": "minecraft:crying_obsidian",
-            "count": 4
+            "id": "minecraft:golden_apple",
+            "count": 3
+          },
+          {
+            "id": "minecraft:potion",
+            "count": 2,
+            "components": {
+              "minecraft:potion_contents": {
+                "potion": "minecraft:long_fire_resistance"
+              }
+            }
           }
         ],
         "experience": 100
       }
     },
     {
-      "points": 65,
+      "points": 3,
       "rewards": {
         "items": [
+          {
+            "id": "minecraft:netherite_upgrade_smithing_template",
+            "count": 1
+          },
           {
             "id": "minecraft:netherite_scrap",
             "count": 4
           }
         ],
         "experience": 150
-      }
-    },
-    {
-      "points": 90,
-      "rewards": {
-        "items": [
-          {
-            "id": "minecraft:netherite_upgrade_smithing_template",
-            "count": 1
-          }
-        ],
-        "experience": 200
       }
     }
   ]

@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:progression",
+  "tier": 4,
+  "points": 2,
+  "title": {
+    "translate": "goal.minegoals.progression.mining_2"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.mining_2.desc"
+  },
+  "icon": "minecraft:iron_pickaxe",
+  "criterion": {
+    "type": "minegoals:category_tier",
+    "category": "minegoals:mining",
+    "tier": 2
+  },
+  "rewards": {
+    "experience": 20
+  },
+  "track_before_unlock": true
+}

@@ -1,7 +1,7 @@
 {
   "category": "minegoals:redstone",
-  "tier": 4,
-  "points": 40,
+  "tier": 3,
+  "points": 1,
   "title": {
     "translate": "goal.minegoals.redstone.crafters"
   },
@@ -10,11 +10,12 @@
   },
   "icon": "minecraft:crafter",
   "criterion": {
-    "type": "minegoals:advancement",
-    "advancement": "minecraft:adventure/crafters_crafting_crafters"
+    "type": "minegoals:craft_item",
+    "item": "minecraft:crafter",
+    "count": 4
   },
   "rewards": {
-    "experience": 40
+    "experience": 10
   },
   "track_before_unlock": true
 }

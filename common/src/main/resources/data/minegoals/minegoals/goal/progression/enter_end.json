@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:progression",
+  "tier": 8,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.progression.enter_end"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.enter_end.desc"
+  },
+  "icon": "minecraft:end_stone",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:story/enter_the_end"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

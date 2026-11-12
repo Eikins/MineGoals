@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:farming",
+  "tier": 1,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.farming.wheat"
+  },
+  "description": {
+    "translate": "goal.minegoals.farming.wheat.desc"
+  },
+  "icon": "minecraft:wheat",
+  "criterion": {
+    "type": "minegoals:collect_item",
+    "item": "minecraft:wheat",
+    "count": 16
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

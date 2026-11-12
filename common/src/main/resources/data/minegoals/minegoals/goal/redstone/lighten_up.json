@@ -1,7 +1,7 @@
 {
   "category": "minegoals:redstone",
   "tier": 3,
-  "points": 30,
+  "points": 1,
   "title": {
     "translate": "goal.minegoals.redstone.lighten_up"
   },
@@ -14,7 +14,7 @@
     "advancement": "minecraft:adventure/lighten_up"
   },
   "rewards": {
-    "experience": 30
+    "experience": 10
   },
   "track_before_unlock": true
 }

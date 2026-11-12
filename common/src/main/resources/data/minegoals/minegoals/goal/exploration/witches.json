@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:exploration",
+  "tier": 1,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.exploration.witches"
+  },
+  "description": {
+    "translate": "goal.minegoals.exploration.witches.desc"
+  },
+  "icon": "minecraft:cauldron",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:witch",
+    "count": 3
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

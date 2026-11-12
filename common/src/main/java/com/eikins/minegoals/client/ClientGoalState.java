@@ -77,6 +77,12 @@ public final class ClientGoalState {
         serverSender.accept(new MineGoalsNetwork.TrackGoal(goal, tracked));
     }
 
+    /** Starts or stops tracking every goal of a tier that is not completed yet; the server confirms with a sync. */
+    public static void setTierTracked(Identifier category, int tier, boolean tracked) {
+        progress.setTierTracked(definitions, category, tier, tracked);
+        serverSender.accept(new MineGoalsNetwork.TrackTier(category, tier, tracked));
+    }
+
     /** Categories the player can see, in display order: locked categories are hidden. */
     public static List<Identifier> visibleCategories() {
         return definitions.categories().keySet().stream()

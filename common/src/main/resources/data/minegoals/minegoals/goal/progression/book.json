@@ -1,0 +1,33 @@
+{
+  "category": "minegoals:progression",
+  "tier": 5,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.progression.book"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.book.desc"
+  },
+  "icon": "minecraft:book",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:book",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 10,
+    "commands": [
+      {
+        "run": "minegoals unlock @s minegoals:magic",
+        "icon": "minecraft:enchanting_table",
+        "name": {
+          "translate": "reward.minegoals.unlock_magic"
+        },
+        "description": {
+          "translate": "reward.minegoals.unlock_magic.desc"
+        }
+      }
+    ]
+  },
+  "track_before_unlock": true
+}

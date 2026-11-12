@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:warden",
+  "tier": 3,
+  "points": 2,
+  "title": {
+    "translate": "goal.minegoals.warden.warden"
+  },
+  "description": {
+    "translate": "goal.minegoals.warden.warden.desc"
+  },
+  "icon": "minecraft:sculk_shrieker",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:warden",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 20
+  },
+  "track_before_unlock": true
+}

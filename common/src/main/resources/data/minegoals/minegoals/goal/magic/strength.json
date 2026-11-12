@@ -1,0 +1,25 @@
+{
+  "category": "minegoals:magic",
+  "tier": 4,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.magic.strength"
+  },
+  "description": {
+    "translate": "goal.minegoals.magic.strength.desc"
+  },
+  "icon": "minecraft:blaze_powder",
+  "criterion": {
+    "type": "minegoals:brew_potion",
+    "count": 3,
+    "potions": [
+      "minecraft:strength",
+      "minecraft:long_strength",
+      "minecraft:strong_strength"
+    ]
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

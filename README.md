@@ -11,7 +11,9 @@ A multi-loader Minecraft **26.3** mod (**Fabric** and **NeoForge**): personal go
   the goals screen title bar ("Collect"), as far as space allows.
 - Goals can be **tracked** with the "Track" button: a toast then shows each progress step. Updates are merged into a
   single toast (it refreshes in place and cycles through goals that progressed together) instead of stacking up.
-  Tracking is saved server-side and stops once the goal is completed.
+  Tracking is saved server-side and stops once the goal is completed. The tier row's "Track" button tracks every goal
+  of the tier that is not completed yet in one click ("Tracked" then stops tracking them all); it is greyed when no
+  goal is left to track.
 - Each category chooses whether players can see tiers they have not reached yet, and whether it is available from
   the start or unlocked later (vanilla advancements or a command).
 - A **journal icon** in the bottom-right corner of the HUD shows the key that opens the goals **screen** (**G**), with
@@ -62,7 +64,7 @@ Key packages in `common/src/main/java/com/eikins/minegoals/`:
   `minecraft:textures/gui/advancements/backgrounds/nether.png` (vanilla has `stone`, `adventure`, `husbandry`,
   `nether` and `end`). Default: `stone`.
   A tier can set its own `background` too (`{"points": 30, "background": "..."}`); it replaces the category's while
-  that tier is selected. Road to the End uses this to follow the journey (overworld, Nether, stronghold, End).
+  that tier is selected. Progression uses this to follow the journey (overworld, Nether, End).
 - `tiers`: at least one tier. Each tier's `points` is how many points the player must earn **from that tier's own
   goals** (any non-negative number; every tier counts from 0).
 - `unlock` (optional) controls when the category is available. Without it, the category is unlocked for everyone:
@@ -131,6 +133,8 @@ The `block`, `entity`, `item` and `biome` fields accept an id (`minecraft:stone`
 | `minegoals:kill_entity` | `entity`, `count` | the player kills the entity |
 | `minegoals:collect_item` | `item`, `count` | the player picks the item up from the ground |
 | `minegoals:craft_item` | `item`, `count` | the player crafts or smelts the item |
+| `minegoals:brew_potion` | `potions` (optional list of potion ids), `count` | the player takes a brewed potion out of a brewing stand (one per bottle); without `potions`, any potion counts. List the `long_` and `strong_` variants too if they should count |
+| `minegoals:use_item` | `item`, `count` | the player uses the item (vanilla "used" stat): places it (seeds, blocks), uses it on a block (a hoe tilling dirt) or wears a tool down by mining |
 | `minegoals:hold_item` | `item`, `count` | the inventory holds `count` items at the same time |
 | `minegoals:visit_biome` | `biome` | the player is in the biome |
 | `minegoals:visit_dimension` | `dimension` | the player is in the dimension |
@@ -182,7 +186,10 @@ screen, each tier box on the track only shows its number and state colour (in pr
 The first row of the list is the selected tier: its reward, its state and its progress (points earned from the
 tier's goals / points it needs). Every row shows its rewards as icons in three fixed slots on the
 right: experience first as an XP bottle, then items, then commands as a nether star. Extra rewards are listed in the
-row's tooltip, and claimed rewards turn green with a check mark. The selected tier stays pinned above the goals, which scroll;
+"+N" label's tooltip, and claimed rewards turn green with a check mark. Hovering an item reward shows the item's full tooltip (enchantments, name, lore...). A goal's points are shown on its title line as
+a number followed by an 8x8 medal (`goal/point` sprite). The tier row's tooltip only says whether the tier is in progress or
+completed. Hovering the left part of a goal row
+(icon, title, progress) shows the goal's title and full description, plus why it is locked. The selected tier stays pinned above the goals, which scroll;
 claimed goals are listed last, darkened by a mask texture. The
 tier reward row and every completed goal have a **Claim** button. A goal's points are only added to its category when
 it is claimed, so claiming goals is what moves the player along the tiers; a goal without rewards is still claimed for
@@ -190,28 +197,36 @@ its points. The server checks
 every claim, so a reward can only be claimed once. Clicking Claim plays a UI sound on the client: an experience pickup
 for a goal, the level-up sound for a tier.
 
-Goal files can be grouped in sub-folders: `goal/road_to_end/first_table.json` has the id
-`minegoals:road_to_end/first_table`.
+Goal files can be grouped in sub-folders: `goal/progression/crafting_table.json` has the id
+`minegoals:progression/crafting_table`.
 
 ### Example content
-The mod ships 10 categories and 152 goals in `common/src/main/resources/data/minegoals/`. A datapack can override
+The mod ships 11 categories and 184 goals in `common/src/main/resources/data/minegoals/`. A datapack can override
 these files.
 
-| Category | Tiers | Idea |
-|---|---|---|
-| Road to the End | 12, `next` | A guided path from the first log to the Ender Dragon: stone, iron, diamonds, Nether fortress, blaze rods, ender pearls, stronghold, preparation, the End. Each tier needs all of its goals, and each tier reward prepares the next step. |
-| Oceans | 4 | Fishing, drowned, coral reefs, ocean monuments, conduit |
-| Farms & Animals | 4 | Crops, breeding, taming, bees, sniffers |
-| Villages & Trading | 4 | Villagers, trading, iron golems, raids |
-| Magic | 4 | Enchanting, anvils, brewing, beacons |
-| Caves & Depths | 4, `next` | Deepslate, geodes, deep dark, sculk, trial chambers, warden |
-| Advanced Nether | 4, hidden until the player enters the Nether | Nether biomes, bastions, striders, netherite, the Wither |
-| World Exploration | 4 | Biomes, maps, archaeology, lodestones, End cities, elytra |
-| Combat | 4 | Common mobs, ranged combat, raids, breezes, the mace |
-| Redstone | 4, hidden until unlocked by a reward | Redstone components, pistons, observers, comparators, crafters. Claiming Road to the End's "First Table" goal runs `/minegoals unlock @s minegoals:redstone` (a command reward with its own icon and name) |
+Only **Progression** is available at the start. Some of its goals unlock a secondary category when claimed (a command
+reward running `/minegoals unlock @s minegoals:<category>`, shown with the category's icon and name), and most of its
+tiers also ask for a tier of a secondary category (`minegoals:category_tier` goals worth 2 points). Villages,
+Exploration and The Warden are optional: Progression never asks for their tiers. Secondary
+categories repeat the same kind of goal from tier to tier with bigger counts (mine 32, then 96 coal ores...).
 
-Themed tiers need about 75% of their goals' points, so players can skip a few goals, and
-their goals use `track_before_unlock`. Road to the End does not: each step starts counting when it is revealed.
+| Category | Tiers | Unlocked by | Idea |
+|---|---|---|---|
+| Progression | 9 | always | From the crafting table to the Wither: iron, diamonds, the Nether, the stronghold, the dragon. Its tiers ask for tiers of the other categories, and its tier backgrounds follow the journey (overworld, Nether, End) |
+| Mining | 4 | Craft a wooden pickaxe (Progression 1) | Coal, copper, iron, gold, redstone, lapis, diamond ores, deepslate |
+| Combat | 4 | Craft a sword (Progression 2) | Zombies, skeletons, spiders, creepers, endermen, breezes, phantoms |
+| Farming | 4 | Craft a hoe (Progression 2) | Tilling, seeds and wheat first, then carrots, potatoes and breeding, then taming, fishing, bees, sniffers |
+| Villages | 4, optional | Talk to a villager (Progression 3) | Trading, bells, iron golems, zombie villagers, raids, ravagers |
+| Exploration | 4, optional | Craft a compass (Progression 4) | Maps first, then biomes and special mobs: witches, guardians, elder guardians, buried treasure, allays, woodland mansion evokers and vexes |
+| Redstone | 3 | Craft a piston (Progression 4) | Redstone components, observers, hoppers, crafters |
+| Magic | 4 | Craft a book (Progression 5) | Books and an enchanting table first, then bookshelves, anvils, then brewing specific potions (swiftness, healing, fire resistance, strength, invisibility), beacons |
+| Nether | 3 | Enter the Nether (Progression 5) | Nether biomes, quartz, bastions, striders, wither skeletons, netherite |
+| The End | 2 | Kill the Ender Dragon (Progression 8) | End gateways, End cities, shulkers, elytra |
+| The Warden | 3, optional | Reach the deep dark (Progression 8) | Late game: sculk, ancient cities, echo shards, disc fragments, the warden |
+
+Every category uses `tier_visibility: next`. Progression tiers need all of their goals; secondary tiers with a
+frustrating goal (a rare biome, a shield, a hard advancement...) need one or two points less, so players can skip it.
+Goals give 10 XP per point and use `track_before_unlock`, so work done before a tier or a category unlocks is not lost.
 The content and both lang files are generated by `tools/generate_content.py` (run `python tools/generate_content.py .`
 from the project root). Edit the script rather than the generated JSON, or your changes will be overwritten.
 `GoalDataTest` checks that every advancement, biome, tag, block, entity and statistic referenced exists.

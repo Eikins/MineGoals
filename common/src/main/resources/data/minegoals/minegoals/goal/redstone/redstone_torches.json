@@ -1,7 +1,7 @@
 {
   "category": "minegoals:redstone",
   "tier": 1,
-  "points": 10,
+  "points": 1,
   "title": {
     "translate": "goal.minegoals.redstone.redstone_torches"
   },

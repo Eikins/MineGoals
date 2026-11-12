@@ -1,7 +1,7 @@
 {
   "category": "minegoals:combat",
-  "tier": 3,
-  "points": 30,
+  "tier": 4,
+  "points": 1,
   "title": {
     "translate": "goal.minegoals.combat.breezes"
   },
@@ -12,10 +12,10 @@
   "criterion": {
     "type": "minegoals:kill_entity",
     "entity": "minecraft:breeze",
-    "count": 5
+    "count": 10
   },
   "rewards": {
-    "experience": 30
+    "experience": 10
   },
   "track_before_unlock": true
 }

@@ -1,0 +1,74 @@
+{
+  "title": {
+    "translate": "category.minegoals.farming"
+  },
+  "icon": "minecraft:wheat",
+  "order": 3,
+  "tier_visibility": "next",
+  "unlock": {
+    "default": false
+  },
+  "background": "minecraft:textures/gui/advancements/backgrounds/husbandry.png",
+  "tiers": [
+    {
+      "points": 3,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:bone_meal",
+            "count": 16
+          },
+          {
+            "id": "minecraft:bread",
+            "count": 8
+          }
+        ],
+        "experience": 50
+      }
+    },
+    {
+      "points": 4,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:lead",
+            "count": 2
+          },
+          {
+            "id": "minecraft:name_tag",
+            "count": 2
+          }
+        ],
+        "experience": 100
+      }
+    },
+    {
+      "points": 3,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:golden_carrot",
+            "count": 16
+          },
+          {
+            "id": "minecraft:golden_apple",
+            "count": 2
+          }
+        ],
+        "experience": 150
+      }
+    },
+    {
+      "points": 3,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:enchanted_golden_apple",
+            "count": 1
+          }
+        ],
+        "experience": 200
+      }
+    }
+  ]
+}

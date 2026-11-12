@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:farming",
+  "tier": 4,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.farming.fishing_2"
+  },
+  "description": {
+    "translate": "goal.minegoals.farming.fishing_2.desc"
+  },
+  "icon": "minecraft:fishing_rod",
+  "criterion": {
+    "type": "minegoals:custom_stat",
+    "stat": "minecraft:fish_caught",
+    "count": 50
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

@@ -1,0 +1,33 @@
+{
+  "category": "minegoals:progression",
+  "tier": 2,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.progression.sword"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.sword.desc"
+  },
+  "icon": "minecraft:stone_sword",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "#minecraft:swords",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 10,
+    "commands": [
+      {
+        "run": "minegoals unlock @s minegoals:combat",
+        "icon": "minecraft:iron_sword",
+        "name": {
+          "translate": "reward.minegoals.unlock_combat"
+        },
+        "description": {
+          "translate": "reward.minegoals.unlock_combat.desc"
+        }
+      }
+    ]
+  },
+  "track_before_unlock": true
+}

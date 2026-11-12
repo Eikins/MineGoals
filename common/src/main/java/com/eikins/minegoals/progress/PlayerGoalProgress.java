@@ -114,6 +114,35 @@ public final class PlayerGoalProgress {
         return track ? this.tracked.add(goal) : this.tracked.remove(goal);
     }
 
+    /** Goals of a tier that can be tracked: the ones not completed yet. */
+    public List<Identifier> trackableGoals(GoalDefinitions defs, Identifier category, int tier) {
+        List<Identifier> goals = new ArrayList<>();
+        for (Identifier goal : defs.goalsIn(category)) {
+            if (defs.goals().get(goal).tier() == tier && !this.isCompleted(goal)) {
+                goals.add(goal);
+            }
+        }
+        return goals;
+    }
+
+    /** True when the tier has goals left to complete and every one of them is tracked. */
+    public boolean isTierTracked(GoalDefinitions defs, Identifier category, int tier) {
+        List<Identifier> goals = this.trackableGoals(defs, category, tier);
+        return !goals.isEmpty() && this.tracked.containsAll(goals);
+    }
+
+    /**
+     * Starts following every goal of a tier that is not completed yet, or stops following every goal of the tier.
+     * Returns true if anything changed.
+     */
+    public boolean setTierTracked(GoalDefinitions defs, Identifier category, int tier, boolean track) {
+        boolean changed = false;
+        for (Identifier goal : this.trackableGoals(defs, category, tier)) {
+            changed |= this.setTracked(goal, track);
+        }
+        return changed;
+    }
+
     /** Reward items waiting to be collected. Read-only: use {@link #addPendingItem} and {@link #takePendingItems}. */
     public List<ItemStack> pendingItems() {
         return java.util.Collections.unmodifiableList(this.pendingItems);

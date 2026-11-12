@@ -1,7 +1,7 @@
 {
   "category": "minegoals:nether",
   "tier": 1,
-  "points": 10,
+  "points": 1,
   "title": {
     "translate": "goal.minegoals.nether.crying_obsidian"
   },

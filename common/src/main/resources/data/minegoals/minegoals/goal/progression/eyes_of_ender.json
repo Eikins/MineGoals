@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:progression",
+  "tier": 7,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.progression.eyes_of_ender"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.eyes_of_ender.desc"
+  },
+  "icon": "minecraft:ender_eye",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:ender_eye",
+    "count": 12
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

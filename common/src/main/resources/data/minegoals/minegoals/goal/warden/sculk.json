@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:warden",
+  "tier": 1,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.warden.sculk"
+  },
+  "description": {
+    "translate": "goal.minegoals.warden.sculk.desc"
+  },
+  "icon": "minecraft:sculk",
+  "criterion": {
+    "type": "minegoals:break_block",
+    "block": "minecraft:sculk",
+    "count": 64
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

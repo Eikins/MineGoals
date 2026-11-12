@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:mining",
+  "tier": 4,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.mining.deepslate_2"
+  },
+  "description": {
+    "translate": "goal.minegoals.mining.deepslate_2.desc"
+  },
+  "icon": "minecraft:deepslate",
+  "criterion": {
+    "type": "minegoals:break_block",
+    "block": "minecraft:deepslate",
+    "count": 1024
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

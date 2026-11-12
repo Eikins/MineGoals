@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:end",
+  "tier": 1,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.end.end_city"
+  },
+  "description": {
+    "translate": "goal.minegoals.end.end_city.desc"
+  },
+  "icon": "minecraft:purpur_block",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:end/find_end_city"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

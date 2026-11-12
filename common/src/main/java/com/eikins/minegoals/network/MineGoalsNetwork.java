@@ -15,7 +15,8 @@ import net.minecraft.world.item.Item;
 
 /**
  * Payloads. Each loader registers them. Server-to-client handlers live in {@code client.ClientPayloadHandlers};
- * client-to-server payloads ({@link ClaimReward}, {@link TrackGoal}, {@link CollectPendingItems}) are handled by
+ * client-to-server payloads ({@link ClaimReward}, {@link TrackGoal}, {@link TrackTier},
+ * {@link CollectPendingItems}) are handled by
  * {@code GoalTracker}.
  */
 public final class MineGoalsNetwork {
@@ -82,6 +83,24 @@ public final class MineGoalsNetwork {
 
         @Override
         public Type<TrackGoal> type() {
+            return TYPE;
+        }
+    }
+
+    /**
+     * Client to server: start or stop following every goal of a tier that is not completed yet. Handled by
+     * {@code GoalTracker.setTierTracked}.
+     */
+    public record TrackTier(Identifier category, int tier, boolean tracked) implements CustomPacketPayload {
+        public static final Type<TrackTier> TYPE = new Type<>(Constants.id("track_tier"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, TrackTier> STREAM_CODEC = StreamCodec.composite(
+                Identifier.STREAM_CODEC, TrackTier::category,
+                ByteBufCodecs.VAR_INT, TrackTier::tier,
+                ByteBufCodecs.BOOL, TrackTier::tracked,
+                TrackTier::new);
+
+        @Override
+        public Type<TrackTier> type() {
             return TYPE;
         }
     }

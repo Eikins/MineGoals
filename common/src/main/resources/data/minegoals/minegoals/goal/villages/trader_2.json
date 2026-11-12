@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:villages",
+  "tier": 2,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.villages.trader_2"
+  },
+  "description": {
+    "translate": "goal.minegoals.villages.trader_2.desc"
+  },
+  "icon": "minecraft:emerald",
+  "criterion": {
+    "type": "minegoals:custom_stat",
+    "stat": "minecraft:traded_with_villager",
+    "count": 50
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

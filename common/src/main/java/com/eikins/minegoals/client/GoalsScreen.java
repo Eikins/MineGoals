@@ -508,39 +508,51 @@ public class GoalsScreen extends Screen {
                 ? Component.translatable("minegoals.screen.tier", tier)
                 : Component.translatable("minegoals.screen.tier_reward", tier);
         int textRight = GoalRowSprites.rightPartX(x, width) - 4;
+        // Points earned / needed, followed by the points medal as on goal rows.
         String counter = tierProgress.text();
-        int counterWidth = this.font.width(counter);
+        int counterWidth = this.font.width(counter) + 1 + GoalRowSprites.POINT_SIZE;
         GoalRender.clippedText(g, this.font, title, x + 36, y + style.titleY, textRight - (x + 36), TEXT);
         GoalRender.clippedText(g, this.font, state.label(tier), x + 36, y + style.subtitleY,
                 textRight - (x + 36) - 4 - counterWidth, TEXT_DIM);
-        g.text(this.font, counter, textRight - counterWidth, y + style.subtitleY, TEXT_DIM, true);
+        g.text(this.font, counter, textRight - counterWidth, y + style.subtitleY, 0xFFFFE066, true);
+        GoalRowSprites.point(g, textRight - GoalRowSprites.POINT_SIZE, y + style.subtitleY - 1);
         if (tierProgress.fraction() >= 0) {
             GoalRowSprites.progress(g, x + 32, y + style.progressY, GoalRowSprites.progressWidth(width), tierProgress.fraction());
         }
 
+        // Before the tier is complete, the button tracks (or stops tracking) every goal of the tier left to do.
+        boolean tierTracked = progress.isTierTracked(defs, categoryId, tier);
         Button button;
         if (state == TierState.CLAIMABLE && !rewards.isEmpty()) {
             button = Button.CLAIM;
         } else if (claimed || state == TierState.DONE) {
             button = Button.COMPLETED;
+        } else if (progress.trackableGoals(defs, categoryId, tier).isEmpty()) {
+            button = Button.TRACK_DISABLED;
         } else {
-            button = Button.TRACK;
+            button = tierTracked ? Button.TRACKED : Button.TRACK;
         }
         MineGoalsNetwork.ClaimReward claim = MineGoalsNetwork.ClaimReward.tier(categoryId, tier);
-        this.renderButton(g, button, GoalRowSprites.buttonX(x, width), y + style.buttonY,
-                button == Button.CLAIM ? () -> this.claim(claim) : null, mouseX, mouseY);
+        Runnable action = switch (button) {
+            case CLAIM -> () -> this.claim(claim);
+            case TRACK, TRACKED -> () -> this.toggleTierTracked(categoryId, tier, !tierTracked);
+            default -> null;
+        };
+        int buttonX = GoalRowSprites.buttonX(x, width);
+        int buttonY = y + style.buttonY;
+        this.renderButton(g, button, buttonX, buttonY, action, mouseX, mouseY);
         List<Component> slotTooltip = this.renderRewardSlots(g, rewards, claimed, x, width, y + style.slotsY,
                 mouseX, mouseY, true);
         if (slotTooltip != null) {
             return slotTooltip;
         }
+        if ((button == Button.TRACK || button == Button.TRACKED)
+                && inside(mouseX, mouseY, buttonX, buttonY, GoalRowSprites.BUTTON_WIDTH, GoalRowSprites.BUTTON_HEIGHT)) {
+            return List.of(Component.translatable(tierTracked ? "minegoals.screen.untrack_tier" : "minegoals.screen.track_tier"));
+        }
 
-        List<Component> lines = new ArrayList<>();
-        lines.add(title.copy().withStyle(ChatFormatting.GOLD));
-        lines.add(Component.literal(tierProgress.text()).withStyle(ChatFormatting.GRAY));
-        lines.addAll(describeRewards(rewards));
-        lines.add(Component.translatable("minegoals.screen.tier_reward_hint").withStyle(ChatFormatting.DARK_GRAY));
-        return lines;
+        // The reward slots show the rewards; the row tooltip only says where the tier stands.
+        return List.of(title.copy().withStyle(ChatFormatting.GOLD), state.label(tier).copy().withStyle(ChatFormatting.GRAY));
     }
 
     private List<Component> renderGoalRow(GuiGraphicsExtractor g, GoalDefinitions defs, PlayerGoalProgress progress,
@@ -555,12 +567,16 @@ public class GoalsScreen extends Screen {
         GoalRowSprites.background(g, style, x, y, width);
         g.item(new ItemStack(goal.icon()), x + 8, y + style.iconY);
 
+        // Points on the right of the title line: the number, then the medal sprite inline like a character.
         int textRight = GoalRowSprites.rightPartX(x, width) - 4;
-        String pointsText = "+" + goal.points() + " pts";
-        int pointsWidth = this.font.width(pointsText);
-        GoalRender.clippedText(g, this.font, goal.title(), x + 36, y + style.titleY, textRight - (x + 36) - 4 - pointsWidth,
+        String points = String.valueOf(goal.points());
+        int pointsWidth = this.font.width(points) + 1 + GoalRowSprites.POINT_SIZE;
+        int pointsX = textRight - pointsWidth;
+        int pointsY = y + style.titleY;
+        GoalRender.clippedText(g, this.font, goal.title(), x + 36, pointsY, pointsX - 4 - (x + 36),
                 unlocked || completed ? TEXT : TEXT_LOCKED);
-        g.text(this.font, pointsText, textRight - pointsWidth, y + style.titleY, 0xFFFFE066, true);
+        g.text(this.font, points, pointsX, pointsY, 0xFFFFE066, true);
+        GoalRowSprites.point(g, textRight - GoalRowSprites.POINT_SIZE, pointsY - 1);
 
         Component subtitle;
         if (completed) {
@@ -589,12 +605,27 @@ public class GoalsScreen extends Screen {
         Runnable action = !clickable ? null : switch (button) {
             case CLAIM -> () -> this.claim(MineGoalsNetwork.ClaimReward.goal(id));
             case TRACK, TRACKED -> () -> this.toggleTracked(id, !tracked);
-            case COMPLETED, CLAIM_LOCKED, COLLECT -> null;
+            case COMPLETED, CLAIM_LOCKED, COLLECT, TRACK_DISABLED -> null;
         };
         this.renderButton(g, button, GoalRowSprites.buttonX(x, width), buttonY, action, mouseX, mouseY);
-        // Goal rows have no tooltip of their own: only a hovered reward slot shows one.
-        return this.renderRewardSlots(g, goal.rewards(), claimed, x, width, y + style.slotsY,
+        List<Component> slotTooltip = this.renderRewardSlots(g, goal.rewards(), claimed, x, width, y + style.slotsY,
                 mouseX, mouseY, mouseInList);
+        if (slotTooltip != null) {
+            return slotTooltip;
+        }
+        // The left part of the row (icon, title, progress; not the rewards or the button) shows the goal's title and
+        // description, which the subtitle replaces once the goal is completed or locked, or clips when it is long.
+        int leftWidth = GoalRowSprites.rightPartX(x, width) - x;
+        if (mouseInList && inside(mouseX, mouseY, x, y, leftWidth, style.height)) {
+            List<Component> lines = new ArrayList<>();
+            lines.add(goal.title().copy().withStyle(ChatFormatting.YELLOW));
+            goal.description().ifPresent(d -> lines.add(d.copy().withStyle(ChatFormatting.GRAY)));
+            if (!completed && !unlocked) {
+                lines.add(subtitle.copy().withStyle(ChatFormatting.RED));
+            }
+            return lines;
+        }
+        return null;
     }
 
     /**
@@ -608,7 +639,9 @@ public class GoalsScreen extends Screen {
         COLLECT(GoalRowSprites.BUTTON_CLAIM),
         COMPLETED(GoalRowSprites.BUTTON_COMPLETED),
         TRACK(GoalRowSprites.BUTTON_TRACK),
-        TRACKED(GoalRowSprites.BUTTON_TRACK);
+        TRACKED(GoalRowSprites.BUTTON_TRACK),
+        /** Tier row with no goal left to track: a greyed track button. */
+        TRACK_DISABLED(GoalRowSprites.BUTTON_TRACK);
 
         final Identifier sprite;
 
@@ -628,12 +661,12 @@ public class GoalsScreen extends Screen {
             case CLAIM, CLAIM_LOCKED -> Component.translatable("minegoals.screen.claim");
             case COLLECT -> Component.translatable("minegoals.screen.collect");
             case COMPLETED -> Component.translatable("minegoals.screen.claimed");
-            case TRACK -> Component.translatable("minegoals.screen.track");
+            case TRACK, TRACK_DISABLED -> Component.translatable("minegoals.screen.track");
             case TRACKED -> Component.translatable("minegoals.screen.tracked");
         };
         int color = switch (button) {
             case COMPLETED -> TEXT_DIM;
-            case CLAIM_LOCKED -> TEXT_LOCKED;
+            case CLAIM_LOCKED, TRACK_DISABLED -> TEXT_LOCKED;
             case TRACKED -> CLAIM_HINT;
             default -> TEXT;
         };
@@ -680,7 +713,7 @@ public class GoalsScreen extends Screen {
                 g.itemDecorations(this.font, icon.stack(), slotX + 1, y + 1, icon.countText());
             }
             if (mouseInList && inside(mouseX, mouseY, slotX, y, SLOT_SIZE, SLOT_SIZE)) {
-                List<Component> lines = new ArrayList<>(icon.lines());
+                List<Component> lines = icon.itemCount() > 0 ? this.itemTooltip(icon) : new ArrayList<>(icon.lines());
                 if (done) {
                     lines.add(Component.translatable("minegoals.screen.claimed").withStyle(ChatFormatting.GREEN));
                 }
@@ -702,14 +735,14 @@ public class GoalsScreen extends Screen {
         List<RewardIcon> icons = new ArrayList<>();
         // Experience always comes first.
         if (rewards.experience() > 0) {
-            icons.add(RewardIcon.item(new ItemStack(Items.EXPERIENCE_BOTTLE), String.valueOf(rewards.experience()),
-                    Component.translatable("minegoals.screen.reward_xp", rewards.experience())));
+            icons.add(new RewardIcon(new ItemStack(Items.EXPERIENCE_BOTTLE), null, String.valueOf(rewards.experience()),
+                    List.of(Component.translatable("minegoals.screen.reward_xp", rewards.experience())), 0));
         }
         for (ItemStackTemplate item : rewards.items()) {
             // A count of 1 keeps the slot clean; the real count is drawn as text so it is not tied to stack sizes.
             ItemStack stack = item.withCount(1).create();
-            icons.add(RewardIcon.item(stack, item.count() > 1 ? String.valueOf(item.count()) : null,
-                    Component.literal(item.count() + "× ").append(stack.getHoverName())));
+            icons.add(new RewardIcon(stack, null, item.count() > 1 ? String.valueOf(item.count()) : null,
+                    List.of(Component.literal(item.count() + "× ").append(stack.getHoverName())), item.count()));
         }
         for (CommandReward command : rewards.commands()) {
             List<Component> lines = new ArrayList<>();
@@ -724,19 +757,29 @@ public class GoalsScreen extends Screen {
             } else {
                 stack = new ItemStack(Items.NETHER_STAR);
             }
-            icons.add(new RewardIcon(stack, texture, null, List.copyOf(lines)));
+            icons.add(new RewardIcon(stack, texture, null, List.copyOf(lines), 0));
         }
         return icons;
     }
 
     /**
-     * One reward shown in a slot: an item or a texture, the count text over it, and its tooltip lines (the first
-     * line names the reward).
+     * The full vanilla tooltip of an item reward (name, enchantments, lore...), its first line prefixed with the
+     * reward count. Built on hover only.
      */
-    private record RewardIcon(ItemStack stack, Identifier texture, String countText, List<Component> lines) {
-        static RewardIcon item(ItemStack stack, String countText, Component label) {
-            return new RewardIcon(stack, null, countText, List.of(label));
+    private List<Component> itemTooltip(RewardIcon icon) {
+        List<Component> lines = new ArrayList<>(Screen.getTooltipFromItem(this.minecraft, icon.stack()));
+        if (!lines.isEmpty() && icon.itemCount() > 1) {
+            lines.set(0, Component.literal(icon.itemCount() + "× ").append(lines.getFirst()));
         }
+        return lines;
+    }
+
+    /**
+     * One reward shown in a slot: an item or a texture, the count text over it, and its short tooltip lines (the
+     * first line names the reward). {@code itemCount} is set for item rewards only, which show the item's full
+     * tooltip on hover instead.
+     */
+    private record RewardIcon(ItemStack stack, Identifier texture, String countText, List<Component> lines, int itemCount) {
     }
 
     private static TierState tierState(GoalDefinitions defs, PlayerGoalProgress progress, Identifier categoryId,
@@ -777,9 +820,9 @@ public class GoalsScreen extends Screen {
         int earned = progress.tierPoints(defs, categoryId, tier);
         int needed = category.pointsNeeded(tier);
         if (tier > unlocked || (tier == unlocked && !category.tierVisibility().revealsNextThreshold())) {
-            return new TierProgress(earned + " pts", -1F);
+            return new TierProgress(String.valueOf(earned), -1F);
         }
-        return new TierProgress(Math.min(earned, needed) + " / " + needed + " pts", GoalRender.fraction(earned, needed));
+        return new TierProgress(Math.min(earned, needed) + " / " + needed, GoalRender.fraction(earned, needed));
     }
 
     /** Text and bar fill (negative for no bar) of a tier's progress. */
@@ -804,25 +847,6 @@ public class GoalsScreen extends Screen {
         }
         Component list = missing.isEmpty() ? Component.empty() : missing.getFirst();
         return Component.translatable("minegoals.screen.locked_requires", list);
-    }
-
-    private static List<Component> describeRewards(Rewards rewards) {
-        List<Component> lines = new ArrayList<>();
-        if (rewards.isEmpty()) {
-            return lines;
-        }
-        lines.add(Component.translatable("minegoals.screen.rewards").withStyle(ChatFormatting.GOLD));
-        if (rewards.experience() > 0) {
-            lines.add(Component.literal(" • ").append(Component.translatable("minegoals.screen.reward_xp", rewards.experience())));
-        }
-        for (ItemStackTemplate item : rewards.items()) {
-            lines.add(Component.literal(" • " + item.count() + "× ").append(item.create().getHoverName()));
-        }
-        for (CommandReward command : rewards.commands()) {
-            lines.add(Component.literal(" • ").append(
-                    command.name().orElseGet(() -> Component.translatable("minegoals.screen.reward_special"))));
-        }
-        return lines;
     }
 
     // ---- input -----------------------------------------------------------------------------------
@@ -875,6 +899,11 @@ public class GoalsScreen extends Screen {
 
     private void toggleTracked(Identifier goal, boolean tracked) {
         ClientGoalState.setTracked(goal, tracked);
+        this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, tracked ? 1.0F : 0.8F));
+    }
+
+    private void toggleTierTracked(Identifier category, int tier, boolean tracked) {
+        ClientGoalState.setTierTracked(category, tier, tracked);
         this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, tracked ? 1.0F : 0.8F));
     }
 

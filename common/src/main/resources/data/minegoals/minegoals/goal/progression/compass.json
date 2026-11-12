@@ -1,0 +1,33 @@
+{
+  "category": "minegoals:progression",
+  "tier": 4,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.progression.compass"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.compass.desc"
+  },
+  "icon": "minecraft:compass",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:compass",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 10,
+    "commands": [
+      {
+        "run": "minegoals unlock @s minegoals:exploration",
+        "icon": "minecraft:compass",
+        "name": {
+          "translate": "reward.minegoals.unlock_exploration"
+        },
+        "description": {
+          "translate": "reward.minegoals.unlock_exploration.desc"
+        }
+      }
+    ]
+  },
+  "track_before_unlock": true
+}

@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:nether",
+  "tier": 3,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.nether.wither_skeletons_2"
+  },
+  "description": {
+    "translate": "goal.minegoals.nether.wither_skeletons_2.desc"
+  },
+  "icon": "minecraft:wither_skeleton_skull",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:wither_skeleton",
+    "count": 40
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

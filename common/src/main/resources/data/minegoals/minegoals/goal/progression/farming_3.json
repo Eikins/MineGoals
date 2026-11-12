@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:progression",
+  "tier": 8,
+  "points": 2,
+  "title": {
+    "translate": "goal.minegoals.progression.farming_3"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.farming_3.desc"
+  },
+  "icon": "minecraft:wheat",
+  "criterion": {
+    "type": "minegoals:category_tier",
+    "category": "minegoals:farming",
+    "tier": 3
+  },
+  "rewards": {
+    "experience": 20
+  },
+  "track_before_unlock": true
+}

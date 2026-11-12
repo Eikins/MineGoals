@@ -1,0 +1,32 @@
+{
+  "category": "minegoals:progression",
+  "tier": 8,
+  "points": 3,
+  "title": {
+    "translate": "goal.minegoals.progression.dragon"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.dragon.desc"
+  },
+  "icon": "minecraft:dragon_head",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:end/kill_dragon"
+  },
+  "rewards": {
+    "experience": 30,
+    "commands": [
+      {
+        "run": "minegoals unlock @s minegoals:end",
+        "icon": "minecraft:purpur_block",
+        "name": {
+          "translate": "reward.minegoals.unlock_end"
+        },
+        "description": {
+          "translate": "reward.minegoals.unlock_end.desc"
+        }
+      }
+    ]
+  },
+  "track_before_unlock": true
+}

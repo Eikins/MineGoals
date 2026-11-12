@@ -3,53 +3,72 @@
     "translate": "category.minegoals.villages"
   },
   "icon": "minecraft:emerald",
-  "order": 3,
-  "tier_visibility": "visible",
+  "order": 4,
+  "tier_visibility": "next",
+  "unlock": {
+    "default": false
+  },
   "background": "minecraft:textures/gui/advancements/backgrounds/adventure.png",
   "tiers": [
     {
-      "points": 20,
+      "points": 3,
       "rewards": {
         "items": [
           {
             "id": "minecraft:emerald",
-            "count": 4
+            "count": 8
+          },
+          {
+            "id": "minecraft:bread",
+            "count": 8
           }
         ],
         "experience": 50
       }
     },
     {
-      "points": 45,
+      "points": 3,
       "rewards": {
         "items": [
           {
-            "id": "minecraft:bell",
-            "count": 4
+            "id": "minecraft:emerald",
+            "count": 16
+          },
+          {
+            "id": "minecraft:iron_block",
+            "count": 2
           }
         ],
         "experience": 100
       }
     },
     {
-      "points": 65,
+      "points": 3,
       "rewards": {
         "items": [
           {
-            "id": "minecraft:totem_of_undying",
+            "id": "minecraft:emerald_block",
             "count": 4
+          },
+          {
+            "id": "minecraft:golden_apple",
+            "count": 2
           }
         ],
         "experience": 150
       }
     },
     {
-      "points": 60,
+      "points": 3,
       "rewards": {
         "items": [
           {
-            "id": "minecraft:emerald_block",
+            "id": "minecraft:totem_of_undying",
             "count": 1
+          },
+          {
+            "id": "minecraft:emerald_block",
+            "count": 8
           }
         ],
         "experience": 200

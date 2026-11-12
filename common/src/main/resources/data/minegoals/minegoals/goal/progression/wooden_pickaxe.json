@@ -1,0 +1,33 @@
+{
+  "category": "minegoals:progression",
+  "tier": 1,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.progression.wooden_pickaxe"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.wooden_pickaxe.desc"
+  },
+  "icon": "minecraft:wooden_pickaxe",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:wooden_pickaxe",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 10,
+    "commands": [
+      {
+        "run": "minegoals unlock @s minegoals:mining",
+        "icon": "minecraft:iron_pickaxe",
+        "name": {
+          "translate": "reward.minegoals.unlock_mining"
+        },
+        "description": {
+          "translate": "reward.minegoals.unlock_mining.desc"
+        }
+      }
+    ]
+  },
+  "track_before_unlock": true
+}

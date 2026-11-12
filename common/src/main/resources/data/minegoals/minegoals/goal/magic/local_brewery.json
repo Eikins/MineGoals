@@ -1,7 +1,7 @@
 {
   "category": "minegoals:magic",
   "tier": 3,
-  "points": 30,
+  "points": 1,
   "title": {
     "translate": "goal.minegoals.magic.local_brewery"
   },
@@ -10,11 +10,11 @@
   },
   "icon": "minecraft:potion",
   "criterion": {
-    "type": "minegoals:advancement",
-    "advancement": "minecraft:nether/brew_potion"
+    "type": "minegoals:brew_potion",
+    "count": 3
   },
   "rewards": {
-    "experience": 30
+    "experience": 10
   },
   "track_before_unlock": true
 }

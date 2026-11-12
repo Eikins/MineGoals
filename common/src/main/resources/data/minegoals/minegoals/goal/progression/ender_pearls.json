@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:progression",
+  "tier": 7,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.progression.ender_pearls"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.ender_pearls.desc"
+  },
+  "icon": "minecraft:ender_pearl",
+  "criterion": {
+    "type": "minegoals:collect_item",
+    "item": "minecraft:ender_pearl",
+    "count": 12
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

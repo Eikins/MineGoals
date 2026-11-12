@@ -1,0 +1,78 @@
+{
+  "title": {
+    "translate": "category.minegoals.exploration"
+  },
+  "icon": "minecraft:compass",
+  "order": 6,
+  "tier_visibility": "next",
+  "unlock": {
+    "default": false
+  },
+  "background": "minecraft:textures/gui/advancements/backgrounds/adventure.png",
+  "tiers": [
+    {
+      "points": 3,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:spyglass",
+            "count": 1
+          },
+          {
+            "id": "minecraft:cooked_beef",
+            "count": 16
+          }
+        ],
+        "experience": 50
+      }
+    },
+    {
+      "points": 4,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:map",
+            "count": 4
+          },
+          {
+            "id": "minecraft:ender_pearl",
+            "count": 4
+          }
+        ],
+        "experience": 100
+      }
+    },
+    {
+      "points": 4,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:golden_apple",
+            "count": 2
+          },
+          {
+            "id": "minecraft:sponge",
+            "count": 4
+          }
+        ],
+        "experience": 150
+      }
+    },
+    {
+      "points": 4,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:totem_of_undying",
+            "count": 1
+          },
+          {
+            "id": "minecraft:diamond",
+            "count": 8
+          }
+        ],
+        "experience": 200
+      }
+    }
+  ]
+}

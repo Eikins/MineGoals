@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:nether",
+  "tier": 3,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.nether.ancient_debris"
+  },
+  "description": {
+    "translate": "goal.minegoals.nether.ancient_debris.desc"
+  },
+  "icon": "minecraft:ancient_debris",
+  "criterion": {
+    "type": "minegoals:break_block",
+    "block": "minecraft:ancient_debris",
+    "count": 16
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

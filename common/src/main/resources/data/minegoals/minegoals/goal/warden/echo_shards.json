@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:warden",
+  "tier": 2,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.warden.echo_shards"
+  },
+  "description": {
+    "translate": "goal.minegoals.warden.echo_shards.desc"
+  },
+  "icon": "minecraft:echo_shard",
+  "criterion": {
+    "type": "minegoals:collect_item",
+    "item": "minecraft:echo_shard",
+    "count": 8
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

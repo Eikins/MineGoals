@@ -1,0 +1,32 @@
+{
+  "category": "minegoals:progression",
+  "tier": 5,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.progression.enter_nether"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.enter_nether.desc"
+  },
+  "icon": "minecraft:netherrack",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:story/enter_the_nether"
+  },
+  "rewards": {
+    "experience": 10,
+    "commands": [
+      {
+        "run": "minegoals unlock @s minegoals:nether",
+        "icon": "minecraft:netherrack",
+        "name": {
+          "translate": "reward.minegoals.unlock_nether"
+        },
+        "description": {
+          "translate": "reward.minegoals.unlock_nether.desc"
+        }
+      }
+    ]
+  },
+  "track_before_unlock": true
+}

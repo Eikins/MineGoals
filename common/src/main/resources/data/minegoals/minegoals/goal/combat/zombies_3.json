@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:combat",
+  "tier": 3,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.combat.zombies_3"
+  },
+  "description": {
+    "translate": "goal.minegoals.combat.zombies_3.desc"
+  },
+  "icon": "minecraft:rotten_flesh",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:zombie",
+    "count": 100
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

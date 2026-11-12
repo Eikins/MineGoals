@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:exploration",
+  "tier": 3,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.exploration.treasure"
+  },
+  "description": {
+    "translate": "goal.minegoals.exploration.treasure.desc"
+  },
+  "icon": "minecraft:heart_of_the_sea",
+  "criterion": {
+    "type": "minegoals:collect_item",
+    "item": "minecraft:heart_of_the_sea",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

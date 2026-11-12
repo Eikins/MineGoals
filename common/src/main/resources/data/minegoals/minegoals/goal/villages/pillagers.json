@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:villages",
+  "tier": 3,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.villages.pillagers"
+  },
+  "description": {
+    "translate": "goal.minegoals.villages.pillagers.desc"
+  },
+  "icon": "minecraft:crossbow",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:pillager",
+    "count": 20
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

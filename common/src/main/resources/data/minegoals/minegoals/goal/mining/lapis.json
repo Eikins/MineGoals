@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:mining",
+  "tier": 2,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.mining.lapis"
+  },
+  "description": {
+    "translate": "goal.minegoals.mining.lapis.desc"
+  },
+  "icon": "minecraft:lapis_ore",
+  "criterion": {
+    "type": "minegoals:break_block",
+    "block": "#minecraft:lapis_ores",
+    "count": 16
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

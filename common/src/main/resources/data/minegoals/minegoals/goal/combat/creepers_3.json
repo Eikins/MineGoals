@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:combat",
+  "tier": 4,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.combat.creepers_3"
+  },
+  "description": {
+    "translate": "goal.minegoals.combat.creepers_3.desc"
+  },
+  "icon": "minecraft:gunpowder",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:creeper",
+    "count": 100
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

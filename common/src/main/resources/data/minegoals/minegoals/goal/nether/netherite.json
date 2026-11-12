@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:nether",
+  "tier": 3,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.nether.netherite"
+  },
+  "description": {
+    "translate": "goal.minegoals.nether.netherite.desc"
+  },
+  "icon": "minecraft:netherite_ingot",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:netherite_ingot",
+    "count": 4
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

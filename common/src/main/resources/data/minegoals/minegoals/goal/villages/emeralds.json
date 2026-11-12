@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:villages",
+  "tier": 2,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.villages.emeralds"
+  },
+  "description": {
+    "translate": "goal.minegoals.villages.emeralds.desc"
+  },
+  "icon": "minecraft:emerald",
+  "criterion": {
+    "type": "minegoals:hold_item",
+    "item": "minecraft:emerald",
+    "count": 64
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

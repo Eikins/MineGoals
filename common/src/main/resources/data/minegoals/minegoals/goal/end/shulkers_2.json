@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:end",
+  "tier": 2,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.end.shulkers_2"
+  },
+  "description": {
+    "translate": "goal.minegoals.end.shulkers_2.desc"
+  },
+  "icon": "minecraft:shulker_shell",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:shulker",
+    "count": 40
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

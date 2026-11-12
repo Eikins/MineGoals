@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:redstone",
+  "tier": 1,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.redstone.lamps"
+  },
+  "description": {
+    "translate": "goal.minegoals.redstone.lamps.desc"
+  },
+  "icon": "minecraft:redstone_lamp",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:redstone_lamp",
+    "count": 4
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

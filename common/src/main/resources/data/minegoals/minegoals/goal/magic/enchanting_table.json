@@ -1,7 +1,7 @@
 {
   "category": "minegoals:magic",
   "tier": 1,
-  "points": 10,
+  "points": 1,
   "title": {
     "translate": "goal.minegoals.magic.enchanting_table"
   },

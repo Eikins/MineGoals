@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:exploration",
+  "tier": 3,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.exploration.archaeology"
+  },
+  "description": {
+    "translate": "goal.minegoals.exploration.archaeology.desc"
+  },
+  "icon": "minecraft:brush",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:adventure/salvage_sherd"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

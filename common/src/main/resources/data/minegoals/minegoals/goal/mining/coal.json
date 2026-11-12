@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:mining",
+  "tier": 1,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.mining.coal"
+  },
+  "description": {
+    "translate": "goal.minegoals.mining.coal.desc"
+  },
+  "icon": "minecraft:coal_ore",
+  "criterion": {
+    "type": "minegoals:break_block",
+    "block": "#minecraft:coal_ores",
+    "count": 32
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

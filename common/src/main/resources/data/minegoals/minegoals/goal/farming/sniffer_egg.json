@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:farming",
+  "tier": 4,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.farming.sniffer_egg"
+  },
+  "description": {
+    "translate": "goal.minegoals.farming.sniffer_egg.desc"
+  },
+  "icon": "minecraft:sniffer_egg",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:husbandry/obtain_sniffer_egg"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

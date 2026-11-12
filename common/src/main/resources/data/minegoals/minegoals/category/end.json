@@ -1,0 +1,46 @@
+{
+  "title": {
+    "translate": "category.minegoals.end"
+  },
+  "icon": "minecraft:purpur_block",
+  "order": 9,
+  "tier_visibility": "next",
+  "unlock": {
+    "default": false
+  },
+  "background": "minecraft:textures/gui/advancements/backgrounds/end.png",
+  "tiers": [
+    {
+      "points": 3,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:shulker_shell",
+            "count": 4
+          },
+          {
+            "id": "minecraft:golden_apple",
+            "count": 2
+          }
+        ],
+        "experience": 50
+      }
+    },
+    {
+      "points": 3,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:firework_rocket",
+            "count": 64
+          },
+          {
+            "id": "minecraft:shulker_box",
+            "count": 2
+          }
+        ],
+        "experience": 100
+      }
+    }
+  ]
+}

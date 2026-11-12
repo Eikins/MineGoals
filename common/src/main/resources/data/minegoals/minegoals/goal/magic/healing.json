@@ -1,0 +1,24 @@
+{
+  "category": "minegoals:magic",
+  "tier": 3,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.magic.healing"
+  },
+  "description": {
+    "translate": "goal.minegoals.magic.healing.desc"
+  },
+  "icon": "minecraft:glistering_melon_slice",
+  "criterion": {
+    "type": "minegoals:brew_potion",
+    "count": 3,
+    "potions": [
+      "minecraft:healing",
+      "minecraft:strong_healing"
+    ]
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

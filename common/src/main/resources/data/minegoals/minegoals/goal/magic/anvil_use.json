@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:magic",
+  "tier": 3,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.magic.anvil_use"
+  },
+  "description": {
+    "translate": "goal.minegoals.magic.anvil_use.desc"
+  },
+  "icon": "minecraft:anvil",
+  "criterion": {
+    "type": "minegoals:custom_stat",
+    "stat": "minecraft:interact_with_anvil",
+    "count": 10
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

@@ -1,0 +1,198 @@
+{
+  "title": {
+    "translate": "category.minegoals.progression"
+  },
+  "icon": "minecraft:crafting_table",
+  "order": 0,
+  "tier_visibility": "next",
+  "background": "minecraft:textures/gui/advancements/backgrounds/adventure.png",
+  "tiers": [
+    {
+      "points": 3,
+      "background": "minecraft:textures/gui/advancements/backgrounds/adventure.png",
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:bread",
+            "count": 8
+          },
+          {
+            "id": "minecraft:torch",
+            "count": 16
+          }
+        ],
+        "experience": 25
+      }
+    },
+    {
+      "points": 5,
+      "background": "minecraft:textures/gui/advancements/backgrounds/stone.png",
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:iron_ingot",
+            "count": 6
+          },
+          {
+            "id": "minecraft:cooked_beef",
+            "count": 8
+          }
+        ],
+        "experience": 50
+      }
+    },
+    {
+      "points": 8,
+      "background": "minecraft:textures/gui/advancements/backgrounds/stone.png",
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:bucket",
+            "count": 2
+          },
+          {
+            "id": "minecraft:golden_apple",
+            "count": 1
+          }
+        ],
+        "experience": 75
+      }
+    },
+    {
+      "points": 6,
+      "background": "minecraft:textures/gui/advancements/backgrounds/stone.png",
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:flint_and_steel",
+            "count": 1
+          },
+          {
+            "id": "minecraft:leather",
+            "count": 8
+          }
+        ],
+        "experience": 100
+      }
+    },
+    {
+      "points": 6,
+      "background": "minecraft:textures/gui/advancements/backgrounds/adventure.png",
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:arrow",
+            "count": 32
+          }
+        ],
+        "commands": [
+          {
+            "run": "effect give @s minecraft:fire_resistance 300",
+            "icon": {
+              "id": "minecraft:potion",
+              "components": {
+                "minecraft:potion_contents": {
+                  "potion": "minecraft:fire_resistance"
+                }
+              }
+            },
+            "name": {
+              "translate": "reward.minegoals.fire_resistance"
+            },
+            "description": {
+              "translate": "reward.minegoals.fire_resistance.desc"
+            }
+          }
+        ],
+        "experience": 125
+      }
+    },
+    {
+      "points": 6,
+      "background": "minecraft:textures/gui/advancements/backgrounds/nether.png",
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:ender_pearl",
+            "count": 4
+          },
+          {
+            "id": "minecraft:golden_apple",
+            "count": 2
+          }
+        ],
+        "experience": 150
+      }
+    },
+    {
+      "points": 9,
+      "background": "minecraft:textures/gui/advancements/backgrounds/adventure.png",
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:bow",
+            "count": 1,
+            "components": {
+              "minecraft:enchantments": {
+                "minecraft:power": 3,
+                "minecraft:unbreaking": 2
+              }
+            }
+          },
+          {
+            "id": "minecraft:arrow",
+            "count": 64
+          }
+        ],
+        "experience": 175
+      }
+    },
+    {
+      "points": 11,
+      "background": "minecraft:textures/gui/advancements/backgrounds/end.png",
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:elytra",
+            "count": 1,
+            "components": {
+              "minecraft:custom_name": {
+                "translate": "item.minegoals.dragon_wings",
+                "color": "light_purple",
+                "italic": false
+              },
+              "minecraft:rarity": "epic"
+            }
+          }
+        ],
+        "experience": 200
+      }
+    },
+    {
+      "points": 13,
+      "background": "minecraft:textures/gui/advancements/backgrounds/end.png",
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:netherite_sword",
+            "count": 1,
+            "components": {
+              "minecraft:enchantments": {
+                "minecraft:sharpness": 5,
+                "minecraft:unbreaking": 3,
+                "minecraft:mending": 1
+              },
+              "minecraft:custom_name": {
+                "translate": "item.minegoals.legend_blade",
+                "color": "gold",
+                "italic": false
+              },
+              "minecraft:rarity": "epic"
+            }
+          }
+        ],
+        "experience": 225
+      }
+    }
+  ]
+}

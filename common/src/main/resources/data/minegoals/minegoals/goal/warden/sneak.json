@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:warden",
+  "tier": 1,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.warden.sneak"
+  },
+  "description": {
+    "translate": "goal.minegoals.warden.sneak.desc"
+  },
+  "icon": "minecraft:sculk_sensor",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:adventure/avoid_vibration"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

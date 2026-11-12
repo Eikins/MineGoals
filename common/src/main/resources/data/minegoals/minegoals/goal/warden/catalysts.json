@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:warden",
+  "tier": 2,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.warden.catalysts"
+  },
+  "description": {
+    "translate": "goal.minegoals.warden.catalysts.desc"
+  },
+  "icon": "minecraft:sculk_catalyst",
+  "criterion": {
+    "type": "minegoals:break_block",
+    "block": "minecraft:sculk_catalyst",
+    "count": 4
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

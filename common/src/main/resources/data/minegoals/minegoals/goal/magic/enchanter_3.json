@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:magic",
+  "tier": 3,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.magic.enchanter_3"
+  },
+  "description": {
+    "translate": "goal.minegoals.magic.enchanter_3.desc"
+  },
+  "icon": "minecraft:enchanted_book",
+  "criterion": {
+    "type": "minegoals:custom_stat",
+    "stat": "minecraft:enchant_item",
+    "count": 15
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

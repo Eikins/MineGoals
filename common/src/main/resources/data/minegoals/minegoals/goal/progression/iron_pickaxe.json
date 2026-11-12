@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:progression",
+  "tier": 3,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.progression.iron_pickaxe"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.iron_pickaxe.desc"
+  },
+  "icon": "minecraft:iron_pickaxe",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:story/iron_tools"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

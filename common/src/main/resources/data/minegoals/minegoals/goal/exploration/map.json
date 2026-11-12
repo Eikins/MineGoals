@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:exploration",
+  "tier": 1,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.exploration.map"
+  },
+  "description": {
+    "translate": "goal.minegoals.exploration.map.desc"
+  },
+  "icon": "minecraft:map",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:map",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

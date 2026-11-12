@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:progression",
+  "tier": 9,
+  "points": 3,
+  "title": {
+    "translate": "goal.minegoals.progression.wither"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.wither.desc"
+  },
+  "icon": "minecraft:nether_star",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:wither",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 30
+  },
+  "track_before_unlock": true
+}

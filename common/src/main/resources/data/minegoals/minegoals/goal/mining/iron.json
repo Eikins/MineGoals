@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:mining",
+  "tier": 2,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.mining.iron"
+  },
+  "description": {
+    "translate": "goal.minegoals.mining.iron.desc"
+  },
+  "icon": "minecraft:iron_ore",
+  "criterion": {
+    "type": "minegoals:break_block",
+    "block": "#minecraft:iron_ores",
+    "count": 32
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

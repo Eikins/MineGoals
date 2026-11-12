@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:warden",
+  "tier": 2,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.warden.recovery_compass"
+  },
+  "description": {
+    "translate": "goal.minegoals.warden.recovery_compass.desc"
+  },
+  "icon": "minecraft:recovery_compass",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:recovery_compass",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

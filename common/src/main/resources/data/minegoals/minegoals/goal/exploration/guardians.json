@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:exploration",
+  "tier": 2,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.exploration.guardians"
+  },
+  "description": {
+    "translate": "goal.minegoals.exploration.guardians.desc"
+  },
+  "icon": "minecraft:prismarine_shard",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:guardian",
+    "count": 5
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

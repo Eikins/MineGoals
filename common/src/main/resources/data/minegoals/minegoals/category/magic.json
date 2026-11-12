@@ -3,53 +3,73 @@
     "translate": "category.minegoals.magic"
   },
   "icon": "minecraft:enchanting_table",
-  "order": 4,
-  "tier_visibility": "visible",
+  "order": 7,
+  "tier_visibility": "next",
+  "unlock": {
+    "default": false
+  },
   "background": "minecraft:textures/gui/advancements/backgrounds/stone.png",
   "tiers": [
     {
-      "points": 20,
+      "points": 3,
       "rewards": {
         "items": [
           {
             "id": "minecraft:lapis_lazuli",
-            "count": 4
+            "count": 32
+          },
+          {
+            "id": "minecraft:experience_bottle",
+            "count": 8
           }
         ],
         "experience": 50
       }
     },
     {
-      "points": 45,
+      "points": 4,
       "rewards": {
         "items": [
           {
             "id": "minecraft:experience_bottle",
-            "count": 4
+            "count": 16
+          },
+          {
+            "id": "minecraft:blaze_rod",
+            "count": 2
           }
         ],
         "experience": 100
       }
     },
     {
-      "points": 65,
+      "points": 4,
       "rewards": {
         "items": [
           {
-            "id": "minecraft:blaze_rod",
-            "count": 4
+            "id": "minecraft:experience_bottle",
+            "count": 32
+          },
+          {
+            "id": "minecraft:nether_wart",
+            "count": 16
           }
         ],
         "experience": 150
       }
     },
     {
-      "points": 60,
+      "points": 4,
       "rewards": {
         "items": [
           {
-            "id": "minecraft:nether_star",
-            "count": 1
+            "id": "minecraft:enchanted_book",
+            "count": 1,
+            "components": {
+              "minecraft:stored_enchantments": {
+                "minecraft:mending": 1
+              }
+            }
           }
         ],
         "experience": 200

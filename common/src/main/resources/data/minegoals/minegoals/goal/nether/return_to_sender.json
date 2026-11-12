@@ -1,7 +1,7 @@
 {
   "category": "minegoals:nether",
   "tier": 3,
-  "points": 30,
+  "points": 1,
   "title": {
     "translate": "goal.minegoals.nether.return_to_sender"
   },
@@ -14,7 +14,7 @@
     "advancement": "minecraft:nether/return_to_sender"
   },
   "rewards": {
-    "experience": 30
+    "experience": 10
   },
   "track_before_unlock": true
 }

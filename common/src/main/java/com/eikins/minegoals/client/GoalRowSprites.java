@@ -23,6 +23,9 @@ public final class GoalRowSprites {
     public static final Identifier BUTTON_TRACK = Constants.id("goal/button_track");
     public static final Identifier PROGRESS_EMPTY = Constants.id("goal/progress_empty");
     public static final Identifier PROGRESS_FULL = Constants.id("goal/progress_full");
+    /** Medal drawn inline after a goal's points on its title line (8x8, the height of a text line's glyphs). */
+    public static final Identifier POINT = Constants.id("goal/point");
+    public static final int POINT_SIZE = 8;
     /** Black silhouette of a normal row, drawn translucent over claimed goals. */
     public static final Identifier MASK = Constants.id("goal/mask");
     public static final float MASK_ALPHA = 0.6F;
@@ -130,6 +133,10 @@ public final class GoalRowSprites {
         if (filled >= width) {
             part(g, PROGRESS_FULL, PROGRESS_HEIGHT, PROGRESS_SOURCE_WIDTH - 1, x + body, y, 1, PROGRESS_SOURCE_WIDTH);
         }
+    }
+
+    public static void point(GuiGraphicsExtractor g, int x, int y) {
+        g.blitSprite(RenderPipelines.GUI_TEXTURED, POINT, x, y, POINT_SIZE, POINT_SIZE);
     }
 
     public static void button(GuiGraphicsExtractor g, Identifier sprite, int x, int y) {

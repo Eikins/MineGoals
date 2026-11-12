@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:progression",
+  "tier": 3,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.progression.iron_armor"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.iron_armor.desc"
+  },
+  "icon": "minecraft:iron_chestplate",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:story/obtain_armor"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

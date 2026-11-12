@@ -1,0 +1,24 @@
+{
+  "category": "minegoals:magic",
+  "tier": 4,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.magic.fire_resistance"
+  },
+  "description": {
+    "translate": "goal.minegoals.magic.fire_resistance.desc"
+  },
+  "icon": "minecraft:magma_cream",
+  "criterion": {
+    "type": "minegoals:brew_potion",
+    "count": 3,
+    "potions": [
+      "minecraft:fire_resistance",
+      "minecraft:long_fire_resistance"
+    ]
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

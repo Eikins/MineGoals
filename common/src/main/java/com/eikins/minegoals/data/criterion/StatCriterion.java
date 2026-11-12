@@ -16,7 +16,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.util.ExtraCodecs;
 
 /**
- * Criteria backed by vanilla statistics: blocks mined, entities killed, items picked up, items crafted and
+ * Criteria backed by vanilla statistics: blocks mined, entities killed, items picked up, crafted or used, and
  * "custom" statistics (fish caught, villager trades, animals bred, items enchanted...).
  * Hooking the stat system covers all of them without any loader-specific event.
  */
@@ -30,6 +30,9 @@ public record StatCriterion<T>(Kind<T> kind, RegistryMatcher<T> target, int coun
             new Kind<>("collect_item", "item", Stats.ITEM_PICKED_UP, Registries.ITEM, BuiltInRegistries.ITEM);
     public static final Kind<net.minecraft.world.item.Item> CRAFT =
             new Kind<>("craft_item", "item", Stats.ITEM_CRAFTED, Registries.ITEM, BuiltInRegistries.ITEM);
+    /** Items used: placed (seeds, blocks), used on a block (a hoe tilling dirt) or worn down by mining (tools). */
+    public static final Kind<net.minecraft.world.item.Item> USE =
+            new Kind<>("use_item", "item", Stats.ITEM_USED, Registries.ITEM, BuiltInRegistries.ITEM);
     /** Vanilla "custom" statistics such as {@code minecraft:fish_caught} or {@code minecraft:traded_with_villager}. */
     public static final Kind<Identifier> CUSTOM =
             new Kind<>("custom_stat", "stat", Stats.CUSTOM, Registries.CUSTOM_STAT, BuiltInRegistries.CUSTOM_STAT);
@@ -38,6 +41,7 @@ public record StatCriterion<T>(Kind<T> kind, RegistryMatcher<T> target, int coun
     public static final MapCodec<StatCriterion<?>> KILL_ENTITY = codec(ENTITY);
     public static final MapCodec<StatCriterion<?>> COLLECT_ITEM = codec(PICKUP);
     public static final MapCodec<StatCriterion<?>> CRAFT_ITEM = codec(CRAFT);
+    public static final MapCodec<StatCriterion<?>> USE_ITEM = codec(USE);
     public static final MapCodec<StatCriterion<?>> CUSTOM_STAT = codec(CUSTOM);
 
     @SuppressWarnings({"unchecked", "rawtypes"})

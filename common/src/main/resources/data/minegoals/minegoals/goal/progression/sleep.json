@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:progression",
+  "tier": 2,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.progression.sleep"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.sleep.desc"
+  },
+  "icon": "minecraft:red_bed",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:adventure/sleep_in_bed"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

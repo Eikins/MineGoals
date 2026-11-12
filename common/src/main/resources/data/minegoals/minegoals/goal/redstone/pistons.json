@@ -1,7 +1,7 @@
 {
   "category": "minegoals:redstone",
-  "tier": 2,
-  "points": 20,
+  "tier": 1,
+  "points": 1,
   "title": {
     "translate": "goal.minegoals.redstone.pistons"
   },
@@ -15,7 +15,7 @@
     "count": 4
   },
   "rewards": {
-    "experience": 20
+    "experience": 10
   },
   "track_before_unlock": true
 }

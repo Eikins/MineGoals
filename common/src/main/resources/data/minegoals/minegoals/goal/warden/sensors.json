@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:warden",
+  "tier": 1,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.warden.sensors"
+  },
+  "description": {
+    "translate": "goal.minegoals.warden.sensors.desc"
+  },
+  "icon": "minecraft:sculk_sensor",
+  "criterion": {
+    "type": "minegoals:break_block",
+    "block": "minecraft:sculk_sensor",
+    "count": 8
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

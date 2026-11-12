@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:progression",
+  "tier": 7,
+  "points": 2,
+  "title": {
+    "translate": "goal.minegoals.progression.redstone_1"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.redstone_1.desc"
+  },
+  "icon": "minecraft:redstone",
+  "criterion": {
+    "type": "minegoals:category_tier",
+    "category": "minegoals:redstone",
+    "tier": 1
+  },
+  "rewards": {
+    "experience": 20
+  },
+  "track_before_unlock": true
+}

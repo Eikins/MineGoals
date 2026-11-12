@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:progression",
+  "tier": 6,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.progression.fortress"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.fortress.desc"
+  },
+  "icon": "minecraft:nether_bricks",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:nether/find_fortress"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

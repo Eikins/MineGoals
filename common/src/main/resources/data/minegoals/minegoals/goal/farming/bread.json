@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:farming",
+  "tier": 2,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.farming.bread"
+  },
+  "description": {
+    "translate": "goal.minegoals.farming.bread.desc"
+  },
+  "icon": "minecraft:bread",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:bread",
+    "count": 16
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

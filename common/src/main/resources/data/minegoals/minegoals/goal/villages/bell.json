@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:villages",
+  "tier": 1,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.villages.bell"
+  },
+  "description": {
+    "translate": "goal.minegoals.villages.bell.desc"
+  },
+  "icon": "minecraft:bell",
+  "criterion": {
+    "type": "minegoals:custom_stat",
+    "stat": "minecraft:bell_ring",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

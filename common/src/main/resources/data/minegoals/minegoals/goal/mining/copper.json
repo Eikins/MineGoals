@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:mining",
+  "tier": 1,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.mining.copper"
+  },
+  "description": {
+    "translate": "goal.minegoals.mining.copper.desc"
+  },
+  "icon": "minecraft:copper_ore",
+  "criterion": {
+    "type": "minegoals:break_block",
+    "block": "#minecraft:copper_ores",
+    "count": 32
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

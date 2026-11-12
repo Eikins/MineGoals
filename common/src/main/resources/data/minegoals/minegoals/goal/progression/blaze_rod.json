@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:progression",
+  "tier": 6,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.progression.blaze_rod"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.blaze_rod.desc"
+  },
+  "icon": "minecraft:blaze_rod",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:nether/obtain_blaze_rod"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

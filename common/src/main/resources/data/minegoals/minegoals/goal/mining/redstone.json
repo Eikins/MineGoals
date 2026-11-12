@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:mining",
+  "tier": 3,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.mining.redstone"
+  },
+  "description": {
+    "translate": "goal.minegoals.mining.redstone.desc"
+  },
+  "icon": "minecraft:redstone_ore",
+  "criterion": {
+    "type": "minegoals:break_block",
+    "block": "#minecraft:redstone_ores",
+    "count": 32
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

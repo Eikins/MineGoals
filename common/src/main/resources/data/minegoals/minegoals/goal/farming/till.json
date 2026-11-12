@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:farming",
+  "tier": 1,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.farming.till"
+  },
+  "description": {
+    "translate": "goal.minegoals.farming.till.desc"
+  },
+  "icon": "minecraft:stone_hoe",
+  "criterion": {
+    "type": "minegoals:use_item",
+    "item": "#minecraft:hoes",
+    "count": 16
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

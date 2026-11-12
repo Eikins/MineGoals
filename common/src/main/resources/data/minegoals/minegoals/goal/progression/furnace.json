@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:progression",
+  "tier": 1,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.progression.furnace"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.furnace.desc"
+  },
+  "icon": "minecraft:furnace",
+  "criterion": {
+    "type": "minegoals:craft_item",
+    "item": "minecraft:furnace",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

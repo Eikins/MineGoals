@@ -1,0 +1,33 @@
+{
+  "category": "minegoals:progression",
+  "tier": 3,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.progression.villager"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.villager.desc"
+  },
+  "icon": "minecraft:emerald",
+  "criterion": {
+    "type": "minegoals:custom_stat",
+    "stat": "minecraft:talked_to_villager",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 10,
+    "commands": [
+      {
+        "run": "minegoals unlock @s minegoals:villages",
+        "icon": "minecraft:emerald",
+        "name": {
+          "translate": "reward.minegoals.unlock_villages"
+        },
+        "description": {
+          "translate": "reward.minegoals.unlock_villages.desc"
+        }
+      }
+    ]
+  },
+  "track_before_unlock": true
+}

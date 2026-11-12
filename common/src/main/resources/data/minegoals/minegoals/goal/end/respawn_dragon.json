@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:end",
+  "tier": 2,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.end.respawn_dragon"
+  },
+  "description": {
+    "translate": "goal.minegoals.end.respawn_dragon.desc"
+  },
+  "icon": "minecraft:end_crystal",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:end/respawn_dragon"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:warden",
+  "tier": 2,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.warden.shriekers"
+  },
+  "description": {
+    "translate": "goal.minegoals.warden.shriekers.desc"
+  },
+  "icon": "minecraft:sculk_shrieker",
+  "criterion": {
+    "type": "minegoals:break_block",
+    "block": "minecraft:sculk_shrieker",
+    "count": 8
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

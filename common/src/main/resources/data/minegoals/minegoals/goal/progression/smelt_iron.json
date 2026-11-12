@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:progression",
+  "tier": 3,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.progression.smelt_iron"
+  },
+  "description": {
+    "translate": "goal.minegoals.progression.smelt_iron.desc"
+  },
+  "icon": "minecraft:iron_ingot",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:story/smelt_iron"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

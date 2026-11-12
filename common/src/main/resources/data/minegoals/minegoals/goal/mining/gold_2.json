@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:mining",
+  "tier": 4,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.mining.gold_2"
+  },
+  "description": {
+    "translate": "goal.minegoals.mining.gold_2.desc"
+  },
+  "icon": "minecraft:gold_ore",
+  "criterion": {
+    "type": "minegoals:break_block",
+    "block": "#minecraft:gold_ores",
+    "count": 96
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

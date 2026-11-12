@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:farming",
+  "tier": 1,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.farming.plant_seeds"
+  },
+  "description": {
+    "translate": "goal.minegoals.farming.plant_seeds.desc"
+  },
+  "icon": "minecraft:wheat_seeds",
+  "criterion": {
+    "type": "minegoals:use_item",
+    "item": "minecraft:wheat_seeds",
+    "count": 16
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

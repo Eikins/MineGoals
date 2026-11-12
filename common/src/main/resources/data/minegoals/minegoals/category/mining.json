@@ -1,0 +1,83 @@
+{
+  "title": {
+    "translate": "category.minegoals.mining"
+  },
+  "icon": "minecraft:iron_pickaxe",
+  "order": 1,
+  "tier_visibility": "next",
+  "unlock": {
+    "default": false
+  },
+  "background": "minecraft:textures/gui/advancements/backgrounds/stone.png",
+  "tiers": [
+    {
+      "points": 3,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:torch",
+            "count": 32
+          },
+          {
+            "id": "minecraft:cooked_beef",
+            "count": 8
+          }
+        ],
+        "experience": 50
+      }
+    },
+    {
+      "points": 4,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:iron_pickaxe",
+            "count": 1,
+            "components": {
+              "minecraft:enchantments": {
+                "minecraft:efficiency": 2,
+                "minecraft:unbreaking": 2
+              }
+            }
+          }
+        ],
+        "experience": 100
+      }
+    },
+    {
+      "points": 3,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:diamond",
+            "count": 3
+          },
+          {
+            "id": "minecraft:golden_apple",
+            "count": 1
+          }
+        ],
+        "experience": 150
+      }
+    },
+    {
+      "points": 3,
+      "rewards": {
+        "items": [
+          {
+            "id": "minecraft:diamond_pickaxe",
+            "count": 1,
+            "components": {
+              "minecraft:enchantments": {
+                "minecraft:efficiency": 4,
+                "minecraft:fortune": 3,
+                "minecraft:unbreaking": 3
+              }
+            }
+          }
+        ],
+        "experience": 200
+      }
+    }
+  ]
+}

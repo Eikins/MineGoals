@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:villages",
+  "tier": 4,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.villages.ravager"
+  },
+  "description": {
+    "translate": "goal.minegoals.villages.ravager.desc"
+  },
+  "icon": "minecraft:saddle",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:ravager",
+    "count": 1
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

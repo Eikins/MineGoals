@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:exploration",
+  "tier": 4,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.exploration.adventuring_time"
+  },
+  "description": {
+    "translate": "goal.minegoals.exploration.adventuring_time.desc"
+  },
+  "icon": "minecraft:diamond_boots",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:adventure/adventuring_time"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

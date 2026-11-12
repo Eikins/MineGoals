@@ -1,0 +1,21 @@
+{
+  "category": "minegoals:exploration",
+  "tier": 4,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.exploration.vexes"
+  },
+  "description": {
+    "translate": "goal.minegoals.exploration.vexes.desc"
+  },
+  "icon": "minecraft:iron_sword",
+  "criterion": {
+    "type": "minegoals:kill_entity",
+    "entity": "minecraft:vex",
+    "count": 5
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}

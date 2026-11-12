@@ -1,7 +1,7 @@
 {
   "category": "minegoals:magic",
   "tier": 2,
-  "points": 20,
+  "points": 1,
   "title": {
     "translate": "goal.minegoals.magic.anvil"
   },
@@ -10,12 +10,12 @@
   },
   "icon": "minecraft:anvil",
   "criterion": {
-    "type": "minegoals:custom_stat",
-    "stat": "minecraft:interact_with_anvil",
-    "count": 5
+    "type": "minegoals:craft_item",
+    "item": "minecraft:anvil",
+    "count": 1
   },
   "rewards": {
-    "experience": 20
+    "experience": 10
   },
   "track_before_unlock": true
 }

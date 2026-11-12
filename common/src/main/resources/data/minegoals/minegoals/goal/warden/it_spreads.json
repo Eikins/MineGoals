@@ -1,0 +1,20 @@
+{
+  "category": "minegoals:warden",
+  "tier": 1,
+  "points": 1,
+  "title": {
+    "translate": "goal.minegoals.warden.it_spreads"
+  },
+  "description": {
+    "translate": "goal.minegoals.warden.it_spreads.desc"
+  },
+  "icon": "minecraft:sculk_catalyst",
+  "criterion": {
+    "type": "minegoals:advancement",
+    "advancement": "minecraft:adventure/kill_mob_near_sculk_catalyst"
+  },
+  "rewards": {
+    "experience": 10
+  },
+  "track_before_unlock": true
+}
