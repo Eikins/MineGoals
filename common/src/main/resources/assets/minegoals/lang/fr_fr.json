@@ -22,7 +22,6 @@
   "minegoals.screen.claimed": "Récupéré",
   "minegoals.screen.track": "Suivre",
   "minegoals.screen.tracked": "Suivi",
-  "minegoals.screen.tracked_hint": "Suivi : la progression s'affiche en notification",
   "minegoals.screen.claimable": "%s récompense(s) à récupérer",
   "minegoals.screen.tier_reward": "Récompense du palier %s",
   "minegoals.screen.tier_hidden": "Atteins ce palier pour le révéler",
@@ -367,5 +366,10 @@
   "goal.minegoals.redstone.redstone_lamps": "Spectacle de lumière",
   "goal.minegoals.redstone.redstone_lamps.desc": "Fabrique 8 lampes de redstone",
   "goal.minegoals.redstone.redstone_blocks": "Centrale électrique",
-  "goal.minegoals.redstone.redstone_blocks.desc": "Fabrique 16 blocs de redstone"
+  "goal.minegoals.redstone.redstone_blocks.desc": "Fabrique 16 blocs de redstone",
+  "minegoals.screen.collect": "Récupérer",
+  "minegoals.screen.pending": "%s objet(s) en attente",
+  "minegoals.screen.pending_title": "Récompenses en attente de place",
+  "minegoals.screen.pending_hint": "Récupérer met ce qui rentre dans ton inventaire",
+  "minegoals.notify.inventory_full": "Inventaire plein : %s objet(s) mis de côté. Récupère-les dans l'écran des objectifs (G)."
 }

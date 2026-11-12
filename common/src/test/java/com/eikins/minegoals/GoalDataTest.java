@@ -502,6 +502,23 @@ class GoalDataTest {
     }
 
     @Test
+    void goalsCompletedInALockedTierWaitForTheTierToUnlock() {
+        PlayerGoalProgress progress = new PlayerGoalProgress();
+        Identifier oceans = id("oceans");
+        Identifier tierTwoGoal = examples.goalsIn(oceans).stream()
+                .filter(goal -> examples.goals().get(goal).tier() == 2)
+                .findFirst().orElseThrow();
+        complete(progress, tierTwoGoal);
+        assertFalse(progress.canClaimGoal(examples, tierTwoGoal), "tier 2 is still locked");
+        assertEquals(0, progress.claimableCount(examples));
+
+        earnTier(progress, oceans, 1);
+        progress.markTierClaimed(oceans, 1);
+        assertEquals(2, progress.tier(examples, oceans));
+        assertTrue(progress.canClaimGoal(examples, tierTwoGoal), "claimable once its tier unlocks");
+    }
+
+    @Test
     void tierRewardIsEarnedByCompletingTheTierAndClaimingUnlocksTheNext() {
         PlayerGoalProgress progress = new PlayerGoalProgress();
         Identifier roadId = id("road_to_end");

@@ -7,7 +7,9 @@ import com.eikins.minegoals.data.GoalDefinitions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -21,6 +23,8 @@ import java.util.Set;
  * by completing the tier, and claiming it unlocks the next tier. The highest tier
  * already announced per category is stored so the "tier reached" notification fires once. Tracked goals are the ones
  * the player chose to follow: the client shows a toast when they progress. A goal stops being tracked once completed.
+ * Pending items are reward items that did not fit in the player's inventory when claimed; the player collects them
+ * from the goals screen.
  */
 public final class PlayerGoalProgress {
 
@@ -33,7 +37,8 @@ public final class PlayerGoalProgress {
                     .forGetter(p -> copyTiers(p.claimedTiers)),
             Codec.unboundedMap(Identifier.CODEC, Codec.BOOL).optionalFieldOf("category_unlocks", Map.of())
                     .forGetter(p -> p.categoryUnlocks),
-            Identifier.CODEC.listOf().optionalFieldOf("tracked", List.of()).forGetter(p -> List.copyOf(p.tracked))
+            Identifier.CODEC.listOf().optionalFieldOf("tracked", List.of()).forGetter(p -> List.copyOf(p.tracked)),
+            ItemStack.CODEC.listOf().optionalFieldOf("pending_items", List.of()).forGetter(p -> List.copyOf(p.pendingItems))
     ).apply(i, PlayerGoalProgress::new));
 
     private final Map<Identifier, Integer> counts;
@@ -44,14 +49,16 @@ public final class PlayerGoalProgress {
     /** Explicit category lock state, overriding the category's default (set by unlock conditions or commands). */
     private final Map<Identifier, Boolean> categoryUnlocks;
     private final Set<Identifier> tracked;
+    private final List<ItemStack> pendingItems;
 
     public PlayerGoalProgress() {
-        this(Map.of(), List.of(), Map.of(), List.of(), Map.of(), Map.of(), List.of());
+        this(Map.of(), List.of(), Map.of(), List.of(), Map.of(), Map.of(), List.of(), List.of());
     }
 
     private PlayerGoalProgress(Map<Identifier, Integer> counts, List<Identifier> completed, Map<Identifier, Integer> announcedTiers,
                                List<Identifier> claimedGoals, Map<Identifier, List<Integer>> claimedTiers,
-                               Map<Identifier, Boolean> categoryUnlocks, List<Identifier> tracked) {
+                               Map<Identifier, Boolean> categoryUnlocks, List<Identifier> tracked,
+                               List<ItemStack> pendingItems) {
         this.counts = new HashMap<>(counts);
         this.completed = new HashSet<>(completed);
         this.announcedTiers = new HashMap<>(announcedTiers);
@@ -60,6 +67,8 @@ public final class PlayerGoalProgress {
         claimedTiers.forEach((category, tiers) -> this.claimedTiers.put(category, new HashSet<>(tiers)));
         this.categoryUnlocks = new HashMap<>(categoryUnlocks);
         this.tracked = new HashSet<>(tracked);
+        this.pendingItems = new ArrayList<>();
+        pendingItems.forEach(this::addPendingItem);
     }
 
     private static Map<Identifier, List<Integer>> copyTiers(Map<Identifier, Set<Integer>> tiers) {
@@ -71,7 +80,7 @@ public final class PlayerGoalProgress {
     public PlayerGoalProgress copy() {
         return new PlayerGoalProgress(this.counts, List.copyOf(this.completed), this.announcedTiers,
                 List.copyOf(this.claimedGoals), copyTiers(this.claimedTiers), this.categoryUnlocks,
-                List.copyOf(this.tracked));
+                List.copyOf(this.tracked), this.pendingItems);
     }
 
     // ---- raw state -------------------------------------------------------------------------------
@@ -103,6 +112,48 @@ public final class PlayerGoalProgress {
     /** Starts or stops following a goal. Returns true if it changed. */
     public boolean setTracked(Identifier goal, boolean track) {
         return track ? this.tracked.add(goal) : this.tracked.remove(goal);
+    }
+
+    /** Reward items waiting to be collected. Read-only: use {@link #addPendingItem} and {@link #takePendingItems}. */
+    public List<ItemStack> pendingItems() {
+        return java.util.Collections.unmodifiableList(this.pendingItems);
+    }
+
+    /** Total number of pending items (sum of stack counts). */
+    public int pendingItemCount() {
+        int count = 0;
+        for (ItemStack stack : this.pendingItems) {
+            count += stack.getCount();
+        }
+        return count;
+    }
+
+    /**
+     * Stores a copy of a reward stack that did not fit in the inventory, merged into existing pending stacks of the
+     * same item and components up to their max stack size.
+     */
+    public void addPendingItem(ItemStack stack) {
+        ItemStack rest = stack.copy();
+        for (ItemStack pending : this.pendingItems) {
+            if (rest.isEmpty()) {
+                return;
+            }
+            if (ItemStack.isSameItemSameComponents(pending, rest) && pending.getCount() < pending.getMaxStackSize()) {
+                int moved = Math.min(rest.getCount(), pending.getMaxStackSize() - pending.getCount());
+                pending.grow(moved);
+                rest.shrink(moved);
+            }
+        }
+        if (!rest.isEmpty()) {
+            this.pendingItems.add(rest);
+        }
+    }
+
+    /** Removes and returns every pending stack; whatever cannot be delivered goes back with {@link #addPendingItem}. */
+    public List<ItemStack> takePendingItems() {
+        List<ItemStack> taken = List.copyOf(this.pendingItems);
+        this.pendingItems.clear();
+        return taken;
     }
 
     /** Sets the count, clamped to [0, max]. Returns true if it changed. */
@@ -153,6 +204,7 @@ public final class PlayerGoalProgress {
         return this.categoryUnlocks.containsKey(category);
     }
 
+    /** Resets all progress. Pending items are kept: they are rewards already earned, not progress. */
     public void resetAll() {
         this.counts.clear();
         this.completed.clear();
@@ -239,12 +291,16 @@ public final class PlayerGoalProgress {
                 && this.tier(defs, goal.category()) >= goal.tier() && this.requirementsMet(goal);
     }
 
-    /** Completed and not claimed yet. Claiming grants the goal's rewards and its points. */
+    /**
+     * Completed, not claimed yet, and its tier is unlocked. Claiming grants the goal's rewards and its points. A goal
+     * that tracks before unlocking can be completed in a locked tier; it waits until the tier unlocks.
+     */
     public boolean canClaimGoal(GoalDefinitions defs, Identifier goalId) {
         Goal goal = defs.goals().get(goalId);
         // Every completed goal is claimed, even without rewards, since claiming is what grants its points.
         return goal != null && this.completed.contains(goalId) && !this.claimedGoals.contains(goalId)
-                && this.isCategoryUnlocked(defs, goal.category());
+                && this.isCategoryUnlocked(defs, goal.category())
+                && this.tier(defs, goal.category()) >= goal.tier();
     }
 
     /** Unlocked, complete, has rewards, and not claimed yet. Tiers are 1-based. Claiming unlocks the next tier. */

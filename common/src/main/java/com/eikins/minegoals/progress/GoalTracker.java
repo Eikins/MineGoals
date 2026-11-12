@@ -4,6 +4,7 @@ import com.eikins.minegoals.FeatureFlags;
 import com.eikins.minegoals.data.Category;
 import com.eikins.minegoals.data.Goal;
 import com.eikins.minegoals.data.GoalDefinitions;
+import com.eikins.minegoals.data.Rewards;
 import com.eikins.minegoals.network.MineGoalsNetwork;
 import com.eikins.minegoals.platform.Services;
 import net.minecraft.ChatFormatting;
@@ -15,9 +16,11 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stat;
 import net.minecraft.stats.StatType;
 import net.minecraft.stats.Stats;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
 import java.util.Set;
@@ -187,16 +190,52 @@ public final class GoalTracker {
                 return;
             }
             progress.markGoalClaimed(id);
-            defs.goals().get(id).rewards().grant(player);
+            keepLeftovers(player, progress, defs.goals().get(id).rewards().grant(player));
         } else {
             if (!progress.canClaimTier(defs, id, tier)) {
                 return;
             }
             progress.markTierClaimed(id, tier);
-            defs.categories().get(id).tiers().get(tier - 1).rewards().grant(player);
+            keepLeftovers(player, progress, defs.categories().get(id).tiers().get(tier - 1).rewards().grant(player));
         }
         // Claiming a tier unlocks the next one, whose goals may already be done when they track early.
         evaluate(player, data, progress, defs, true);
+    }
+
+    /** Stores reward items that did not fit in the inventory and tells the player where to collect them. */
+    private static void keepLeftovers(ServerPlayer player, PlayerGoalProgress progress, List<ItemStack> leftovers) {
+        if (leftovers.isEmpty()) {
+            return;
+        }
+        int count = 0;
+        for (ItemStack stack : leftovers) {
+            progress.addPendingItem(stack);
+            count += stack.getCount();
+        }
+        player.sendSystemMessage(Component.empty()
+                .append(Component.literal("[MineGoals] ").withStyle(ChatFormatting.GOLD))
+                .append(Component.translatable("minegoals.notify.inventory_full", count).withStyle(ChatFormatting.YELLOW)));
+    }
+
+    /**
+     * Moves pending reward items into the player's inventory, as far as they fit; the rest stays pending. Called from
+     * the {@code CollectPendingItems} payload.
+     */
+    public static void collectPendingItems(ServerPlayer player) {
+        GoalProgressData data = GoalProgressData.get(player.level().getServer());
+        PlayerGoalProgress progress = data.get(player.getUUID());
+        List<ItemStack> pending = progress.takePendingItems();
+        if (pending.isEmpty()) {
+            return;
+        }
+        for (ItemStack stack : pending) {
+            ItemStack rest = Rewards.giveItem(player, stack.copy());
+            if (!rest.isEmpty()) {
+                progress.addPendingItem(rest);
+            }
+        }
+        data.setDirty();
+        Services.NETWORK.sendToPlayer(player, new MineGoalsNetwork.SyncProgress(progress.copy()));
     }
 
     /**

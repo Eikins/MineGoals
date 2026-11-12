@@ -26,6 +26,10 @@ public class MineGoalsFabric implements ModInitializer {
         PayloadTypeRegistry.serverboundPlay().register(MineGoalsNetwork.TrackGoal.TYPE, MineGoalsNetwork.TrackGoal.STREAM_CODEC);
         ServerPlayNetworking.registerGlobalReceiver(MineGoalsNetwork.TrackGoal.TYPE,
                 (payload, ctx) -> GoalTracker.setTracked(ctx.player(), payload.goal(), payload.tracked()));
+        PayloadTypeRegistry.serverboundPlay().register(MineGoalsNetwork.CollectPendingItems.TYPE,
+                MineGoalsNetwork.CollectPendingItems.STREAM_CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(MineGoalsNetwork.CollectPendingItems.TYPE,
+                (payload, ctx) -> GoalTracker.collectPendingItems(ctx.player()));
 
         DataResourceLoader.get().registerReloadListener(GoalDataLoader.ID, GoalDataLoader::new);
         // Fires for a joining player and for everyone after /reload.

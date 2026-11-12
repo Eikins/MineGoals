@@ -1,6 +1,7 @@
 package com.eikins.minegoals.client;
 
 import com.eikins.minegoals.data.GoalDefinitions;
+import com.eikins.minegoals.progress.PlayerGoalProgress;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -44,8 +45,9 @@ public final class JournalHud {
         VanillaSprites.sprite(g, VanillaSprites.BUTTON, keyX, keyY, keyWidth, KEY_HEIGHT);
         g.text(font, key, keyX + 4, keyY + 3, 0xFFFFFFFF, true);
 
-        // Vanilla notification badge over the frame's top-right corner when a reward is waiting
-        if (ClientGoalState.progress().claimableCount(defs) > 0) {
+        // Vanilla notification badge over the frame's top-right corner when a reward or a pending item is waiting
+        PlayerGoalProgress progress = ClientGoalState.progress();
+        if (progress.claimableCount(defs) > 0 || progress.pendingItemCount() > 0) {
             VanillaSprites.sprite(g, VanillaSprites.NOTIFICATION, x + FRAME - 7, y - 3, 10, 10);
         }
     }

@@ -126,6 +126,11 @@ public final class ClientGoalState {
         serverSender.accept(payload);
     }
 
+    /** Asks the server to move pending reward items into the inventory. */
+    public static void collectPendingItems() {
+        serverSender.accept(MineGoalsNetwork.CollectPendingItems.INSTANCE);
+    }
+
     public static boolean isHudVisible() {
         return hudVisible;
     }

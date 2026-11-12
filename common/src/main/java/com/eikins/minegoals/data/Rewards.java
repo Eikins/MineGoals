@@ -10,6 +10,7 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,12 +38,19 @@ public record Rewards(List<ItemStackTemplate> items, int experience, List<Comman
         return this.items.isEmpty() && this.experience == 0 && this.commands.isEmpty();
     }
 
-    public void grant(ServerPlayer player) {
+    /**
+     * Grants the rewards: items go into the inventory, experience and commands apply at once.
+     *
+     * @return the parts of item stacks that did not fit in the inventory (never empty stacks); the caller keeps them
+     *         for the player to collect later
+     */
+    public List<ItemStack> grant(ServerPlayer player) {
+        List<ItemStack> leftovers = new ArrayList<>();
         for (ItemStackTemplate reward : this.items) {
             // create() returns a fresh stack each time, so the template is never modified.
-            ItemStack stack = reward.create();
-            if (!player.getInventory().add(stack)) {
-                player.spawnAtLocation(player.level(), stack);
+            ItemStack rest = giveItem(player, reward.create());
+            if (!rest.isEmpty()) {
+                leftovers.add(rest);
             }
         }
         if (this.experience > 0) {
@@ -63,5 +71,17 @@ public record Rewards(List<ItemStackTemplate> items, int experience, List<Comman
                 }
             }
         }
+        return leftovers;
+    }
+
+    /**
+     * Puts as much of the stack as fits into the player's inventory and returns what is left (empty if all of it
+     * fit). The stack itself is consumed.
+     */
+    public static ItemStack giveItem(ServerPlayer player, ItemStack stack) {
+        // add() returns true on a partial insert too, so the remaining count is what tells what is left.
+        player.getInventory().add(stack);
+        player.containerMenu.broadcastChanges();
+        return stack;
     }
 }

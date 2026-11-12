@@ -15,7 +15,8 @@ import net.minecraft.world.item.Item;
 
 /**
  * Payloads. Each loader registers them. Server-to-client handlers live in {@code client.ClientPayloadHandlers};
- * client-to-server payloads ({@link ClaimReward}, {@link TrackGoal}) are handled by {@code GoalTracker}.
+ * client-to-server payloads ({@link ClaimReward}, {@link TrackGoal}, {@link CollectPendingItems}) are handled by
+ * {@code GoalTracker}.
  */
 public final class MineGoalsNetwork {
 
@@ -81,6 +82,18 @@ public final class MineGoalsNetwork {
 
         @Override
         public Type<TrackGoal> type() {
+            return TYPE;
+        }
+    }
+
+    /** Client to server: move pending reward items into the inventory. Handled by {@code GoalTracker.collectPendingItems}. */
+    public record CollectPendingItems() implements CustomPacketPayload {
+        public static final CollectPendingItems INSTANCE = new CollectPendingItems();
+        public static final Type<CollectPendingItems> TYPE = new Type<>(Constants.id("collect_pending_items"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, CollectPendingItems> STREAM_CODEC = StreamCodec.unit(INSTANCE);
+
+        @Override
+        public Type<CollectPendingItems> type() {
             return TYPE;
         }
     }

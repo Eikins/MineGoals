@@ -22,7 +22,6 @@
   "minegoals.screen.claimed": "Claimed",
   "minegoals.screen.track": "Track",
   "minegoals.screen.tracked": "Tracked",
-  "minegoals.screen.tracked_hint": "Tracked: progress shows in a notification",
   "minegoals.screen.claimable": "%s reward(s) to claim",
   "minegoals.screen.tier_reward": "Tier %s reward",
   "minegoals.screen.tier_hidden": "Reach this tier to reveal it",
@@ -367,5 +366,10 @@
   "goal.minegoals.redstone.redstone_lamps": "Light Show",
   "goal.minegoals.redstone.redstone_lamps.desc": "Craft 8 redstone lamps",
   "goal.minegoals.redstone.redstone_blocks": "Power Plant",
-  "goal.minegoals.redstone.redstone_blocks.desc": "Craft 16 blocks of redstone"
+  "goal.minegoals.redstone.redstone_blocks.desc": "Craft 16 blocks of redstone",
+  "minegoals.screen.collect": "Collect",
+  "minegoals.screen.pending": "%s item(s) waiting",
+  "minegoals.screen.pending_title": "Rewards waiting for space",
+  "minegoals.screen.pending_hint": "Collect puts what fits in your inventory",
+  "minegoals.notify.inventory_full": "Inventory full: %s item(s) kept for you. Collect them in the goals screen (G)."
 }
