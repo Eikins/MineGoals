@@ -87,8 +87,8 @@ MINING = {
     "tiers": [
         {"reward": {"items": [{"id": "minecraft:torch", "count": 32}, {"id": "minecraft:cooked_beef", "count": 8}]}, "goals": [
             ("torches", "minecraft:torch", CR("minecraft:torch", 16), 1, "Light the Way", "Craft 16 torches", "Éclaire le chemin", "Fabrique 16 torches"),
-            ("coal", "minecraft:coal_ore", B("#minecraft:coal_ores", 32), 1, "Coal Miner", "Mine 32 coal ores", "Mineur de charbon", "Mine 32 minerais de charbon"),
-            ("copper", "minecraft:copper_ore", B("#minecraft:copper_ores", 32), 1, "Copper Vein", "Mine 32 copper ores", "Filon de cuivre", "Mine 32 minerais de cuivre"),
+            ("coal", "minecraft:coal_ore", B("#minecraft:coal_ores", 12), 1, "Coal Miner", "Mine 12 coal ores", "Mineur de charbon", "Mine 12 minerais de charbon"),
+            ("copper", "minecraft:copper_ore", B("#minecraft:copper_ores", 12), 1, "Copper Vein", "Mine 12 copper ores", "Filon de cuivre", "Mine 12 minerais de cuivre"),
         ]},
         {"reward": {"items": [stack("minecraft:iron_pickaxe", enchantments={"minecraft:efficiency": 2, "minecraft:unbreaking": 2})]}, "goals": [
             ("coal_2", "minecraft:coal_ore", B("#minecraft:coal_ores", 96), 1, "Coal Miner II", "Mine 96 coal ores", "Mineur de charbon II", "Mine 96 minerais de charbon"),
@@ -389,7 +389,7 @@ PROGRESSION = {
             ("sleep", "minecraft:red_bed", ADV("adventure/sleep_in_bed"), 1, "Sweet Dreams", "Sleep in a bed", "Fais de beaux rêves", "Dors dans un lit"),
         ]},
         {"background": "stone", "reward": items(("minecraft:bucket", 2), ("minecraft:golden_apple", 1)), "goals": [
-            ("smelt_iron", "minecraft:iron_ingot", ADV("story/smelt_iron"), 1, "Acquire Hardware", "Smelt an iron ingot", "Quincaillerie", "Fais fondre un lingot de fer"),
+            ("smelt_iron", "minecraft:iron_ingot", CR("minecraft:iron_ingot"), 1, "Acquire Hardware", "Smelt an iron ingot", "Quincaillerie", "Fais fondre un lingot de fer"),
             ("iron_pickaxe", "minecraft:iron_pickaxe", ADV("story/iron_tools"), 1, "Isn't It Iron Pick", "Craft an iron pickaxe", "Pioche en fer", "Fabrique une pioche en fer"),
             ("iron_armor", "minecraft:iron_chestplate", ADV("story/obtain_armor"), 1, "Suit Up", "Wear a piece of iron armor", "Équipe-toi", "Porte une pièce d'armure en fer"),
             ("villager", "minecraft:emerald", ST("talked_to_villager"), 1, "Neighbours", "Talk to a villager", "Voisinage", "Parle à un villageois", {"unlocks": "villages"}),

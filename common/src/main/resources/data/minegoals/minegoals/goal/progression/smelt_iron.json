@@ -10,8 +10,9 @@
   },
   "icon": "minecraft:iron_ingot",
   "criterion": {
-    "type": "minegoals:advancement",
-    "advancement": "minecraft:story/smelt_iron"
+    "type": "minegoals:craft_item",
+    "item": "minecraft:iron_ingot",
+    "count": 1
   },
   "rewards": {
     "experience": 10

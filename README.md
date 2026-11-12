@@ -265,6 +265,20 @@ Requirements: JDK **25**, IntelliJ IDEA (Eclipse is not supported).
 Jars are written to `fabric/build/libs/` and `neoforge/build/libs/`.
 Versions (mod, Minecraft, Fabric, NeoForge) live in `gradle.properties`.
 
+### Releases
+
+Pushing a tag that starts with `v` runs `.github/workflows/release.yml`: it builds and tests both loaders, then
+publishes a GitHub release with the Fabric and NeoForge jars and generated release notes.
+
+```bash
+git tag v0.2.0
+git push origin v0.2.0
+```
+
+The tag without its `v` becomes the mod version (jar names and mod metadata), overriding `version` in
+`gradle.properties`; keep both in sync. A tag with a `-` (`v0.2.0-beta.1`) is published as a pre-release.
+Players need the jar on the client and on the server (plus Fabric API on Fabric).
+
 ## To do
 
 - Add a `minegoals.png` icon to `common/src/main/resources/`.

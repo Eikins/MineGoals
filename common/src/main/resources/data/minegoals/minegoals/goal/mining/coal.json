@@ -12,7 +12,7 @@
   "criterion": {
     "type": "minegoals:break_block",
     "block": "#minecraft:coal_ores",
-    "count": 32
+    "count": 12
   },
   "rewards": {
     "experience": 10
