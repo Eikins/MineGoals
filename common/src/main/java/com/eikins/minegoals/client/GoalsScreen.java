@@ -27,7 +27,8 @@ import java.util.Optional;
 /**
  * Goals screen, styled like the vanilla advancements screen and built from vanilla GUI sprites:
  * <ul>
- *   <li>advancement tabs above the window, one per unlocked category;</li>
+ *   <li>advancement tabs above the window, one per unlocked category, in pages with arrows when they do not all
+ *       fit;</li>
  *   <li>the advancement window, filled with the category's background tile;</li>
  *   <li>the tier track as advancement frames (the last tier as a challenge frame);</li>
  *   <li>MineGoals rows ({@link GoalRowSprites}): the selected tier pinned on top (taller row), then its goals in a
@@ -45,6 +46,11 @@ public class GoalsScreen extends Screen {
     private static final int TAB_WIDTH = 28;
     private static final int TAB_HEIGHT = 32;
     private static final int TAB_OVERLAP = 4;
+    private static final int TAB_STEP = TAB_WIDTH + 4;
+    private static final int PAGE_ARROW_WIDTH = 23;
+    private static final int PAGE_ARROW_HEIGHT = 13;
+    /** Room kept at each end of the tab row for the page arrows, when the tabs need more than one page. */
+    private static final int PAGE_ARROW_SPACE = PAGE_ARROW_WIDTH + 3;
     private static final int FRAME = 26;
     private static final int ROW_GAP = 2;
     private static final int SCROLL_STEP = 17;
@@ -63,6 +69,8 @@ public class GoalsScreen extends Screen {
     private final List<RowButton> rowButtons = new ArrayList<>();
     private int selectedCategory;
     private int selectedTier = 1;
+    /** Shown page of category tabs, when they do not all fit above the window. */
+    private int tabPage;
     private double scroll;
 
     // Window layout, computed in init()
@@ -95,6 +103,7 @@ public class GoalsScreen extends Screen {
 
     private void selectCategory(int index) {
         this.selectedCategory = index;
+        this.tabPage = index / this.tabsPerPage();
         this.scroll = 0;
         Identifier id = this.currentCategoryId();
         if (id != null) {
@@ -114,6 +123,7 @@ public class GoalsScreen extends Screen {
         int index = current == null ? -1 : this.categoryIds.indexOf(current);
         if (index >= 0) {
             this.selectedCategory = index;
+            this.tabPage = Math.min(this.tabPage, this.pageCount() - 1);
         } else {
             this.selectCategory(0);
         }
@@ -171,14 +181,64 @@ public class GoalsScreen extends Screen {
         return Math.max(GoalRowSprites.MIN_WIDTH, this.innerWidth() - 8 - SCROLLBAR_WIDTH - 2);
     }
 
-    /** Tabs sit 4 px apart; with many categories they get closer so they still fit above the window. */
-    private int tabStep() {
-        int count = Math.max(1, this.categoryIds.size());
-        return Math.min(TAB_WIDTH + 4, (this.windowWidth - TAB_WIDTH) / Math.max(1, count - 1));
+    /** How many tabs (4 px apart) fit in a row of the given width. */
+    private static int tabsFitting(int width) {
+        return Math.max(1, (width - TAB_WIDTH) / TAB_STEP + 1);
     }
 
+    /**
+     * Tabs shown at once. When every category fits above the window there is a single page; otherwise both ends of
+     * the row are kept for the page arrows.
+     */
+    private int tabsPerPage() {
+        int all = tabsFitting(this.windowWidth);
+        return this.categoryIds.size() <= all ? all : tabsFitting(this.windowWidth - 2 * PAGE_ARROW_SPACE);
+    }
+
+    private int pageCount() {
+        return Math.max(1, (this.categoryIds.size() + this.tabsPerPage() - 1) / this.tabsPerPage());
+    }
+
+    private boolean paged() {
+        return this.pageCount() > 1;
+    }
+
+    private int firstTab() {
+        return this.tabPage * this.tabsPerPage();
+    }
+
+    private int endTab() {
+        return Math.min(this.categoryIds.size(), this.firstTab() + this.tabsPerPage());
+    }
+
+    /** X of a tab of the shown page; paged tabs are centered between the arrows. */
     private int tabX(int index) {
-        return this.windowX + index * this.tabStep();
+        int slot = index - this.firstTab();
+        if (!this.paged()) {
+            return this.windowX + slot * TAB_STEP;
+        }
+        int available = this.windowWidth - 2 * PAGE_ARROW_SPACE;
+        int used = this.tabsPerPage() * TAB_STEP - 4;
+        return this.windowX + PAGE_ARROW_SPACE + (available - used) / 2 + slot * TAB_STEP;
+    }
+
+    private int pageArrowY() {
+        return this.tabY() + (TAB_HEIGHT - TAB_OVERLAP - PAGE_ARROW_HEIGHT) / 2;
+    }
+
+    private int pageArrowX(boolean forward) {
+        return forward ? this.windowX + this.windowWidth - PAGE_ARROW_WIDTH : this.windowX;
+    }
+
+    private boolean canTurnPage(boolean forward) {
+        return forward ? this.tabPage < this.pageCount() - 1 : this.tabPage > 0;
+    }
+
+    private void turnPage(boolean forward) {
+        if (this.canTurnPage(forward)) {
+            this.tabPage += forward ? 1 : -1;
+            this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.BOOK_PAGE_TURN, 1.0F));
+        }
     }
 
     private int tabY() {
@@ -316,11 +376,16 @@ public class GoalsScreen extends Screen {
     }
 
     private void renderTabs(GuiGraphicsExtractor g, GoalDefinitions defs, PlayerGoalProgress progress, int mouseX, int mouseY) {
-        for (int i = 0; i < this.categoryIds.size(); i++) {
+        if (this.paged()) {
+            this.renderPageArrow(g, false, mouseX, mouseY);
+            this.renderPageArrow(g, true, mouseX, mouseY);
+        }
+        for (int i = this.firstTab(); i < this.endTab(); i++) {
             Identifier categoryId = this.categoryIds.get(i);
             Category category = defs.categories().get(categoryId);
             boolean selected = i == this.selectedCategory;
-            Identifier sprite = i == 0
+            // The left tab sprite joins the window's corner, which only the first tab of an unpaged row touches.
+            Identifier sprite = i == 0 && !this.paged()
                     ? (selected ? VanillaSprites.TAB_LEFT_SELECTED : VanillaSprites.TAB_LEFT)
                     : (selected ? VanillaSprites.TAB_MIDDLE_SELECTED : VanillaSprites.TAB_MIDDLE);
             int x = this.tabX(i);
@@ -334,6 +399,43 @@ public class GoalsScreen extends Screen {
                 g.setTooltipForNextFrame(this.font, List.of(category.title()), Optional.empty(), mouseX, mouseY);
             }
         }
+    }
+
+    /**
+     * A page arrow beside the tabs: dimmed on the first or last page. Its tooltip gives the page number, and tells
+     * when another page has a reward ready to claim.
+     */
+    private void renderPageArrow(GuiGraphicsExtractor g, boolean forward, int mouseX, int mouseY) {
+        int x = this.pageArrowX(forward);
+        int y = this.pageArrowY();
+        boolean enabled = this.canTurnPage(forward);
+        boolean hovered = inside(mouseX, mouseY, x, y, PAGE_ARROW_WIDTH, PAGE_ARROW_HEIGHT);
+        Identifier sprite = forward
+                ? (enabled && hovered ? VanillaSprites.PAGE_FORWARD_HIGHLIGHTED : VanillaSprites.PAGE_FORWARD)
+                : (enabled && hovered ? VanillaSprites.PAGE_BACKWARD_HIGHLIGHTED : VanillaSprites.PAGE_BACKWARD);
+        VanillaSprites.sprite(g, sprite, x, y, PAGE_ARROW_WIDTH, PAGE_ARROW_HEIGHT, enabled ? 1.0F : 0.35F);
+        if (enabled && this.claimableBeyond(forward)) {
+            VanillaSprites.sprite(g, VanillaSprites.NOTIFICATION, forward ? x + PAGE_ARROW_WIDTH - 7 : x - 3, y - 6, 10, 10);
+        }
+        if (hovered) {
+            g.setTooltipForNextFrame(this.font,
+                    List.of(Component.translatable("minegoals.screen.page", this.tabPage + 1, this.pageCount())),
+                    Optional.empty(), mouseX, mouseY);
+        }
+    }
+
+    /** Whether a category on a page before (or after) the shown one has a reward ready to claim. */
+    private boolean claimableBeyond(boolean forward) {
+        GoalDefinitions defs = ClientGoalState.definitions();
+        PlayerGoalProgress progress = ClientGoalState.progress();
+        int from = forward ? this.endTab() : 0;
+        int to = forward ? this.categoryIds.size() : this.firstTab();
+        for (int i = from; i < to; i++) {
+            if (this.hasClaimable(defs, progress, this.categoryIds.get(i))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean hasClaimable(GoalDefinitions defs, PlayerGoalProgress progress, Identifier categoryId) {
@@ -861,7 +963,15 @@ public class GoalsScreen extends Screen {
                 return true;
             }
         }
-        for (int i = 0; i < this.categoryIds.size(); i++) {
+        if (this.paged()) {
+            for (boolean forward : new boolean[]{false, true}) {
+                if (inside(mx, my, this.pageArrowX(forward), this.pageArrowY(), PAGE_ARROW_WIDTH, PAGE_ARROW_HEIGHT)) {
+                    this.turnPage(forward);
+                    return true;
+                }
+            }
+        }
+        for (int i = this.firstTab(); i < this.endTab(); i++) {
             if (inside(mx, my, this.tabX(i), this.tabY(), TAB_WIDTH, TAB_HEIGHT - TAB_OVERLAP)) {
                 this.selectCategory(i);
                 return true;
@@ -883,6 +993,12 @@ public class GoalsScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
+        // The wheel over the tab row turns its pages.
+        if (this.paged() && scrollY != 0
+                && inside(x, y, this.windowX, this.tabY(), this.windowWidth, TAB_HEIGHT - TAB_OVERLAP)) {
+            this.turnPage(scrollY < 0);
+            return true;
+        }
         this.scroll = Math.max(0, Math.min(this.maxScroll(), this.scroll - scrollY * SCROLL_STEP));
         return true;
     }

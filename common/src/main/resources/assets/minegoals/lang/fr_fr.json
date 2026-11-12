@@ -23,6 +23,7 @@
   "minegoals.screen.tracked": "Suivi",
   "minegoals.screen.track_tier": "Suivre tous les objectifs de ce palier",
   "minegoals.screen.untrack_tier": "Ne plus suivre les objectifs de ce palier",
+  "minegoals.screen.page": "Page %s / %s",
   "minegoals.screen.collect": "Récupérer",
   "minegoals.screen.pending": "%s objet(s) en attente",
   "minegoals.screen.pending_title": "Récompenses en attente de place",

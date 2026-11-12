@@ -25,6 +25,10 @@ public final class VanillaSprites {
     // Widgets
     public static final Identifier BUTTON = sprite("widget/button");
     public static final Identifier BUTTON_HIGHLIGHTED = sprite("widget/button_highlighted");
+    public static final Identifier PAGE_BACKWARD = sprite("widget/page_backward");
+    public static final Identifier PAGE_BACKWARD_HIGHLIGHTED = sprite("widget/page_backward_highlighted");
+    public static final Identifier PAGE_FORWARD = sprite("widget/page_forward");
+    public static final Identifier PAGE_FORWARD_HIGHLIGHTED = sprite("widget/page_forward_highlighted");
     public static final Identifier SCROLLER = sprite("widget/scroller");
     public static final Identifier SCROLLER_BACKGROUND = sprite("widget/scroller_background");
     public static final Identifier SLOT = sprite("container/slot");

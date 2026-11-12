@@ -19,7 +19,9 @@ A multi-loader Minecraft **26.3** mod (**Fabric** and **NeoForge**): personal go
 - A **journal icon** in the bottom-right corner of the HUD shows the key that opens the goals **screen** (**G**), with
   the vanilla "!" badge when a reward is ready to be claimed.
 - The goals screen looks like the vanilla advancements screen and is drawn with vanilla GUI sprites (window, tabs,
-  advancement frames and title boxes, slots, buttons, experience bar).
+  advancement frames and title boxes, slots, buttons, experience bar). When the category tabs do not all fit above
+  the window, they are split into pages turned with the book arrows beside them (or the mouse wheel over the tabs);
+  an arrow shows the "!" badge when a category on another page has a reward ready.
 - Criteria cover mining, killing, collecting, crafting, holding items, visiting biomes and dimensions, vanilla
   statistics and vanilla advancements.
 - Works in singleplayer and on dedicated servers. Progress is stored server-side, per player.

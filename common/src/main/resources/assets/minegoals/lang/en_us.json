@@ -23,6 +23,7 @@
   "minegoals.screen.tracked": "Tracked",
   "minegoals.screen.track_tier": "Track every goal of this tier",
   "minegoals.screen.untrack_tier": "Stop tracking the goals of this tier",
+  "minegoals.screen.page": "Page %s / %s",
   "minegoals.screen.collect": "Collect",
   "minegoals.screen.pending": "%s item(s) waiting",
   "minegoals.screen.pending_title": "Rewards waiting for space",
